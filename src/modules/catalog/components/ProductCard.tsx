@@ -29,11 +29,37 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
     setImgSrc(product.imageUrl || FALLBACK_IMG);
   }, [product.imageUrl]);
 
+  const stockNum = typeof product.stock === 'number' ? product.stock : parseInt(String(product.stock || 0), 10);
+  const isOutOfStock = isNaN(stockNum) || stockNum <= 0;
+
   return (
-    <div className="product-card">
+    <div className={`product-card ${isOutOfStock ? 'is-out-of-stock' : ''}`}>
       {/* Product Image Container */}
       <div className="product-card-image-wrapper">
-        {cartQty > 0 && (
+        {isOutOfStock ? (
+          <span
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              backgroundColor: '#dc2626',
+              color: '#ffffff',
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              padding: '0.35rem 0.7rem',
+              borderRadius: '20px',
+              boxShadow: '0 4px 10px rgba(220,38,38,0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              zIndex: 10,
+              letterSpacing: '0.3px',
+              textTransform: 'uppercase'
+            }}
+          >
+            Out of Stock
+          </span>
+        ) : cartQty > 0 ? (
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -63,7 +89,7 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             <ShoppingBag size={13} color="var(--color-gold)" />
             <span>{cartQty} in Cart</span>
           </button>
-        )}
+        ) : null}
 
         <Link href={`/products/${product.slug}`} style={{ display: 'block', width: '100%', height: '100%' }}>
           <img
@@ -71,11 +97,9 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             alt={product.name}
             onError={() => setImgSrc(FALLBACK_IMG)}
             className="product-card-image"
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: 'pointer', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }}
           />
         </Link>
-
-
 
         {/* Quick View Button Overlay */}
         {onQuickView && (
@@ -117,6 +141,26 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
               <span className="impact-text">{product.impactDescription}</span>
             </div>
           )}
+
+          {/* Stock Quantity / Out of Stock Indicator */}
+          <div style={{ marginBottom: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.74rem' }}>
+            {isOutOfStock ? (
+              <span style={{ color: '#dc2626', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#dc2626' }}></span>
+                Out of Stock (0 units)
+              </span>
+            ) : stockNum <= 5 ? (
+              <span style={{ color: '#ea580c', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#ea580c' }}></span>
+                Only {stockNum} left in stock!
+              </span>
+            ) : (
+              <span style={{ color: '#15803d', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span>
+                Quantity: <strong>{stockNum} in stock</strong>
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Pricing & Add to Cart Action */}
@@ -127,11 +171,24 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           </div>
 
           <button
-            onClick={() => addToCart(product)}
-            className="btn-primary add-to-cart-btn"
+            onClick={() => !isOutOfStock && addToCart(product)}
+            disabled={isOutOfStock}
+            className={`btn-primary add-to-cart-btn ${isOutOfStock ? 'disabled-out-of-stock' : ''}`}
+            style={
+              isOutOfStock
+                ? {
+                    backgroundColor: '#e2e8f0',
+                    color: '#94a3b8',
+                    cursor: 'not-allowed',
+                    boxShadow: 'none',
+                    border: '1px solid #cbd5e1',
+                  }
+                : {}
+            }
+            title={isOutOfStock ? 'Item is Out of Stock' : 'Add to Basket'}
           >
             <ShoppingBag size={14} />
-            <span>Add</span>
+            <span>{isOutOfStock ? 'Sold Out' : 'Add'}</span>
           </button>
         </div>
       </div>

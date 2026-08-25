@@ -23,7 +23,11 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
 
   if (!product) return null;
 
+  const stockNum = typeof product.stock === 'number' ? product.stock : parseInt(String(product.stock || 0), 10);
+  const isOutOfStock = isNaN(stockNum) || stockNum <= 0;
+
   const handleAddToCart = () => {
+    if (isOutOfStock) return;
     addToCart(product, quantity);
     onClose();
   };
@@ -125,11 +129,33 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
               {product.name}
             </h2>
 
-            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.8rem' }}>
-              ₹{parseFloat(product.price).toFixed(2)}
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)', marginLeft: '6px' }}>
-                ({formatWeightAndUnit(product.weight, product.unit)})
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-forest)' }}>
+                ₹{parseFloat(product.price).toFixed(2)}
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)', marginLeft: '6px' }}>
+                  ({formatWeightAndUnit(product.weight, product.unit)})
+                </span>
+              </div>
+
+              {/* Stock Status Badge */}
+              <div style={{ fontSize: '0.8rem', fontWeight: 800 }}>
+                {isOutOfStock ? (
+                  <span style={{ color: '#dc2626', backgroundColor: '#fee2e2', padding: '0.25rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#dc2626' }}></span>
+                    Out of Stock
+                  </span>
+                ) : stockNum <= 5 ? (
+                  <span style={{ color: '#ea580c', backgroundColor: '#ffedd5', padding: '0.25rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ea580c' }}></span>
+                    Only {stockNum} left!
+                  </span>
+                ) : (
+                  <span style={{ color: '#166534', backgroundColor: '#dcfce7', padding: '0.25rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span>
+                    In Stock: {stockNum} units
+                  </span>
+                )}
+              </div>
             </div>
 
             <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', lineHeight: '1.55', marginBottom: '1rem' }}>
@@ -168,26 +194,37 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                   borderRadius: 'var(--radius-pill)',
                   padding: '0.4rem 0.8rem',
                   backgroundColor: 'var(--color-cream-light)',
+                  opacity: isOutOfStock ? 0.6 : 1,
                 }}
               >
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
+                <button disabled={isOutOfStock} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
                   <Minus size={16} color="var(--color-forest)" />
                 </button>
                 <span style={{ fontSize: '1rem', fontWeight: 800, padding: '0 10px', minWidth: '28px', textAlign: 'center' }}>
-                  {quantity}
+                  {isOutOfStock ? 0 : quantity}
                 </span>
-                <button onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
+                <button disabled={isOutOfStock || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
                   <Plus size={16} color="var(--color-forest)" />
                 </button>
               </div>
 
               <button
                 onClick={handleAddToCart}
+                disabled={isOutOfStock}
                 className="btn-primary"
-                style={{ flex: '1 1 180px', height: '46px', fontSize: '0.9rem' }}
+                style={{
+                  flex: '1 1 180px',
+                  height: '46px',
+                  fontSize: '0.9rem',
+                  backgroundColor: isOutOfStock ? '#e2e8f0' : undefined,
+                  color: isOutOfStock ? '#94a3b8' : undefined,
+                  cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                  border: isOutOfStock ? '1px solid #cbd5e1' : undefined,
+                  boxShadow: isOutOfStock ? 'none' : undefined,
+                }}
               >
                 <ShoppingBag size={18} />
-                <span>Add to Basket • ₹{(parseFloat(product.price) * quantity).toFixed(2)}</span>
+                <span>{isOutOfStock ? 'Out of Stock' : `Add to Basket • ₹${(parseFloat(product.price) * quantity).toFixed(2)}`}</span>
               </button>
             </div>
 

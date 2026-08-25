@@ -93,6 +93,9 @@ export default function ProductDetailPage() {
     ? activePayments.map((p) => (p.code === 'cash' ? 'Cash on Delivery' : 'UPI Payment')).join(' • ')
     : 'Cash on Delivery • UPI Payment';
 
+  const stockNum = typeof product.stock === 'number' ? product.stock : parseInt(String(product.stock || 0), 10);
+  const isOutOfStock = isNaN(stockNum) || stockNum <= 0;
+
   return (
     <div className="container" style={{ padding: '3rem 1.5rem 5rem', position: 'relative' }}>
       {toastMsg && (
@@ -173,11 +176,35 @@ export default function ProductDetailPage() {
             </span>
           </div>
 
-          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '1.2rem' }}>
-            ₹{parseFloat(product.price).toFixed(2)}
-            <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 600, marginLeft: '6px' }}>
-              / {formatWeightAndUnit(product.weight, product.unit)}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+              <span style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--color-forest)' }}>
+                ₹{parseFloat(product.price).toFixed(2)}
+              </span>
+              <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)' }}>
+                / {formatWeightAndUnit(product.weight, product.unit)}
+              </span>
+            </div>
+
+            {/* Stock Quantity Badge */}
+            <div style={{ fontSize: '0.85rem', fontWeight: 800 }}>
+              {isOutOfStock ? (
+                <span style={{ color: '#dc2626', backgroundColor: '#fee2e2', padding: '0.35rem 0.85rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#dc2626' }}></span>
+                  Out of Stock (0 units)
+                </span>
+              ) : stockNum <= 5 ? (
+                <span style={{ color: '#ea580c', backgroundColor: '#ffedd5', padding: '0.35rem 0.85rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#ea580c' }}></span>
+                  Only {stockNum} left in stock!
+                </span>
+              ) : (
+                <span style={{ color: '#166534', backgroundColor: '#dcfce7', padding: '0.35rem 0.85rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span>
+                  In Stock: <strong>{stockNum} units</strong>
+                </span>
+              )}
+            </div>
           </div>
 
           <p style={{ fontSize: '1rem', color: 'var(--color-text-muted)', lineHeight: '1.7', marginBottom: '1.5rem' }}>
@@ -192,30 +219,35 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Delivery Payment Modes Badge */}
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--color-border)', padding: '0.9rem 1.2rem', borderRadius: '14px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <CreditCard size={20} color="var(--color-gold)" />
-            <div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-forest)' }}>Delivery Payment Modes</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{paymentModesText}</div>
-            </div>
-          </div>
-
           {/* Action Row */}
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--color-border)', borderRadius: 'var(--radius-pill)', padding: '0.5rem 1rem', backgroundColor: '#fff' }}>
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--color-border)', borderRadius: 'var(--radius-pill)', padding: '0.5rem 1rem', backgroundColor: '#fff', opacity: isOutOfStock ? 0.6 : 1 }}>
+              <button disabled={isOutOfStock} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
                 <Minus size={18} color="var(--color-forest)" />
               </button>
-              <span style={{ fontSize: '1.1rem', fontWeight: 800, padding: '0 14px' }}>{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, padding: '0 14px' }}>{isOutOfStock ? 0 : quantity}</span>
+              <button disabled={isOutOfStock || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
                 <Plus size={18} color="var(--color-forest)" />
               </button>
             </div>
 
-            <button onClick={() => addToCart(product, quantity)} className="btn-primary" style={{ flex: 1, height: '52px', fontSize: '1rem' }}>
+            <button
+              onClick={() => !isOutOfStock && addToCart(product, quantity)}
+              disabled={isOutOfStock}
+              className="btn-primary"
+              style={{
+                flex: 1,
+                height: '52px',
+                fontSize: '1rem',
+                backgroundColor: isOutOfStock ? '#e2e8f0' : undefined,
+                color: isOutOfStock ? '#94a3b8' : undefined,
+                cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                border: isOutOfStock ? '1px solid #cbd5e1' : undefined,
+                boxShadow: isOutOfStock ? 'none' : undefined,
+              }}
+            >
               <ShoppingBag size={20} />
-              <span>Add to Basket • ₹{(parseFloat(product.price) * quantity).toFixed(2)}</span>
+              <span>{isOutOfStock ? 'Out of Stock' : `Add to Basket • ₹${(parseFloat(product.price) * quantity).toFixed(2)}`}</span>
             </button>
 
             <button

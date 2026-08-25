@@ -548,7 +548,7 @@ export default function UserProfilePage() {
                                 </div>
                               </div>
                               <div style={{ fontWeight: 900, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
-                                ${((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)}
+                                ₹{((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)}
                               </div>
                             </div>
                           ))}
@@ -716,7 +716,7 @@ export default function UserProfilePage() {
                           <img src={item.imageUrl} alt={item.name} style={{ width: '60px', height: '60px', borderRadius: '10px', objectFit: 'cover' }} />
                           <div>
                             <h4 style={{ margin: '0 0 0.2rem', fontWeight: 900, color: 'var(--color-forest)' }}>{item.name}</h4>
-                            <div style={{ fontSize: '0.85rem', color: 'var(--color-gold)', fontWeight: 800 }}>${priceNum.toFixed(2)}</div>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--color-gold)', fontWeight: 800 }}>₹{priceNum.toFixed(2)}</div>
                             <div style={{ fontSize: '0.7rem', color: '#888' }}>DB Product ID: #{item.productId}</div>
                           </div>
                         </div>
@@ -729,7 +729,7 @@ export default function UserProfilePage() {
                           </div>
 
                           <div style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--color-forest)' }}>
-                            ${(priceNum * item.quantity).toFixed(2)}
+                            ₹{(priceNum * item.quantity).toFixed(2)}
                           </div>
 
                           <button onClick={() => handleDbCartRemoveItem(item.productId)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444' }}>
@@ -744,7 +744,7 @@ export default function UserProfilePage() {
                 <div style={{ borderTop: '2px solid #e2d5c3', paddingTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--color-forest)' }}>
                     Total (Fetched via API): <span style={{ color: 'var(--color-gold)' }}>
-                      ${(dbCartItems && dbCartItems.length > 0
+                      ₹{(dbCartItems && dbCartItems.length > 0
                         ? dbCartItems.reduce((acc, i) => acc + ((typeof i.price === 'number' ? i.price : parseFloat(i.price) || 0) * i.quantity), 0)
                         : totalPrice
                       ).toFixed(2)}

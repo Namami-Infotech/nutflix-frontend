@@ -51,9 +51,9 @@ export default function HomePage() {
     return true;
   });
 
-  // Maximum 32 products displayed on Home Page
-  const displayedProducts = filteredProducts.slice(0, 32);
-  const hasMoreProducts = filteredProducts.length > 32 || products.length > 32;
+  // Maximum 12 products displayed on Home Page (3 rows of 4)
+  const displayedProducts = filteredProducts.slice(0, 12);
+  const hasMoreProducts = filteredProducts.length >= 12;
 
   return (
     <div>
@@ -62,16 +62,8 @@ export default function HomePage() {
       {/* Featured Catalog Section */}
       <section id="products" style={{ padding: '4rem 0 5rem', backgroundColor: '#ffffff' }}>
         <div className="container">
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'flex-end',
-              justifyContent: 'space-between',
-              gap: '1.5rem',
-              marginBottom: '2.2rem',
-            }}
-          >
+          {/* Section Header */}
+          <div style={{ marginBottom: '2.2rem' }}>
             <div style={{ maxWidth: '680px' }}>
               <span className="badge-impact" style={{ marginBottom: '0.8rem' }}>
                 Harvest Collections
@@ -90,22 +82,6 @@ export default function HomePage() {
                 Hand-harvested, ethically sourced, and crafted for unparalleled flavor.
               </p>
             </div>
-
-            <Link
-              href="/products"
-              className="btn-primary"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1.6rem',
-                fontSize: '0.9rem',
-                borderRadius: 'var(--radius-pill)',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              View More <ArrowRight size={18} />
-            </Link>
           </div>
 
           <CategoryFilter
@@ -120,23 +96,25 @@ export default function HomePage() {
             onQuickView={setQuickViewProduct}
           />
 
+          {/* View More Button Aligned to Bottom Right (Only shown when > 12 products exist) */}
           {hasMoreProducts && (
-            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2.5rem' }}>
               <Link
-                href="/products"
+                href={selectedCategory ? `/products?category=${selectedCategory}` : '/products'}
                 className="btn-primary"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.6rem',
-                  padding: '0.85rem 2.2rem',
+                  padding: '0.85rem 2rem',
                   fontSize: '1rem',
-                  fontWeight: 800,
+                  fontWeight: 700,
                   borderRadius: 'var(--radius-pill)',
-                  boxShadow: 'var(--shadow-md)',
+                  whiteSpace: 'nowrap',
+                  textDecoration: 'none',
                 }}
               >
-                View More Products ({products.length} Items Available) <ArrowRight size={18} />
+                View More <ArrowRight size={18} />
               </Link>
             </div>
           )}

@@ -44,13 +44,6 @@ const DELIVERY_STEPS = [
     icon: Truck,
   },
   {
-    key: 'out_for_delivery',
-    aliases: ['out_for_delivery', 'out for delivery'],
-    label: 'Out for Delivery',
-    description: 'Delivery executive is on the way to your doorstep',
-    icon: MapPin,
-  },
-  {
     key: 'delivered',
     aliases: ['delivered', 'completed'],
     label: 'Delivered',

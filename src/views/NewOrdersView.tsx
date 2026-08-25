@@ -96,10 +96,8 @@ export default function NewOrdersView({
                     <option value="confirmed">Confirmed</option>
                     <option value="processing">Processing & Packed</option>
                     <option value="shipped">Shipped</option>
-                    <option value="out_for_delivery">Out for Delivery</option>
                     <option value="delivered">Delivered</option>
                     <option value="cancelled">Cancelled</option>
-                    <option value="returned">Returned</option>
                   </select>
                 </td>
               </tr>
