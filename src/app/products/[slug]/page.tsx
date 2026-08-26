@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { fetchProductBySlug, fetchReviews, fetchPaymentTypes, formatWeightAndUnit, PaymentType } from '@/lib/api';
 import { Product, Review } from '@/types';
 import { useCart } from '@/modules/cart';
+import { useAuth } from '@/modules/auth';
 import { Star, ShoppingBag, Heart, ArrowLeft, Plus, Minus, CreditCard, ShieldCheck, Truck, Share2, Sparkles, CheckCircle2, Leaf } from 'lucide-react';
 import Link from 'next/link';
 import { ProductReviews } from '@/modules/catalog/components/ProductReviews';
@@ -14,6 +15,8 @@ export default function ProductDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const { items: cartItems, addToCart, openCart } = useCart();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [activePayments, setActivePayments] = useState<PaymentType[]>([]);
@@ -221,33 +224,34 @@ export default function ProductDetailPage() {
 
           {/* Action Row */}
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--color-border)', borderRadius: 'var(--radius-pill)', padding: '0.5rem 1rem', backgroundColor: '#fff', opacity: isOutOfStock ? 0.6 : 1 }}>
-              <button disabled={isOutOfStock} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--color-border)', borderRadius: 'var(--radius-pill)', padding: '0.5rem 1rem', backgroundColor: '#fff', opacity: isOutOfStock || isAdmin ? 0.6 : 1 }}>
+              <button disabled={isOutOfStock || isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
                 <Minus size={18} color="var(--color-forest)" />
               </button>
               <span style={{ fontSize: '1.1rem', fontWeight: 800, padding: '0 14px' }}>{isOutOfStock ? 0 : quantity}</span>
-              <button disabled={isOutOfStock || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
+              <button disabled={isOutOfStock || isAdmin || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
                 <Plus size={18} color="var(--color-forest)" />
               </button>
             </div>
 
             <button
-              onClick={() => !isOutOfStock && addToCart(product, quantity)}
-              disabled={isOutOfStock}
+              onClick={() => !isOutOfStock && !isAdmin && addToCart(product, quantity)}
+              disabled={isOutOfStock || isAdmin}
               className="btn-primary"
               style={{
                 flex: 1,
                 height: '52px',
                 fontSize: '1rem',
-                backgroundColor: isOutOfStock ? '#e2e8f0' : undefined,
-                color: isOutOfStock ? '#94a3b8' : undefined,
-                cursor: isOutOfStock ? 'not-allowed' : 'pointer',
-                border: isOutOfStock ? '1px solid #cbd5e1' : undefined,
-                boxShadow: isOutOfStock ? 'none' : undefined,
+                backgroundColor: isOutOfStock || isAdmin ? '#e2e8f0' : undefined,
+                color: isOutOfStock || isAdmin ? '#94a3b8' : undefined,
+                cursor: isOutOfStock || isAdmin ? 'not-allowed' : 'pointer',
+                border: isOutOfStock || isAdmin ? '1px solid #cbd5e1' : undefined,
+                boxShadow: isOutOfStock || isAdmin ? 'none' : undefined,
               }}
+              title={isAdmin ? 'Admin accounts cannot purchase items' : isOutOfStock ? 'Item is out of stock' : 'Add to Basket'}
             >
               <ShoppingBag size={20} />
-              <span>{isOutOfStock ? 'Out of Stock' : `Add to Basket • ₹${(parseFloat(product.price) * quantity).toFixed(2)}`}</span>
+              <span>{isOutOfStock ? 'Out of Stock' : isAdmin ? 'Admin (Disabled)' : `Add to Basket • ₹${(parseFloat(product.price) * quantity).toFixed(2)}`}</span>
             </button>
 
             <button

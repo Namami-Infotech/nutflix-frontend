@@ -8,9 +8,10 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  promptMessage?: string;
 }
 
-export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess }) => {
+export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess, promptMessage }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
@@ -292,6 +293,29 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                 DARSHAN TECHNO SYSTEM • Account & Token Access
               </p>
             </div>
+
+            {/* Context Prompt Message (e.g. Add to Cart / Checkout Auth required) */}
+            {promptMessage && (
+              <div
+                style={{
+                  backgroundColor: '#fffbeb',
+                  color: '#92400e',
+                  border: '1px solid #fde68a',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '12px',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  marginBottom: '1.2rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  lineHeight: '1.4',
+                }}
+              >
+                <span>🔒</span>
+                <span>{promptMessage}</span>
+              </div>
+            )}
 
             {/* Tab Switcher */}
             <div

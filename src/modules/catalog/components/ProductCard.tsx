@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, formatWeightAndUnit } from '@/lib/api';
 import { useCart } from '../../cart/cart.context';
+import { useAuth } from '@/modules/auth';
 import { Star, ShoppingBag, Heart, Eye } from 'lucide-react';
 import Link from 'next/link';
 
@@ -16,6 +17,8 @@ const FALLBACK_IMG = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d
 export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
   const [mounted, setMounted] = useState(false);
   const { items, addToCart, openCart } = useCart();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
   const [imgSrc, setImgSrc] = useState(product.imageUrl || FALLBACK_IMG);
 
   useEffect(() => {
@@ -171,11 +174,11 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           </div>
 
           <button
-            onClick={() => !isOutOfStock && addToCart(product)}
-            disabled={isOutOfStock}
-            className={`btn-primary add-to-cart-btn ${isOutOfStock ? 'disabled-out-of-stock' : ''}`}
+            onClick={() => !isOutOfStock && !isAdmin && addToCart(product)}
+            disabled={isOutOfStock || isAdmin}
+            className={`btn-primary add-to-cart-btn ${isOutOfStock || isAdmin ? 'disabled-out-of-stock' : ''}`}
             style={
-              isOutOfStock
+              isOutOfStock || isAdmin
                 ? {
                     backgroundColor: '#e2e8f0',
                     color: '#94a3b8',
@@ -185,10 +188,10 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
                   }
                 : {}
             }
-            title={isOutOfStock ? 'Item is Out of Stock' : 'Add to Basket'}
+            title={isOutOfStock ? 'Item is Out of Stock' : isAdmin ? 'Admin accounts cannot add to cart' : 'Add to Basket'}
           >
             <ShoppingBag size={14} />
-            <span>{isOutOfStock ? 'Sold Out' : 'Add'}</span>
+            <span>{isOutOfStock ? 'Sold Out' : isAdmin ? 'Admin (Disabled)' : 'Add'}</span>
           </button>
         </div>
       </div>

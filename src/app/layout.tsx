@@ -1,5 +1,6 @@
 import React from 'react';
 import '@/styles/globals.css';
+import { AuthProvider } from '@/modules/auth';
 import { CartProvider, CartDrawer } from '@/modules/cart';
 import { AnnouncementBar, Header, Footer } from '@/modules/layout';
 
@@ -18,14 +19,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <CartProvider>
-          <AnnouncementBar />
-          <Header />
-          <CartDrawer />
-          <main style={{ minHeight: '80vh' }}>{children}</main>
-          <Footer />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <AnnouncementBar />
+            <Header />
+            <CartDrawer />
+            <main style={{ minHeight: '80vh' }}>{children}</main>
+            <Footer />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
 }
+

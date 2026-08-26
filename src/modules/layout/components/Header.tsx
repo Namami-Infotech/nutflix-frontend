@@ -5,45 +5,25 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { ShoppingBag, Search, X, Heart, Leaf, User } from 'lucide-react';
 import { useCart } from '@/modules/cart/cart.context';
-import { LoginModal } from './LoginModal';
+import { useAuth } from '@/modules/auth';
 import { useDebounce } from '@/hooks/useDebounce';
-import { getUserFromCookie, getAuthToken, fetchCategories, fetchProducts, Category, Product } from '@/lib/api';
+import { fetchCategories, fetchProducts, Category, Product } from '@/lib/api';
 
 export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSearch }) => {
   const pathname = usePathname();
   if (pathname?.startsWith('/admin')) return null;
 
   const { openCart, totalItems } = useCart();
+  const { isLoggedIn, user: currentUser, openLoginModal } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  
+  const isAdmin = currentUser?.role?.toLowerCase() === 'admin';
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [productsList, setProductsList] = useState<Product[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = React.useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  const checkUser = () => {
-    if (typeof window !== 'undefined') {
-      const token = getAuthToken();
-      const user = getUserFromCookie();
-      if (token && user) {
-        setCurrentUser(user);
-        setIsAdmin(user?.role?.toLowerCase() === 'admin');
-      } else {
-        setCurrentUser(null);
-        setIsAdmin(false);
-      }
-    }
-  };
-
-  React.useEffect(() => {
-    checkUser();
-  }, [pathname]);
 
   // Load catalog items for predictive search when search is opened
   React.useEffect(() => {
@@ -368,9 +348,10 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
             <button
               type="button"
               onClick={() => {
-                const token = getAuthToken();
-                if (!token) {
-                  setLoginModalOpen(true);
+                if (!isLoggedIn) {
+                  openLoginModal(() => {
+                    router.push('/profile');
+                  });
                 } else {
                   router.push('/profile');
                 }
@@ -475,17 +456,6 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
           </div>
         </div>
       </header>
-
-      {/* Login & Registration Modal */}
-      <LoginModal
-        isOpen={loginModalOpen}
-        onClose={() => setLoginModalOpen(false)}
-        onSuccess={() => {
-          setLoginModalOpen(false);
-          checkUser();
-          router.push('/profile');
-        }}
-      />
 
       <style jsx>{`
         @media (max-width: 480px) {

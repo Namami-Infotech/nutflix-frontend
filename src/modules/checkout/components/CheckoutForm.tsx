@@ -1,11 +1,15 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/modules/cart';
-import { submitOrder, fetchPaymentTypes, PaymentType } from '@/lib/api';
-import { ShoppingBag, ShieldCheck, CheckCircle2, ArrowRight, Truck, CreditCard, Banknote } from 'lucide-react';
+import { submitOrder, fetchPaymentTypes, PaymentType, getAuthToken } from '@/lib/api';
+import { useAuth } from '@/modules/auth';
+import { ShoppingBag, ShieldCheck, CheckCircle2, ArrowRight, Truck, CreditCard, Banknote, User, Lock } from 'lucide-react';
 import Link from 'next/link';
 
 export const CheckoutForm: React.FC = () => {
   const { items, subtotal, clearCart } = useCart();
+  const { isLoggedIn, user, openLoginModal } = useAuth();
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
@@ -15,6 +19,13 @@ export const CheckoutForm: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<string>('online');
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      if (user.name && !customerName) setCustomerName(user.name);
+      if (user.email && !customerEmail) setCustomerEmail(user.email);
+    }
+  }, [user]);
 
   useEffect(() => {
     async function loadPayments() {
@@ -115,6 +126,120 @@ export const CheckoutForm: React.FC = () => {
             <span>Continue Shopping</span>
             <ArrowRight size={18} />
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const token = getAuthToken();
+  const authenticated = Boolean(token || isLoggedIn);
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
+
+  if (isAdmin) {
+    return (
+      <div className="container" style={{ padding: '5rem 1rem', maxWidth: '600px', textAlign: 'center' }}>
+        <div
+          style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '24px',
+            padding: '3rem 2rem',
+            boxShadow: 'var(--shadow-md)',
+            border: '1px solid var(--color-border)',
+          }}
+        >
+          <div
+            style={{
+              width: '72px',
+              height: '72px',
+              borderRadius: '50%',
+              backgroundColor: '#fee2e2',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '1.5rem',
+              border: '2px solid #ef4444',
+            }}
+          >
+            <ShieldCheck size={36} color="#dc2626" />
+          </div>
+
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.6rem' }}>
+            Checkout Disabled for Admin
+          </h2>
+          <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', marginBottom: '2rem', lineHeight: '1.6' }}>
+            You are currently logged in as an <strong>Administrator ({user?.email})</strong>. Placing customer orders is disabled for admin accounts. You can manage existing orders and products in the Admin Dashboard.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <Link
+              href="/admin"
+              className="btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: '0.85rem', fontSize: '0.95rem', borderRadius: '12px', textDecoration: 'none' }}
+            >
+              <span>Go to Admin Dashboard</span>
+              <ArrowRight size={18} />
+            </Link>
+
+            <Link href="/" style={{ fontSize: '0.85rem', color: 'var(--color-forest)', fontWeight: 700, textDecoration: 'underline', marginTop: '0.5rem' }}>
+              Return to Store
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authenticated) {
+    return (
+      <div className="container" style={{ padding: '5rem 1rem', maxWidth: '580px', textAlign: 'center' }}>
+        <div
+          style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '24px',
+            padding: '3rem 2rem',
+            boxShadow: 'var(--shadow-md)',
+            border: '1px solid var(--color-border)',
+          }}
+        >
+          <div
+            style={{
+              width: '72px',
+              height: '72px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(200, 157, 102, 0.15)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '1.5rem',
+              border: '2px solid var(--color-gold)',
+            }}
+          >
+            <Lock size={32} color="var(--color-forest)" />
+          </div>
+
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.6rem' }}>
+            Sign In Required for Checkout
+          </h2>
+          <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', marginBottom: '2rem', lineHeight: '1.6' }}>
+            Please sign in or create an account to securely complete your order, receive instant tracking, and access your order history.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => openLoginModal(undefined, 'Please sign in or create an account to proceed to checkout.')}
+            className="btn-primary"
+            style={{ width: '100%', justifyContent: 'center', padding: '0.9rem', fontSize: '1rem', borderRadius: '14px', marginBottom: '1rem' }}
+          >
+            <User size={18} />
+            <span>Sign In / Create Account</span>
+            <ArrowRight size={18} />
+          </button>
+
+          <div>
+            <Link href="/" style={{ fontSize: '0.85rem', color: 'var(--color-forest)', fontWeight: 700, textDecoration: 'underline' }}>
+              Return to Store
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -279,11 +404,21 @@ export const CheckoutForm: React.FC = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isAdmin}
             className="btn-primary"
-            style={{ width: '100%', height: '50px', fontSize: '0.98rem', justifyContent: 'center' }}
+            style={{
+              width: '100%',
+              height: '50px',
+              fontSize: '0.98rem',
+              justifyContent: 'center',
+              backgroundColor: isAdmin ? '#e2e8f0' : undefined,
+              color: isAdmin ? '#94a3b8' : undefined,
+              cursor: isAdmin ? 'not-allowed' : 'pointer',
+              border: isAdmin ? '1px solid #cbd5e1' : undefined,
+              boxShadow: isAdmin ? 'none' : undefined,
+            }}
           >
-            {loading ? 'Processing Order...' : `Complete Order • ₹${totalAmount.toFixed(2)}`}
+            {loading ? 'Processing Order...' : isAdmin ? 'Admin (Cannot Place Order)' : `Complete Order • ₹${totalAmount.toFixed(2)}`}
           </button>
         </form>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, formatWeightAndUnit, fetchPaymentTypes, PaymentType } from '@/lib/api';
 import { useCart } from '../../cart/cart.context';
+import { useAuth } from '@/modules/auth';
 import { X, Star, ShoppingBag, Plus, Minus, Heart, ShieldCheck, Truck, CreditCard } from 'lucide-react';
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
 
 export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
   const [quantity, setQuantity] = useState(1);
   const [activePayments, setActivePayments] = useState<PaymentType[]>([]);
 
@@ -194,37 +197,38 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                   borderRadius: 'var(--radius-pill)',
                   padding: '0.4rem 0.8rem',
                   backgroundColor: 'var(--color-cream-light)',
-                  opacity: isOutOfStock ? 0.6 : 1,
+                  opacity: isOutOfStock || isAdmin ? 0.6 : 1,
                 }}
               >
-                <button disabled={isOutOfStock} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
+                <button disabled={isOutOfStock || isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
                   <Minus size={16} color="var(--color-forest)" />
                 </button>
                 <span style={{ fontSize: '1rem', fontWeight: 800, padding: '0 10px', minWidth: '28px', textAlign: 'center' }}>
                   {isOutOfStock ? 0 : quantity}
                 </span>
-                <button disabled={isOutOfStock || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
+                <button disabled={isOutOfStock || isAdmin || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
                   <Plus size={16} color="var(--color-forest)" />
                 </button>
               </div>
 
               <button
                 onClick={handleAddToCart}
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || isAdmin}
                 className="btn-primary"
                 style={{
                   flex: '1 1 180px',
                   height: '46px',
                   fontSize: '0.9rem',
-                  backgroundColor: isOutOfStock ? '#e2e8f0' : undefined,
-                  color: isOutOfStock ? '#94a3b8' : undefined,
-                  cursor: isOutOfStock ? 'not-allowed' : 'pointer',
-                  border: isOutOfStock ? '1px solid #cbd5e1' : undefined,
-                  boxShadow: isOutOfStock ? 'none' : undefined,
+                  backgroundColor: isOutOfStock || isAdmin ? '#e2e8f0' : undefined,
+                  color: isOutOfStock || isAdmin ? '#94a3b8' : undefined,
+                  cursor: isOutOfStock || isAdmin ? 'not-allowed' : 'pointer',
+                  border: isOutOfStock || isAdmin ? '1px solid #cbd5e1' : undefined,
+                  boxShadow: isOutOfStock || isAdmin ? 'none' : undefined,
                 }}
+                title={isAdmin ? 'Admin accounts cannot purchase items' : isOutOfStock ? 'Item is out of stock' : 'Add to Basket'}
               >
                 <ShoppingBag size={18} />
-                <span>{isOutOfStock ? 'Out of Stock' : `Add to Basket • ₹${(parseFloat(product.price) * quantity).toFixed(2)}`}</span>
+                <span>{isOutOfStock ? 'Out of Stock' : isAdmin ? 'Admin (Disabled)' : `Add to Basket • ₹${(parseFloat(product.price) * quantity).toFixed(2)}`}</span>
               </button>
             </div>
 

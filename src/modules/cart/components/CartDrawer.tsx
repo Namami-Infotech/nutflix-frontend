@@ -2,14 +2,36 @@
 
 import React from 'react';
 import { useCart } from '../cart.context';
-import { formatWeightAndUnit } from '@/lib/api';
+import { formatWeightAndUnit, getAuthToken } from '@/lib/api';
+import { useAuth } from '@/modules/auth';
 import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Heart } from 'lucide-react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export const CartDrawer: React.FC = () => {
   const { items, isOpen, closeCart, updateQuantity, removeFromCart, subtotal, freeShippingThreshold } = useCart();
+  const { isLoggedIn, user, openLoginModal } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
+  const router = useRouter();
 
   if (!isOpen) return null;
+
+  const handleProceedToCheckout = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isAdmin) {
+      alert('Admin account is not permitted to place customer orders.');
+      return;
+    }
+    const token = getAuthToken();
+    if (!token && !isLoggedIn) {
+      closeCart();
+      openLoginModal(() => {
+        router.push('/checkout');
+      }, 'Please sign in or create an account to proceed to checkout.');
+      return;
+    }
+    closeCart();
+    router.push('/checkout');
+  };
 
   const freeShippingDiff = freeShippingThreshold - subtotal;
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
@@ -261,15 +283,43 @@ export const CartDrawer: React.FC = () => {
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
 
-            <Link
-              href="/checkout"
-              onClick={closeCart}
+            {isAdmin && (
+              <div
+                style={{
+                  backgroundColor: '#fee2e2',
+                  border: '1px solid #fca5a5',
+                  color: '#991b1b',
+                  fontSize: '0.8rem',
+                  padding: '0.5rem 0.8rem',
+                  borderRadius: '8px',
+                  marginBottom: '0.8rem',
+                  fontWeight: 700,
+                  textAlign: 'center',
+                }}
+              >
+                ⚠️ Admin Account: Checkout is disabled for admins.
+              </div>
+            )}
+
+            <button
+              onClick={handleProceedToCheckout}
+              disabled={isAdmin}
               className="btn-primary"
-              style={{ width: '100%', borderRadius: 'var(--radius-pill)', textDecoration: 'none' }}
+              style={{
+                width: '100%',
+                borderRadius: 'var(--radius-pill)',
+                justifyContent: 'center',
+                backgroundColor: isAdmin ? '#e2e8f0' : undefined,
+                color: isAdmin ? '#94a3b8' : undefined,
+                cursor: isAdmin ? 'not-allowed' : 'pointer',
+                border: isAdmin ? '1px solid #cbd5e1' : undefined,
+                boxShadow: isAdmin ? 'none' : undefined,
+              }}
+              title={isAdmin ? 'Admin accounts cannot checkout' : 'Proceed to Checkout'}
             >
-              <span>Proceed to Checkout</span>
+              <span>{isAdmin ? 'Admin (Checkout Disabled)' : 'Proceed to Checkout'}</span>
               <ArrowRight size={18} />
-            </Link>
+            </button>
 
             <div style={{ textAlign: 'center', marginTop: '0.8rem', fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
               🔒 Guaranteed Secure Checkout • Carbon Neutral Shipping

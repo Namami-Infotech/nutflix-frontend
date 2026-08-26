@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, fetchCartApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi, syncCartApi } from '@/lib/api';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Product, fetchCartApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi, syncCartApi, getAuthToken } from '@/lib/api';
+import { useAuth } from '@/modules/auth';
 
 export interface CartItem {
   product: Product;
@@ -30,36 +31,39 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const { isLoggedIn, user, openLoginModal } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
+
+  const loadCartData = useCallback(async () => {
+    const dbCart = await fetchCartApi();
+    if (dbCart && Array.isArray(dbCart)) {
+      const formatted = dbCart.map((dbItem: any) => ({
+        product: {
+          id: dbItem.productId || dbItem.id,
+          name: dbItem.name,
+          price: String(dbItem.price),
+          imageUrl: dbItem.imageUrl,
+          weight: dbItem.weight || '250g',
+          slug: dbItem.slug || '',
+        } as Product,
+        quantity: dbItem.quantity,
+      }));
+      setItems(formatted);
+    } else {
+      setItems([]);
+    }
+    setIsLoaded(true);
+  }, []);
 
   useEffect(() => {
-    async function loadCartData() {
-      const dbCart = await fetchCartApi();
-      if (dbCart && Array.isArray(dbCart)) {
-        const formatted = dbCart.map((dbItem: any) => ({
-          product: {
-            id: dbItem.productId || dbItem.id,
-            name: dbItem.name,
-            price: String(dbItem.price),
-            imageUrl: dbItem.imageUrl,
-            weight: dbItem.weight || '250g',
-            slug: dbItem.slug || '',
-          } as Product,
-          quantity: dbItem.quantity,
-        }));
-        setItems(formatted);
-      } else {
-        setItems([]);
-      }
-      setIsLoaded(true);
-    }
-
     loadCartData();
-  }, []);
+  }, [loadCartData, isLoggedIn]);
 
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
 
-  const addToCart = (product: Product, quantity = 1) => {
+  const executeAddToCart = (product: Product, quantity = 1) => {
+    if (isAdmin) return;
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -70,8 +74,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return [...prev, { product, quantity }];
     });
     setIsOpen(true);
-    // Sync to backend DB if logged in
+    // Sync to backend DB
     addToCartApi(product.id, quantity);
+  };
+
+  const addToCart = (product: Product, quantity = 1) => {
+    if (isAdmin) {
+      alert('Admin account is not permitted to add items to cart or place orders.');
+      return;
+    }
+
+    const token = getAuthToken();
+    if (!token && !isLoggedIn) {
+      openLoginModal(() => {
+        executeAddToCart(product, quantity);
+      }, 'Please sign in or create an account to add items to your cart.');
+      return;
+    }
+
+    executeAddToCart(product, quantity);
   };
 
   const removeFromCart = (productId: number) => {
