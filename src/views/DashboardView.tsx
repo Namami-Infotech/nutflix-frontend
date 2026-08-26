@@ -15,6 +15,8 @@ interface DashboardViewProps {
   onViewAllOrders: () => void;
 }
 
+// https://nutflix-frontend.vercel.app/dashboard
+
 export default function DashboardView({
   usersCount,
   productsCount,
