@@ -10,10 +10,12 @@ import { Star, ShoppingBag, Heart, ArrowLeft, Plus, Minus, CreditCard, ShieldChe
 import Link from 'next/link';
 import { ProductReviews } from '@/modules/catalog/components/ProductReviews';
 
-export default function ProductDetailPage() {
+export const dynamic = 'force-dynamic';
+
+export default function ProductDetailPage({ params }: { params?: { slug?: string } }) {
   const [mounted, setMounted] = useState(false);
-  const params = useParams();
-  const slug = params?.slug as string;
+  const routeParams = useParams();
+  const slug = (params?.slug || routeParams?.slug || '') as string;
   const { items: cartItems, addToCart, openCart } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';

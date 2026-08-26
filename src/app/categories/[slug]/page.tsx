@@ -7,157 +7,44 @@ import { ArrowLeft, Sparkles, ArrowRight, Layers, Package, ShieldCheck, ChevronR
 import Link from 'next/link';
 import { useDebounce } from '@/hooks/useDebounce';
 
-export default function CategoryProductsPage() {
+export const dynamic = 'force-dynamic';
+
+export default function CategoryProductsPage({ params }: { params?: { slug?: string } }) {
   const [mounted, setMounted] = useState(false);
-  const params = useParams();
-  const slug = params?.slug as string;
+  const routeParams = useParams();
+  const slug = (params?.slug || routeParams?.slug || '') as string;
   const router = useRouter();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [loading, setLoading] = useState(true);
-
-  // Curated Sub-Categories list for dry fruits
-  const featuredCategoryCards = [
-    {
-      id: 'cashews',
-      slug: 'cashews-nuts',
-      name: 'King Size Cashews (Kaju)',
-      description: 'Hand-harvested W240 & W180 Roasted, Salted & Peppered Premium Cashews.',
-      badge: 'Bestseller',
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
-      icon: '🥜',
-      itemCount: '12 Varieties'
-    },
-    {
-      id: 'almonds',
-      slug: 'almonds',
-      name: 'California & Mamra Almonds (Badam)',
-      description: '100% Organic, high-protein crunchy jumbo almonds rich in vitamin E.',
-      badge: 'High Protein',
-      image: 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&w=600&q=80',
-      icon: '🌰',
-      itemCount: '8 Varieties'
-    },
-    {
-      id: 'pistachios',
-      slug: 'pistachios',
-      name: 'Roasted Pistachios (Pista)',
-      description: 'Gently salted, open-shell roasted Iranian & California pistachios.',
-      badge: 'Nutritious',
-      image: 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=600&q=80',
-      icon: '🟢',
-      itemCount: '6 Varieties'
-    },
-    {
-      id: 'walnuts',
-      slug: 'walnuts',
-      name: 'Kashmiri Walnuts (Akhrot)',
-      description: 'Brain-boosting Omega-3 rich light kernel walnut halves.',
-      badge: 'Organic',
-      image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80',
-      icon: '🧠',
-      itemCount: '5 Varieties'
-    },
-    {
-      id: 'raisins-figs',
-      slug: 'dried-fruits',
-      name: 'Raisins & Figs (Kishmish & Anjeer)',
-      description: 'Sun-dried juicy seedless green raisins, black raisins, and Afghan figs.',
-      badge: 'Natural Sweet',
-      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80',
-      icon: '🍇',
-      itemCount: '9 Varieties'
-    },
-    {
-      id: 'dates',
-      slug: 'dates',
-      name: 'Royal Medjool & Ajwa Dates (Khajoor)',
-      description: 'Soft, melt-in-mouth imported Arabian dates packed with natural energy.',
-      badge: 'Royal Quality',
-      image: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=600&q=80',
-      icon: '🌴',
-      itemCount: '7 Varieties'
-    },
-    {
-      id: 'seeds-mixes',
-      slug: 'seeds-mixes',
-      name: 'Roasted Seeds & Trail Mixes',
-      description: 'Chia, Pumpkin, Sunflower seeds & 7-in-1 roasted superfood trail mixes.',
-      badge: 'Superfood',
-      image: 'https://images.unsplash.com/photo-1608797178974-15b35a640578?auto=format&fit=crop&w=600&q=80',
-      icon: '🌱',
-      itemCount: '10 Varieties'
-    },
-    {
-      id: 'gifting-boxes',
-      slug: 'gift-hampers',
-      name: 'Nutflix Festive Gift Hampers',
-      description: 'Luxury handcrafted wooden & brass gift boxes filled with premium dry fruits.',
-      badge: 'Gift Special',
-      image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&q=80',
-      icon: '🎁',
-      itemCount: '15 Hampers'
-    }
-  ];
 
   useEffect(() => {
     setMounted(true);
     async function loadCategories() {
       setLoading(true);
-      const apiCats = await fetchCategories();
-      setCategories(apiCats);
-      if (slug && apiCats.length > 0) {
-        const found = apiCats.find(c => c.slug === slug);
-        setSelectedCategory(found || null);
+      try {
+        const apiCats = await fetchCategories();
+        setCategories(apiCats || []);
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadCategories();
   }, [slug]);
 
   if (!mounted) return null;
 
-  const matchFallbackImage = (name: string, slug: string, idx: number) => {
-    const s = (slug + ' ' + name).toLowerCase();
-    if (s.includes('cashew') || s.includes('kaju')) return featuredCategoryCards[0].image;
-    if (s.includes('almond') || s.includes('badam')) return featuredCategoryCards[1].image;
-    if (s.includes('pista') || s.includes('pistachio')) return featuredCategoryCards[2].image;
-    if (s.includes('walnut') || s.includes('akhrot')) return featuredCategoryCards[3].image;
-    if (s.includes('raisin') || s.includes('kishmish') || s.includes('fig') || s.includes('anjeer')) return featuredCategoryCards[4].image;
-    if (s.includes('date') || s.includes('khajoor')) return featuredCategoryCards[5].image;
-    if (s.includes('seed') || s.includes('mix') || s.includes('trail') || s.includes('fruit')) return 'https://images.unsplash.com/photo-1608797178974-15b35a640578?auto=format&fit=crop&w=600&q=80';
-    if (s.includes('saffron') || s.includes('kesar')) return 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=600&q=80';
-    if (s.includes('gift') || s.includes('hamper')) return featuredCategoryCards[7].image;
-    return featuredCategoryCards[idx % featuredCategoryCards.length].image;
-  };
-
-  // Merge API categories if available
-  const allCategories = categories.length > 0 ? categories.map((cat, idx) => {
-    const fallbackImage = matchFallbackImage(cat.name, cat.slug, idx);
-    const rawImage = (cat as any).image || cat.imageUrl || fallbackImage;
-    return {
-      id: cat.id,
-      slug: cat.slug,
-      name: cat.name,
-      description: cat.description || 'Premium handpicked dry fruits and nuts.',
-      badge: idx === 0 ? 'Featured' : 'Popular',
-      image: rawImage,
-      fallbackImage,
-      icon: featuredCategoryCards[idx % featuredCategoryCards.length].icon,
-      itemCount: 'Browse All'
-    };
-  }) : featuredCategoryCards.map(c => ({ ...c, fallbackImage: c.image }));
-
-  const displayCategories = allCategories.filter((cat) => {
+  const displayCategories = categories.filter((cat) => {
     if (!debouncedSearchQuery.trim()) return true;
     const q = debouncedSearchQuery.trim().toLowerCase();
     return (
-      cat.name.toLowerCase().includes(q) ||
-      cat.description.toLowerCase().includes(q) ||
-      cat.slug.toLowerCase().includes(q)
+      cat.name?.toLowerCase().includes(q) ||
+      cat.description?.toLowerCase().includes(q) ||
+      cat.slug?.toLowerCase().includes(q)
     );
   });
 
@@ -293,30 +180,41 @@ export default function CategoryProductsPage() {
         </div>
 
         {/* Categories Cards Grid */}
-        <div 
-          style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-            gap: '2rem' 
-          }}
-        >
-          {displayCategories.map((cat) => (
-            <CategoryCardItem key={cat.id || cat.slug} cat={cat} />
-          ))}
-        </div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--color-text-muted)' }}>
+            Loading categories...
+          </div>
+        ) : displayCategories.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--color-text-muted)' }}>
+            <h3>No categories found</h3>
+            <p>Try searching for another keyword or browse all products.</p>
+          </div>
+        ) : (
+          <div 
+            style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+              gap: '2rem' 
+            }}
+          >
+            {displayCategories.map((cat) => (
+              <CategoryCardItem key={cat.id || cat.slug} cat={cat} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 function CategoryCardItem({ cat }: { cat: any }) {
-  const [imgSrc, setImgSrc] = useState(cat.image);
+  const fallback = 'https://images.unsplash.com/photo-1608797178974-15b35a640578?auto=format&fit=crop&w=600&q=80';
+  const initialImg = cat.imageUrl || cat.image || fallback;
+  const [imgSrc, setImgSrc] = useState(initialImg);
 
   useEffect(() => {
-    setImgSrc(cat.image);
-  }, [cat.image]);
-
-  const fallback = cat.fallbackImage || 'https://images.unsplash.com/photo-1608797178974-15b35a640578?auto=format&fit=crop&w=600&q=80';
+    setImgSrc(cat.imageUrl || cat.image || fallback);
+  }, [cat.imageUrl, cat.image]);
 
   return (
     <Link
@@ -365,43 +263,28 @@ function CategoryCardItem({ cat }: { cat: any }) {
               transition: 'transform 0.5s ease',
             }}
           />
-          <div
-            style={{
-              position: 'absolute',
-              top: '12px',
-              left: '12px',
-              backgroundColor: 'rgba(30, 77, 43, 0.9)',
-              color: '#ffffff',
-              padding: '0.3rem 0.8rem',
-              borderRadius: '20px',
-              fontSize: '0.75rem',
-              fontWeight: 800,
-              backdropFilter: 'blur(4px)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.3rem'
-            }}
-          >
-            <span>{cat.icon}</span>
-            <span>{cat.badge}</span>
-          </div>
-
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '12px',
-              right: '12px',
-              backgroundColor: '#ffffff',
-              color: 'var(--color-forest)',
-              padding: '0.25rem 0.7rem',
-              borderRadius: '12px',
-              fontSize: '0.75rem',
-              fontWeight: 800,
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            {cat.itemCount}
-          </div>
+          {cat.badge && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                backgroundColor: 'rgba(30, 77, 43, 0.9)',
+                color: '#ffffff',
+                padding: '0.3rem 0.8rem',
+                borderRadius: '20px',
+                fontSize: '0.75rem',
+                fontWeight: 800,
+                backdropFilter: 'blur(4px)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem'
+              }}
+            >
+              {cat.icon && <span>{cat.icon}</span>}
+              <span>{cat.badge}</span>
+            </div>
+          )}
         </div>
 
         {/* Category Content */}
