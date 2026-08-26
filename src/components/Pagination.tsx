@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 interface PaginationProps {
   currentPage: number;
@@ -23,99 +23,257 @@ export default function Pagination({
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
-  // Generate page numbers array
-  const pages: number[] = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push(i);
-  }
+  // Generate smart truncated page numbers for responsive fitting
+  const getVisiblePages = (): (number | string)[] => {
+    if (totalPages <= 5) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    if (currentPage <= 3) {
+      return [1, 2, 3, '...', totalPages];
+    }
+
+    if (currentPage >= totalPages - 2) {
+      return [1, '...', totalPages - 2, totalPages - 1, totalPages];
+    }
+
+    return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+  };
+
+  const visiblePages = getVisiblePages();
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '1rem 0 0.5rem',
-      borderTop: '1px solid #e2e8f0',
-      marginTop: '1.25rem',
-      flexWrap: 'wrap',
-      gap: '1rem'
-    }}>
+    <div className="admin-pagination-container">
       {/* Range Info */}
-      <div style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>
-        Showing <strong style={{ color: '#0f291e' }}>{startItem}</strong> to <strong style={{ color: '#0f291e' }}>{endItem}</strong> of <strong style={{ color: '#0f291e' }}>{totalItems}</strong> entries
+      <div className="admin-pagination-info">
+        Showing <strong>{startItem}</strong> to <strong>{endItem}</strong> of <strong>{totalItems}</strong> entries
       </div>
 
       {/* Pagination Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-        {/* Previous Button */}
+      <div className="admin-pagination-controls">
+        {/* First Page (<<) */}
         <button
+          type="button"
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1}
+          className="admin-pagination-nav-btn"
+          title="First Page (<<)"
+          aria-label="First Page"
+        >
+          <ChevronsLeft size={16} />
+        </button>
+
+        {/* Previous Page (<) */}
+        <button
+          type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0.4rem 0.75rem',
-            borderRadius: '8px',
-            border: '1px solid #cbd5e1',
-            backgroundColor: currentPage === 1 ? '#f1f5f9' : '#fff',
-            color: currentPage === 1 ? '#94a3b8' : '#334155',
-            fontSize: '0.8rem',
-            fontWeight: 800,
-            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-            transition: 'all 0.15s ease'
-          }}
+          className="admin-pagination-nav-btn"
+          title="Previous Page (<)"
+          aria-label="Previous Page"
         >
-          <ChevronLeft size={16} style={{ marginRight: '0.2rem' }} /> Previous
+          <ChevronLeft size={16} />
         </button>
 
         {/* Page Numbers */}
-        {pages.map((pg) => {
-          const isActive = pg === currentPage;
-          return (
-            <button
-              key={pg}
-              onClick={() => onPageChange(pg)}
-              style={{
-                minWidth: '34px',
-                height: '34px',
-                borderRadius: '8px',
-                border: isActive ? '1px solid #d97706' : '1px solid #cbd5e1',
-                backgroundColor: isActive ? 'var(--color-forest)' : '#fff',
-                color: isActive ? '#fff' : '#334155',
-                fontWeight: isActive ? 900 : 700,
-                fontSize: '0.82rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              {pg}
-            </button>
-          );
-        })}
+        <div className="admin-pagination-pages">
+          {visiblePages.map((pg, index) => {
+            if (pg === '...') {
+              return (
+                <span key={`dots-${index}`} className="admin-pagination-ellipsis">
+                  ...
+                </span>
+              );
+            }
 
-        {/* Next Button */}
+            const pageNum = Number(pg);
+            const isActive = pageNum === currentPage;
+
+            return (
+              <button
+                key={pageNum}
+                type="button"
+                onClick={() => onPageChange(pageNum)}
+                className={`admin-pagination-page-btn ${isActive ? 'is-active' : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+                title={`Page ${pageNum}`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Next Page (>) */}
         <button
+          type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0.4rem 0.75rem',
-            borderRadius: '8px',
-            border: '1px solid #cbd5e1',
-            backgroundColor: currentPage === totalPages ? '#f1f5f9' : '#fff',
-            color: currentPage === totalPages ? '#94a3b8' : '#334155',
-            fontSize: '0.8rem',
-            fontWeight: 800,
-            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-            transition: 'all 0.15s ease'
-          }}
+          className="admin-pagination-nav-btn"
+          title="Next Page (>)"
+          aria-label="Next Page"
         >
-          Next <ChevronRight size={16} style={{ marginLeft: '0.2rem' }} />
+          <ChevronRight size={16} />
+        </button>
+
+        {/* Last Page (>>) */}
+        <button
+          type="button"
+          onClick={() => onPageChange(totalPages)}
+          disabled={currentPage === totalPages}
+          className="admin-pagination-nav-btn"
+          title="Last Page (>>)"
+          aria-label="Last Page"
+        >
+          <ChevronsRight size={16} />
         </button>
       </div>
+
+      <style jsx>{`
+        .admin-pagination-container {
+          display: flex;
+          align-items: center;
+          justifyContent: space-between;
+          padding: 0.85rem 0 0.25rem;
+          border-top: 1px solid #e2e8f0;
+          margin-top: 1rem;
+          width: 100%;
+          box-sizing: border-box;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+
+        .admin-pagination-info {
+          font-size: 0.8rem;
+          color: #64748b;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        .admin-pagination-info strong {
+          color: #0f291e;
+        }
+
+        .admin-pagination-controls {
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          flex-wrap: wrap;
+          max-width: 100%;
+        }
+
+        .admin-pagination-pages {
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+          flex-wrap: wrap;
+        }
+
+        .admin-pagination-nav-btn {
+          width: 32px;
+          height: 32px;
+          display: inline-flex;
+          align-items: center;
+          justifyContent: center;
+          border-radius: 8px;
+          border: 1px solid #cbd5e1;
+          background-color: #fff;
+          color: #334155;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          user-select: none;
+          box-sizing: border-box;
+          flex-shrink: 0;
+        }
+
+        .admin-pagination-nav-btn:hover:not(:disabled) {
+          background-color: #f8fafc;
+          border-color: #94a3b8;
+          color: #0f291e;
+        }
+
+        .admin-pagination-nav-btn:disabled {
+          background-color: #f1f5f9;
+          color: #94a3b8;
+          cursor: not-allowed;
+          opacity: 0.6;
+          border-color: #e2e8f0;
+        }
+
+        .admin-pagination-page-btn {
+          min-width: 32px;
+          height: 32px;
+          padding: 0 0.35rem;
+          border-radius: 8px;
+          border: 1px solid #cbd5e1;
+          background-color: #fff;
+          color: #334155;
+          font-weight: 700;
+          font-size: 0.8rem;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justifyContent: center;
+          transition: all 0.15s ease;
+          user-select: none;
+          box-sizing: border-box;
+          flex-shrink: 0;
+        }
+
+        .admin-pagination-page-btn:hover:not(.is-active) {
+          background-color: #f8fafc;
+          border-color: #94a3b8;
+        }
+
+        .admin-pagination-page-btn.is-active {
+          border-color: #d97706;
+          background-color: var(--color-forest, #0f291e);
+          color: #fff;
+          font-weight: 900;
+          box-shadow: 0 2px 6px rgba(15, 41, 30, 0.25);
+        }
+
+        .admin-pagination-ellipsis {
+          padding: 0 0.2rem;
+          color: #94a3b8;
+          font-size: 0.8rem;
+          font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+          .admin-pagination-container {
+            flex-direction: column;
+            align-items: center;
+            justifyContent: center;
+            text-align: center;
+            gap: 0.6rem;
+          }
+
+          .admin-pagination-controls {
+            justify-content: center;
+            width: 100%;
+          }
+
+          .admin-pagination-info {
+            width: 100%;
+            text-align: center;
+            font-size: 0.76rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .admin-pagination-nav-btn {
+            width: 28px;
+            height: 28px;
+          }
+
+          .admin-pagination-page-btn {
+            min-width: 28px;
+            height: 28px;
+            font-size: 0.74rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -21,7 +21,8 @@ import {
   Upload,
   Loader2,
   Plus,
-  X
+  X,
+  Menu
 } from 'lucide-react';
 import { ImageCropperModal } from '@/components/ui/ImageCropperModal';
 import {
@@ -73,6 +74,21 @@ export default function AdminView() {
 
   // Active Menu
   const [activeMenu, setActiveMenu] = useState<string>('dashboard');
+
+  // Sidebar responsive collapse & mobile states
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+        setIsSidebarCollapsed(true);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Master Data States
   const [orders, setOrders] = useState<any[]>([]);
@@ -692,10 +708,14 @@ export default function AdminView() {
             sidebarItems={sidebarItems}
             adminUser={adminUser}
             onLogout={handleLogout}
+            isCollapsed={isSidebarCollapsed}
+            setIsCollapsed={setIsSidebarCollapsed}
+            mobileOpen={mobileSidebarOpen}
+            setMobileOpen={setMobileSidebarOpen}
           />
 
           {/* MAIN WORKSPACE PANEL */}
-          <main style={{ flexGrow: 1, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <main style={{ flexGrow: 1, height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
             {/* Top Navigation Bar (Fixed at top) */}
             <header style={{
               backgroundColor: '#fff',
@@ -710,6 +730,31 @@ export default function AdminView() {
               flexShrink: 0
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+                      setMobileSidebarOpen(!mobileSidebarOpen);
+                    } else {
+                      setIsSidebarCollapsed(!isSidebarCollapsed);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '0.45rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#1e293b',
+                    transition: 'all 0.2s',
+                  }}
+                  title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                >
+                  <Menu size={18} />
+                </button>
                 <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: '#0f291e', letterSpacing: '-0.02em', textTransform: 'capitalize' }}>
                   {sidebarItems.find(s => s.id === activeMenu)?.label || 'Dashboard'}
                 </h2>
@@ -756,7 +801,7 @@ export default function AdminView() {
             </header>
 
             {/* View Table Area (Scrollable Body) */}
-            <div style={{ padding: '1rem 1.25rem', flexGrow: 1, overflowY: 'auto' }}>
+            <div style={{ padding: '1rem 1.25rem', flexGrow: 1, overflowY: 'auto', overflowX: 'hidden', maxWidth: '100%', boxSizing: 'border-box' }}>
               {activeMenu === 'dashboard' && (
                 <DashboardView
                   usersCount={usersList.length}

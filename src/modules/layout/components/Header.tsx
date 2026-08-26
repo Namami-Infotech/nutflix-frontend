@@ -169,7 +169,7 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }} className="desktop-nav">
+          <nav style={{ display: 'flex', alignItems: 'center', gap: '1.6rem' }} className="desktop-nav">
             <Link href="/" style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
               Home
             </Link>
@@ -178,6 +178,12 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
             </Link>
             <Link href="/categories/cashews-nuts" style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
               Cashews & Nuts
+            </Link>
+            <Link href="/about" style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
+              About
+            </Link>
+            <Link href="/contact" style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
+              Contact
             </Link>
           </nav>
 
