@@ -5,6 +5,7 @@ export interface Category {
   description?: string;
   imageUrl: string;
   keywords?: string[];
+  status?: 'active' | 'inactive' | string;
 }
 
 export interface Product {
@@ -24,6 +25,7 @@ export interface Product {
   reviewCount: number;
   isFeatured: boolean;
   keywords?: string[];
+  status?: 'active' | 'inactive' | string;
 }
 
 export interface ImpactMetric {
@@ -43,6 +45,7 @@ export interface Review {
   title: string;
   comment: string;
   verified: boolean;
+  status?: 'active' | 'inactive' | string;
   createdAt: string;
 }
 
@@ -85,6 +88,7 @@ export interface MasterBanner {
   featuredSubtitle: string;
   displayOrder?: number;
   isActive?: boolean;
+  status?: 'active' | 'inactive' | string;
 }
 
 export interface PaymentType {
@@ -94,5 +98,17 @@ export interface PaymentType {
   status: 'active' | 'inactive';
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
+  phone?: string;
+  address?: string;
+  gstNumber?: string;
+  status?: 'active' | 'inactive' | string;
+  createdAt?: string;
 }
 

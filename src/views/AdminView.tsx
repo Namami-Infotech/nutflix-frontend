@@ -25,6 +25,7 @@ import {
   Menu
 } from 'lucide-react';
 import { ImageCropperModal } from '@/components/ui/ImageCropperModal';
+import BrandLogo from '@/components/BrandLogo';
 import {
   fetchAdminOrders,
   updateOrderStatus,
@@ -41,6 +42,7 @@ import {
   updateBanner,
   deleteBanner,
   fetchUsers,
+  deleteUser,
   loginUser,
   fetchPaymentTypes,
   updatePaymentTypeStatus,
@@ -530,6 +532,18 @@ export default function AdminView() {
     }
   };
 
+  const handleDeleteUser = async (id: number) => {
+    if (confirm('Deactivate this user account? (Status will be set to inactive)')) {
+      const res = await deleteUser(id);
+      if (res.success) {
+        showToast('User status set to inactive');
+        setUsersList(prev => prev.map(u => u.id === id ? { ...u, status: 'inactive' } : u));
+      } else {
+        showToast(res.message || 'Failed to deactivate user', 'error');
+      }
+    }
+  };
+
   // CALCULATIONS
   const totalOrdersCount = orders.length;
   const newOrdersList = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'returned');
@@ -627,18 +641,9 @@ export default function AdminView() {
             backdropFilter: 'blur(10px)'
           }}>
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <img
-                src="/logo.svg"
-                alt="NUTFLIX LOGO"
-                style={{
-                  width: '68px',
-                  height: '68px',
-                  objectFit: 'contain',
-                  margin: '0 auto 1.2rem',
-                  filter: 'drop-shadow(0 4px 12px rgba(15, 41, 30, 0.2))',
-                  display: 'block'
-                }}
-              />
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.2rem' }}>
+                <BrandLogo width={180} height={55} variant="light" />
+              </div>
               <h2 style={{ fontSize: '1.75rem', fontWeight: 900, color: '#0f291e', margin: '0 0 0.4rem', letterSpacing: '-0.02em' }}>
                 Admin Portal
               </h2>
@@ -823,7 +828,7 @@ export default function AdminView() {
               )}
 
               {activeMenu === 'users' && (
-                <UsersView usersList={usersList} searchQuery={searchQuery} />
+                <UsersView usersList={usersList} searchQuery={searchQuery} onDeleteUser={handleDeleteUser} />
               )}
 
               {activeMenu === 'products' && (

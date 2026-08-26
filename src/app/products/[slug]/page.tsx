@@ -224,26 +224,28 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
             </div>
           </div>
 
-          {/* Action Row */}
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--color-border)', borderRadius: 'var(--radius-pill)', padding: '0.5rem 1rem', backgroundColor: '#fff', opacity: isOutOfStock || isAdmin ? 0.6 : 1 }}>
-              <button disabled={isOutOfStock || isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
-                <Minus size={18} color="var(--color-forest)" />
+          {/* Action Row - Clean Horizontal Flex */}
+          <div className="product-action-row">
+            <div
+              className="product-qty-selector"
+              style={{
+                opacity: isOutOfStock || isAdmin ? 0.6 : 1,
+              }}
+            >
+              <button disabled={isOutOfStock || isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} className="qty-btn" aria-label="Decrease quantity">
+                <Minus size={16} color="var(--color-forest)" />
               </button>
-              <span style={{ fontSize: '1.1rem', fontWeight: 800, padding: '0 14px' }}>{isOutOfStock ? 0 : quantity}</span>
-              <button disabled={isOutOfStock || isAdmin || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
-                <Plus size={18} color="var(--color-forest)" />
+              <span className="qty-value">{isOutOfStock ? 0 : quantity}</span>
+              <button disabled={isOutOfStock || isAdmin || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} className="qty-btn" aria-label="Increase quantity">
+                <Plus size={16} color="var(--color-forest)" />
               </button>
             </div>
 
             <button
               onClick={() => !isOutOfStock && !isAdmin && addToCart(product, quantity)}
               disabled={isOutOfStock || isAdmin}
-              className="btn-primary"
+              className="btn-primary product-add-btn"
               style={{
-                flex: 1,
-                height: '52px',
-                fontSize: '1rem',
                 backgroundColor: isOutOfStock || isAdmin ? '#e2e8f0' : undefined,
                 color: isOutOfStock || isAdmin ? '#94a3b8' : undefined,
                 cursor: isOutOfStock || isAdmin ? 'not-allowed' : 'pointer',
@@ -252,8 +254,20 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
               }}
               title={isAdmin ? 'Admin accounts cannot purchase items' : isOutOfStock ? 'Item is out of stock' : 'Add to Basket'}
             >
-              <ShoppingBag size={20} />
-              <span>{isOutOfStock ? 'Out of Stock' : isAdmin ? 'Admin (Disabled)' : `Add to Basket • ₹${(parseFloat(product.price) * quantity).toFixed(2)}`}</span>
+              <ShoppingBag size={18} />
+              <span className="add-text">
+                {isOutOfStock ? (
+                  'Out of Stock'
+                ) : isAdmin ? (
+                  'Admin (Disabled)'
+                ) : (
+                  <>
+                    <span className="add-text-desktop">Add to Basket</span>
+                    <span className="add-text-mobile">Add</span>
+                    <span className="add-price"> • ₹{(parseFloat(product.price) * quantity).toFixed(0)}</span>
+                  </>
+                )}
+              </span>
             </button>
 
             <button
@@ -263,23 +277,11 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
                   showToast('Product link copied to clipboard!');
                 }
               }}
-              style={{
-                width: '52px',
-                height: '52px',
-                borderRadius: '50%',
-                border: '1.5px solid var(--color-border)',
-                backgroundColor: '#ffffff',
-                color: 'var(--color-forest)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                boxShadow: 'var(--shadow-sm)',
-                flexShrink: 0
-              }}
+              className="product-share-btn"
               title="Share Product Link"
+              aria-label="Share product"
             >
-              <Share2 size={20} />
+              <Share2 size={18} />
             </button>
           </div>
         </div>
@@ -294,6 +296,129 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
         currentReviewCount={product.reviewCount}
         onReviewSubmitted={handleReviewSubmitted}
       />
+
+      <style jsx>{`
+        .product-action-row {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 2rem;
+          width: 100%;
+        }
+
+        .product-qty-selector {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border: 1.5px solid var(--color-border);
+          border-radius: var(--radius-pill);
+          padding: 0.2rem 0.5rem;
+          background-color: #ffffff;
+          height: 48px;
+          box-sizing: border-box;
+          flex-shrink: 0;
+        }
+
+        .qty-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+        }
+
+        .qty-value {
+          font-size: 0.95rem;
+          font-weight: 800;
+          padding: 0 6px;
+          min-width: 20px;
+          text-align: center;
+          color: var(--color-forest);
+        }
+
+        .product-add-btn {
+          flex: 1;
+          min-width: 0;
+          height: 48px;
+          font-size: 0.9rem;
+          font-weight: 800;
+          white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.4rem;
+          padding: 0 0.85rem !important;
+          box-sizing: border-box;
+          border-radius: var(--radius-pill);
+        }
+
+        .add-text {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        .add-text-desktop {
+          display: inline;
+        }
+
+        .add-text-mobile {
+          display: none;
+        }
+
+        .product-share-btn {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          border: 1.5px solid var(--color-border);
+          background-color: #ffffff;
+          color: var(--color-forest);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: var(--shadow-sm);
+          flex-shrink: 0;
+          transition: transform 0.15s ease;
+        }
+
+        .product-share-btn:hover {
+          transform: scale(1.05);
+        }
+
+        @media (max-width: 420px) {
+          .product-action-row {
+            gap: 0.35rem;
+          }
+          .product-qty-selector {
+            padding: 0.2rem 0.35rem;
+            height: 46px;
+          }
+          .qty-value {
+            font-size: 0.88rem;
+            padding: 0 4px;
+          }
+          .product-add-btn {
+            height: 46px;
+            font-size: 0.82rem;
+            padding: 0 0.55rem !important;
+          }
+          .product-share-btn {
+            width: 44px;
+            height: 44px;
+          }
+          .add-text-desktop {
+            display: none;
+          }
+          .add-text-mobile {
+            display: inline;
+          }
+        }
+      `}</style>
     </div>
   );
 }

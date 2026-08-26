@@ -1,19 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShoppingBag, Package, User } from 'lucide-react';
+import { Home, ShoppingBag, Package, User, ShieldCheck } from 'lucide-react';
+import { getUserFromCookie } from '@/lib/api';
 
 export const MobileBottomBar: React.FC = () => {
   const pathname = usePathname();
   if (pathname?.startsWith('/admin')) return null;
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const user = getUserFromCookie();
+    setIsAdmin(user?.role?.toLowerCase() === 'admin');
+  }, []);
+
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop All', href: '/products', icon: ShoppingBag },
     { label: 'Cashews & Nuts', href: '/categories/cashews-nuts', icon: Package },
-    { label: 'My Orders', href: '/my-orders', icon: User },
+    isAdmin
+      ? { label: 'Admin', href: '/admin', icon: ShieldCheck }
+      : { label: 'My Orders', href: '/my-orders', icon: User },
   ];
 
   return (

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Leaf, Heart, Mail, Truck, Award, Phone, MapPin } from 'lucide-react';
+import { getUserFromCookie } from '@/lib/api';
 import { MobileBottomBar } from './MobileBottomBar';
 
 export const Footer: React.FC = () => {
@@ -12,6 +13,12 @@ export const Footer: React.FC = () => {
 
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const user = getUserFromCookie();
+    setIsAdmin(user?.role?.toLowerCase() === 'admin');
+  }, []);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,7 +185,11 @@ export const Footer: React.FC = () => {
               <li><Link href="/contact" style={{ color: '#a0b0a4' }}>Contact Us</Link></li>
               <li><Link href="/products" style={{ color: '#a0b0a4' }}>Shop All Produce</Link></li>
               <li><Link href="/categories/cashews-nuts" style={{ color: '#a0b0a4' }}>Cashews &amp; Nuts</Link></li>
-              <li><Link href="/my-orders" style={{ color: '#a0b0a4' }}>Track My Order</Link></li>
+              {isAdmin ? (
+                <li><Link href="/admin" style={{ color: '#f59e0b', fontWeight: 700 }}>Admin Dashboard</Link></li>
+              ) : (
+                <li><Link href="/my-orders" style={{ color: '#a0b0a4' }}>Track My Order</Link></li>
+              )}
             </ul>
           </div>
 
@@ -188,8 +199,8 @@ export const Footer: React.FC = () => {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.88rem', color: '#a0b0a4' }}>
               <li><Link href="/privacy-policy" style={{ color: '#a0b0a4' }}>Privacy Policy</Link></li>
               <li><Link href="/terms" style={{ color: '#a0b0a4' }}>Terms &amp; Conditions</Link></li>
-              <li><Link href="/refund-policy" style={{ color: '#a0b0a4' }}>Return &amp; Refund Policy</Link></li>
               <li><Link href="/shipping-policy" style={{ color: '#a0b0a4' }}>Shipping &amp; Delivery</Link></li>
+              <li><Link href="/contact" style={{ color: '#a0b0a4' }}>Contact Support</Link></li>
             </ul>
           </div>
 
@@ -240,7 +251,6 @@ export const Footer: React.FC = () => {
             <Link href="/contact" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Contact Us</Link>
             <Link href="/privacy-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Privacy Policy</Link>
             <Link href="/terms" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Terms &amp; Conditions</Link>
-            <Link href="/refund-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Return/Refund Policy</Link>
             <Link href="/shipping-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Shipping &amp; Delivery</Link>
           </div>
           <p>© {new Date().getFullYear()} DARSHAN TECHNO SYSTEM (Brand: NUTFLIX). All rights reserved. GSTIN: 19ADZPG6957G3ZN.</p>

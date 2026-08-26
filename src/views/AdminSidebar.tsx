@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 import {
   LogOut,
   ArrowLeft,
@@ -118,32 +119,15 @@ export default function AdminSidebar({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.75rem',
               textDecoration: 'none',
               minWidth: 0,
             }}
             title="NUTFLIX Storefront"
           >
-            <img
-              src="/logo.svg"
-              alt="NUTFLIX LOGO"
-              style={{
-                width: effectiveCollapsed ? '38px' : '40px',
-                height: effectiveCollapsed ? '38px' : '40px',
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.35))',
-                flexShrink: 0,
-              }}
-            />
-            {!effectiveCollapsed && (
-              <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', letterSpacing: '0.04em', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
-                  NUT<span style={{ color: '#f59e0b' }}>FLIX</span>
-                </div>
-                <div style={{ fontSize: '0.62rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, marginTop: '0.2rem', whiteSpace: 'nowrap' }}>
-                  ADMIN SUITE
-                </div>
-              </div>
+            {effectiveCollapsed ? (
+              <BrandLogo width={40} height={28} variant="dark" showAdminBadge={false} />
+            ) : (
+              <BrandLogo width={135} height={38} variant="dark" showAdminBadge={true} />
             )}
           </Link>
 

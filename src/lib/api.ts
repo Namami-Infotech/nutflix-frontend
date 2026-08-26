@@ -676,6 +676,33 @@ export async function deleteCategory(id: number) {
   }
 }
 
+export async function deleteUser(id: number) {
+  try {
+    const res = await api.delete(`/users/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || { success: false, message: 'Failed to delete user' };
+  }
+}
+
+export async function deleteReview(id: number) {
+  try {
+    const res = await api.delete(`/reviews/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || { success: false, message: 'Failed to delete review' };
+  }
+}
+
+export async function deleteOrder(id: number) {
+  try {
+    const res = await api.delete(`/orders/${id}`);
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || { success: false, message: 'Failed to delete order' };
+  }
+}
+
 let LOCAL_PAYMENT_TYPES: PaymentType[] = [
   { id: 1, name: 'Online', code: 'online', status: 'active' },
   { id: 2, name: 'Cash', code: 'cash', status: 'active' },

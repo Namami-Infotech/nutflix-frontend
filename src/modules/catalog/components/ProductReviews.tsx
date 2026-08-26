@@ -275,19 +275,21 @@ export const ProductReviews: React.FC<Props> = ({
                     <div className="author-avatar">
                       {(rev.author || 'U').charAt(0).toUpperCase()}
                     </div>
-                    <div>
+                    <div className="author-meta">
                       <div className="author-name-row">
                         <span className="author-name">{rev.author || 'Anonymous'}</span>
+                      </div>
+                      <div className="author-sub-row">
+                        <span className="review-date">
+                          {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently'}
+                        </span>
                         {rev.verified && (
                           <span className="verified-badge">
-                            <CheckCircle size={12} color="#15803d" />
+                            <CheckCircle size={11} color="#15803d" />
                             <span>Verified Buyer</span>
                           </span>
                         )}
                       </div>
-                      <span className="review-date">
-                        {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently'}
-                      </span>
                     </div>
                   </div>
 
@@ -295,7 +297,7 @@ export const ProductReviews: React.FC<Props> = ({
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        size={14}
+                        size={15}
                         fill={i < rev.rating ? 'var(--color-gold)' : '#e2e8f0'}
                         color={i < rev.rating ? 'var(--color-gold)' : '#cbd5e1'}
                       />
@@ -345,8 +347,9 @@ export const ProductReviews: React.FC<Props> = ({
 
       <style jsx>{`
         .reviews-module {
-          margin-top: 3rem;
-          padding-top: 2rem;
+          margin-top: 3.5rem;
+          padding-top: 2.5rem;
+          padding-bottom: 4.5rem;
           border-top: 1px solid var(--color-border);
         }
 
@@ -608,14 +611,18 @@ export const ProductReviews: React.FC<Props> = ({
         .review-card-header {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 0.75rem;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.6rem;
+          margin-bottom: 0.85rem;
         }
 
         .author-info {
           display: flex;
           align-items: center;
           gap: 0.75rem;
+          min-width: 0;
+          flex: 1;
         }
 
         .author-avatar {
@@ -629,40 +636,62 @@ export const ProductReviews: React.FC<Props> = ({
           justify-content: center;
           font-weight: 800;
           font-size: 0.95rem;
+          flex-shrink: 0;
+        }
+
+        .author-meta {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
         }
 
         .author-name-row {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.4rem;
         }
 
         .author-name {
-          font-size: 0.92rem;
+          font-size: 0.95rem;
           font-weight: 800;
           color: var(--color-forest);
+          line-height: 1.3;
+        }
+
+        .author-sub-row {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          flex-wrap: wrap;
         }
 
         .verified-badge {
           display: inline-flex;
           align-items: center;
           gap: 3px;
-          font-size: 0.7rem;
+          font-size: 0.68rem;
           font-weight: 700;
           color: #15803d;
           background-color: #f0fdf4;
-          padding: 0.15rem 0.45rem;
+          border: 1px solid #bbf7d0;
+          padding: 0.1rem 0.45rem;
           border-radius: 4px;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
 
         .review-date {
           font-size: 0.75rem;
           color: var(--color-text-muted);
+          white-space: nowrap;
         }
 
         .stars-row {
           display: flex;
+          align-items: center;
           gap: 2px;
+          flex-shrink: 0;
         }
 
         .review-headline {
@@ -676,6 +705,7 @@ export const ProductReviews: React.FC<Props> = ({
           font-size: 0.88rem;
           color: var(--color-text-muted);
           line-height: 1.5;
+          word-break: break-word;
         }
 
         .form-header-badge {
@@ -699,15 +729,55 @@ export const ProductReviews: React.FC<Props> = ({
         }
 
         @media (max-width: 640px) {
+          .reviews-module {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            padding-bottom: 5rem;
+          }
           .reviews-summary-grid {
             grid-template-columns: 1fr;
             padding: 1.2rem;
+            gap: 1.2rem;
           }
           .score-box {
             border-right: none;
             border-bottom: 1px solid var(--color-border);
             padding-right: 0;
-            padding-bottom: 1rem;
+            padding-bottom: 1.2rem;
+          }
+          .reviews-header-row {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .write-review-toggle-btn {
+            width: 100%;
+            justify-content: center;
+          }
+          .review-card {
+            padding: 1rem;
+          }
+          .review-form-card {
+            padding: 1.2rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .big-score {
+            font-size: 2.3rem;
+          }
+          .reviews-title {
+            font-size: 1.2rem;
+          }
+          .bar-label {
+            width: 28px;
+            font-size: 0.75rem;
+          }
+          .bar-pct {
+            width: 32px;
+            font-size: 0.75rem;
+          }
+          .review-card-header {
+            align-items: flex-start;
           }
         }
       `}</style>

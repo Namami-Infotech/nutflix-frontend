@@ -183,7 +183,8 @@ button {
 
 @media (max-width: 768px) {
   .container {
-    padding: 0 1rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 
   h1 {
@@ -225,7 +226,8 @@ button {
 
 @media (max-width: 480px) {
   .container {
-    padding: 0 0.85rem !important;
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
   }
 
   .badge-impact {

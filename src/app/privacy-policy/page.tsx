@@ -253,9 +253,6 @@ export default function PrivacyPolicyPage() {
           <Link href="/terms" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
             Terms & Conditions
           </Link>
-          <Link href="/refund-policy" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
-            Return & Refund Policy
-          </Link>
           <Link href="/shipping-policy" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
             Shipping & Delivery Policy
           </Link>

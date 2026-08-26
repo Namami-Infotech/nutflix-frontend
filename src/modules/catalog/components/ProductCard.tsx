@@ -34,6 +34,7 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
 
   const stockNum = typeof product.stock === 'number' ? product.stock : parseInt(String(product.stock || 0), 10);
   const isOutOfStock = isNaN(stockNum) || stockNum <= 0;
+  const productUrl = `/products/${product.slug || product.id}`;
 
   return (
     <div className={`product-card ${isOutOfStock ? 'is-out-of-stock' : ''}`}>
@@ -94,7 +95,11 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           </button>
         ) : null}
 
-        <Link href={`/products/${product.slug}`} style={{ display: 'block', width: '100%', height: '100%' }}>
+        <Link
+          href={productUrl}
+          style={{ display: 'block', width: '100%', height: '100%', textDecoration: 'none' }}
+          title={`View details of ${product.name}`}
+        >
           <img
             src={imgSrc}
             alt={product.name}
@@ -107,7 +112,11 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
         {/* Quick View Button Overlay */}
         {onQuickView && (
           <button
-            onClick={() => onQuickView(product)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onQuickView(product);
+            }}
             className="quick-view-btn"
             title="Quick View"
           >
@@ -121,21 +130,25 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
       <div className="product-card-body">
         <div>
           {/* Star Rating Badge */}
-          <div className="product-rating-row">
-            <div style={{ display: 'flex', gap: '2px' }}>
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={12} fill="var(--color-gold)" color="var(--color-gold)" />
-              ))}
+          <Link href={productUrl} style={{ textDecoration: 'none', display: 'block' }}>
+            <div className="product-rating-row" style={{ cursor: 'pointer' }}>
+              <div style={{ display: 'flex', gap: '2px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={12} fill="var(--color-gold)" color="var(--color-gold)" />
+                ))}
+              </div>
+              <span className="rating-score">{product.rating}</span>
+              <span className="rating-count">({product.reviewCount})</span>
             </div>
-            <span className="rating-score">{product.rating}</span>
-            <span className="rating-count">({product.reviewCount})</span>
-          </div>
+          </Link>
 
-          <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none' }}>
+          <Link href={productUrl} style={{ textDecoration: 'none', display: 'block' }} title={`View details of ${product.name}`}>
             <h3 className="product-title">{product.name}</h3>
           </Link>
 
-          <p className="product-desc">{product.description}</p>
+          <Link href={productUrl} style={{ textDecoration: 'none', display: 'block' }}>
+            <p className="product-desc" style={{ cursor: 'pointer' }}>{product.description}</p>
+          </Link>
 
           {/* Impact Tag */}
           {product.impactDescription && (

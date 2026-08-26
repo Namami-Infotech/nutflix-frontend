@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { ShoppingBag, Search, X, Heart, Leaf, User } from 'lucide-react';
+import { ShoppingBag, Search, X, Heart, Leaf, User, Menu } from 'lucide-react';
 import { useCart } from '@/modules/cart/cart.context';
 import { useAuth } from '@/modules/auth';
 import { useDebounce } from '@/hooks/useDebounce';
 import { fetchCategories, fetchProducts, Category, Product } from '@/lib/api';
+import { MobileSidebar } from './MobileSidebar';
 
 export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSearch }) => {
   const pathname = usePathname();
@@ -18,6 +19,7 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebounce(searchQuery, 300);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isAdmin = currentUser?.role?.toLowerCase() === 'admin';
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [productsList, setProductsList] = useState<Product[]>([]);
@@ -113,47 +115,72 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
         }}
       >
         <div className="container header-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '65px' }}>
-          {/* Brand Logo - Exact nutflix wordmark with dual-color, leaf on i and chand from u to l */}
-          <Link href="/" className="header-brand-logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', minWidth: 0 }}>
-            <svg viewBox="0 0 145 44" width="145" height="44" style={{ display: 'block', overflow: 'visible', maxWidth: '100%' }}>
-              <defs>
-                <linearGradient id="headerGoldChand" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#C58526" />
-                  <stop offset="50%" stopColor="#E5A638" />
-                  <stop offset="100%" stopColor="#C58526" />
-                </linearGradient>
-              </defs>
-              <g transform="translate(0, 2)">
-                {/* 'nut' in rich chocolate brown */}
-                <text x="0" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#23160C" letterSpacing="-0.5px">
-                  nut
-                </text>
-                {/* 'fl' in rich forest olive green */}
-                <text x="52" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22" letterSpacing="-0.5px">
-                  fl
-                </text>
-                {/* 'ı' stem without dot */}
-                <text x="78" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22">
-                  ı
-                </text>
-                {/* 'x' */}
-                <text x="88" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22" letterSpacing="-0.5px">
-                  x
-                </text>
-                {/* Leaf cluster on 'i' matching photo */}
-                <g transform="translate(82, 8)">
-                  <path d="M 0,0 C -3.5,-7 -11,-8 -14,-3 C -16,2 -6,3 0,0 Z" fill="#1D4A22" />
-                  <path d="M 0,-1 C 0,-7 7,-11 11,-7 C 13,-2.5 5,-1 0,-1 Z" fill="#26612E" />
-                  <path d="M 1.5,-1 C 5,-8 15,-9 19,-4 C 21,1.5 9,2.5 1.5,-1 Z" fill="#1D4A22" />
-                </g>
-                {/* TM in small uppercase */}
-                <text x="110" y="10" fontFamily="'Inter', sans-serif" fontSize="7.5" fontWeight="800" fill="#23160C">TM</text>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0 }}>
+            {/* Mobile Hamburger Menu Button (visible on mobile / tablet <= 992px) */}
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="mobile-menu-toggle-btn"
+              aria-label="Open navigation menu"
+              title="Menu"
+              style={{
+                display: 'none',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.45rem',
+                borderRadius: '50%',
+                backgroundColor: 'var(--color-cream-light)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-forest)',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              <Menu size={19} />
+            </button>
 
-                {/* Golden Chand Curve strictly from 'u' to 'l' with thick middle and tapered ends */}
-                <path d="M 24,33 C 39,43 60,43 75,33 C 60,39.5 39,39.5 24,33 Z" fill="url(#headerGoldChand)" />
-              </g>
-            </svg>
-          </Link>
+            {/* Brand Logo - Exact nutflix wordmark with dual-color, leaf on i and chand from u to l */}
+            <Link href="/" className="header-brand-logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', minWidth: 0 }}>
+              <svg viewBox="0 0 145 44" width="145" height="44" style={{ display: 'block', overflow: 'visible', maxWidth: '100%' }}>
+                <defs>
+                  <linearGradient id="headerGoldChand" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#C58526" />
+                    <stop offset="50%" stopColor="#E5A638" />
+                    <stop offset="100%" stopColor="#C58526" />
+                  </linearGradient>
+                </defs>
+                <g transform="translate(0, 2)">
+                  {/* 'nut' in rich chocolate brown */}
+                  <text x="0" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#23160C" letterSpacing="-0.5px">
+                    nut
+                  </text>
+                  {/* 'fl' in rich forest olive green */}
+                  <text x="52" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22" letterSpacing="-0.5px">
+                    fl
+                  </text>
+                  {/* 'ı' stem without dot */}
+                  <text x="78" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22">
+                    ı
+                  </text>
+                  {/* 'x' */}
+                  <text x="88" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22" letterSpacing="-0.5px">
+                    x
+                  </text>
+                  {/* Leaf cluster on 'i' matching photo */}
+                  <g transform="translate(82, 8)">
+                    <path d="M 0,0 C -3.5,-7 -11,-8 -14,-3 C -16,2 -6,3 0,0 Z" fill="#1D4A22" />
+                    <path d="M 0,-1 C 0,-7 7,-11 11,-7 C 13,-2.5 5,-1 0,-1 Z" fill="#26612E" />
+                    <path d="M 1.5,-1 C 5,-8 15,-9 19,-4 C 21,1.5 9,2.5 1.5,-1 Z" fill="#1D4A22" />
+                  </g>
+                  {/* TM in small uppercase */}
+                  <text x="110" y="10" fontFamily="'Inter', sans-serif" fontSize="7.5" fontWeight="800" fill="#23160C">TM</text>
+
+                  {/* Golden Chand Curve strictly from 'u' to 'l' with thick middle and tapered ends */}
+                  <path d="M 24,33 C 39,43 60,43 75,33 C 60,39.5 39,39.5 24,33 Z" fill="url(#headerGoldChand)" />
+                </g>
+              </svg>
+            </Link>
+          </div>
 
           {/* Desktop Navigation Links */}
           <nav style={{ display: 'flex', alignItems: 'center', gap: '1.6rem' }} className="desktop-nav">
@@ -286,7 +313,7 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
                             onClick={() => {
                               setShowSuggestions(false);
                               setSearchOpen(false);
-                              router.push(`/products?search=${encodeURIComponent(prod.name)}`);
+                              router.push(`/products/${prod.slug || prod.id}`);
                             }}
                             style={{
                               display: 'flex',
@@ -464,7 +491,18 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
         </div>
       </header>
 
+      {/* Mobile Drawer Sidebar */}
+      <MobileSidebar
+        isOpen={mobileSidebarOpen}
+        onClose={() => setMobileSidebarOpen(false)}
+      />
+
       <style jsx>{`
+        @media (max-width: 992px) {
+          .mobile-menu-toggle-btn {
+            display: flex !important;
+          }
+        }
         @media (max-width: 480px) {
           .header-container {
             padding: 0 0.5rem !important;

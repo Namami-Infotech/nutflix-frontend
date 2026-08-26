@@ -152,10 +152,17 @@ export default function UserProfilePage() {
           setEditPhone(storedUser.phone || '');
           setEditAddress(storedUser.address || '');
           setEditGst(storedUser.gstNumber || '');
+          if (storedUser.role?.toLowerCase() === 'admin') {
+            if (tabParam === 'orders' || !tabParam) {
+              setActiveTab('settings');
+            }
+          }
         }
       }
     }
   }, []);
+
+  const isAdmin = userData?.role?.toLowerCase() === 'admin';
 
   useEffect(() => {
     loadUserOrders(userData?.email || '');
@@ -393,25 +400,46 @@ export default function UserProfilePage() {
         </div>
 
         {/* Tab Selection */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', borderBottom: '2px solid #e2d5c3', paddingBottom: '0.5rem' }}>
-          <button
-            onClick={() => setActiveTab('orders')}
-            style={{
-              padding: '0.75rem 1.5rem',
-              borderRadius: '10px',
-              border: 'none',
-              fontWeight: 900,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-              backgroundColor: activeTab === 'orders' ? 'var(--color-forest)' : 'transparent',
-              color: activeTab === 'orders' ? '#fff' : 'var(--color-forest)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            <Package size={18} /> My Orders ({orders.length})
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', borderBottom: '2px solid #e2d5c3', paddingBottom: '0.5rem', flexWrap: 'wrap' }}>
+          {!isAdmin ? (
+            <button
+              onClick={() => setActiveTab('orders')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: '10px',
+                border: 'none',
+                fontWeight: 900,
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                backgroundColor: activeTab === 'orders' ? 'var(--color-forest)' : 'transparent',
+                color: activeTab === 'orders' ? '#fff' : 'var(--color-forest)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <Package size={18} /> My Orders ({orders.length})
+            </button>
+          ) : (
+            <Link
+              href="/admin"
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: '10px',
+                textDecoration: 'none',
+                fontWeight: 900,
+                fontSize: '0.95rem',
+                backgroundColor: '#fef3c7',
+                color: '#b45309',
+                border: '1px solid #fde68a',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <ShieldCheck size={18} color="#d97706" /> Go to Admin Dashboard
+            </Link>
+          )}
 
           <button
             onClick={() => setActiveTab('cart')}
@@ -452,12 +480,25 @@ export default function UserProfilePage() {
           </button>
         </div>
 
-        {/* TAB 1: MY ORDERS HISTORY */}
+        {/* TAB 1: MY ORDERS HISTORY (Hidden / Redirected for Admin) */}
         {activeTab === 'orders' && (
           <div>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '1.25rem', color: 'var(--color-forest)' }}>
-              📦 Order History & Tracking Details
-            </h2>
+            {isAdmin ? (
+              <div style={{ backgroundColor: '#fff', padding: '3rem', borderRadius: '16px', border: '1px solid #e2d5c3', textAlign: 'center' }}>
+                <ShieldCheck size={48} color="#d97706" style={{ marginBottom: '1rem' }} />
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.3rem', fontWeight: 900, color: 'var(--color-forest)' }}>Administrator Account</h3>
+                <p style={{ color: '#666', fontSize: '0.92rem', marginBottom: '1.5rem', maxWidth: '480px', margin: '0 auto 1.5rem' }}>
+                  You are currently signed in as an Administrator. Customer orders and order fulfillment tracking are managed in the central Admin Suite.
+                </p>
+                <Link href="/admin" style={{ backgroundColor: 'var(--color-forest)', color: '#fff', padding: '0.85rem 1.8rem', borderRadius: '10px', textDecoration: 'none', fontWeight: 800, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                  Open Admin Dashboard <ArrowRight size={16} />
+                </Link>
+              </div>
+            ) : (
+              <>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '1.25rem', color: 'var(--color-forest)' }}>
+                  📦 Order History & Tracking Details
+                </h2>
 
             {loadingOrders ? (
               <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#666' }}>Loading order history...</div>
@@ -629,6 +670,8 @@ export default function UserProfilePage() {
                   );
                 })}
               </div>
+            )}
+            </>
             )}
           </div>
         )}

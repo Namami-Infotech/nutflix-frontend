@@ -238,9 +238,6 @@ export default function ShippingPolicyPage() {
           <Link href="/terms" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
             Terms & Conditions
           </Link>
-          <Link href="/refund-policy" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
-            Return & Refund Policy
-          </Link>
           <Link href="/contact" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
             Contact Us
           </Link>
