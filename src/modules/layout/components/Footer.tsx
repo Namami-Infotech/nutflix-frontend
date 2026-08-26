@@ -96,19 +96,45 @@ export const Footer: React.FC = () => {
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2.5rem', marginBottom: '3rem' }}>
           {/* Brand Info */}
           <div style={{ gridColumn: 'span 1' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
-              <img 
-                src="/logo.svg" 
-                alt="NUTFLIX DRY FRUITS" 
-                style={{ 
-                  height: '44px', 
-                  width: '44px', 
-                  objectFit: 'contain'
-                }} 
-              />
-              <span style={{ fontWeight: 900, fontSize: '1.4rem', color: '#ffffff', letterSpacing: '0.04em' }}>
-                NUT<span style={{ color: 'var(--color-gold)' }}>FLIX</span>
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.8rem' }}>
+              <svg viewBox="0 0 145 44" width="145" height="44" style={{ display: 'block', overflow: 'visible' }}>
+                <defs>
+                  <linearGradient id="footerGoldChand" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#C58526" />
+                    <stop offset="50%" stopColor="#E5A638" />
+                    <stop offset="100%" stopColor="#C58526" />
+                  </linearGradient>
+                </defs>
+                <g transform="translate(0, 2)">
+                  {/* 'nut' in crisp white */}
+                  <text x="0" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#FFFFFF" letterSpacing="-0.5px">
+                    nut
+                  </text>
+                  {/* 'fl' in bright herbal green */}
+                  <text x="52" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#4ADE80" letterSpacing="-0.5px">
+                    fl
+                  </text>
+                  {/* 'ı' stem without dot */}
+                  <text x="78" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#4ADE80">
+                    ı
+                  </text>
+                  {/* 'x' */}
+                  <text x="88" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#4ADE80" letterSpacing="-0.5px">
+                    x
+                  </text>
+                  {/* Leaf cluster on 'i' */}
+                  <g transform="translate(82, 8)">
+                    <path d="M 0,0 C -3.5,-7 -11,-8 -14,-3 C -16,2 -6,3 0,0 Z" fill="#4ADE80" />
+                    <path d="M 0,-1 C 0,-7 7,-11 11,-7 C 13,-2.5 5,-1 0,-1 Z" fill="#86EFAC" />
+                    <path d="M 1.5,-1 C 5,-8 15,-9 19,-4 C 21,1.5 9,2.5 1.5,-1 Z" fill="#4ADE80" />
+                  </g>
+                  {/* TM */}
+                  <text x="110" y="10" fontFamily="'Inter', sans-serif" fontSize="7.5" fontWeight="800" fill="#E5A638">TM</text>
+
+                  {/* Golden Chand Curve strictly from 'u' to 'l' */}
+                  <path d="M 24,33 C 39,43 60,43 75,33 C 60,39.5 39,39.5 24,33 Z" fill="url(#footerGoldChand)" />
+                </g>
+              </svg>
             </div>
             <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-gold)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '0.8rem' }}>
               DARSHAN TECHNO SYSTEM

@@ -113,39 +113,46 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
         }}
       >
         <div className="container header-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '65px' }}>
-          {/* Brand Logo */}
-          <Link href="/" className="header-brand-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none', minWidth: 0 }}>
-            <img 
-              src="/logo.svg" 
-              alt="NUTFLIX DRY FRUITS" 
-              style={{ 
-                height: '48px', 
-                width: '48px', 
-                objectFit: 'contain',
-                filter: 'drop-shadow(0px 2px 6px rgba(0,0,0,0.12))',
-                flexShrink: 0 
-              }} 
-            />
-            <div style={{ minWidth: 0, overflow: 'hidden' }}>
-              <span
-                className="header-logo-text"
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: 900,
-                  fontSize: '1.25rem',
-                  letterSpacing: '0.02em',
-                  color: 'var(--color-forest)',
-                  display: 'block',
-                  lineHeight: 1,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                NUT<span style={{ color: 'var(--color-gold)' }}>FLIX</span>
-              </span>
-              <span className="logo-tagline" style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-muted)', fontWeight: 800 }}>
-                DRY FRUITS
-              </span>
-            </div>
+          {/* Brand Logo - Exact nutflix wordmark with dual-color, leaf on i and chand from u to l */}
+          <Link href="/" className="header-brand-logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', minWidth: 0 }}>
+            <svg viewBox="0 0 145 44" width="145" height="44" style={{ display: 'block', overflow: 'visible', maxWidth: '100%' }}>
+              <defs>
+                <linearGradient id="headerGoldChand" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#C58526" />
+                  <stop offset="50%" stopColor="#E5A638" />
+                  <stop offset="100%" stopColor="#C58526" />
+                </linearGradient>
+              </defs>
+              <g transform="translate(0, 2)">
+                {/* 'nut' in rich chocolate brown */}
+                <text x="0" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#23160C" letterSpacing="-0.5px">
+                  nut
+                </text>
+                {/* 'fl' in rich forest olive green */}
+                <text x="52" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22" letterSpacing="-0.5px">
+                  fl
+                </text>
+                {/* 'ı' stem without dot */}
+                <text x="78" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22">
+                  ı
+                </text>
+                {/* 'x' */}
+                <text x="88" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22" letterSpacing="-0.5px">
+                  x
+                </text>
+                {/* Leaf cluster on 'i' matching photo */}
+                <g transform="translate(82, 8)">
+                  <path d="M 0,0 C -3.5,-7 -11,-8 -14,-3 C -16,2 -6,3 0,0 Z" fill="#1D4A22" />
+                  <path d="M 0,-1 C 0,-7 7,-11 11,-7 C 13,-2.5 5,-1 0,-1 Z" fill="#26612E" />
+                  <path d="M 1.5,-1 C 5,-8 15,-9 19,-4 C 21,1.5 9,2.5 1.5,-1 Z" fill="#1D4A22" />
+                </g>
+                {/* TM in small uppercase */}
+                <text x="110" y="10" fontFamily="'Inter', sans-serif" fontSize="7.5" fontWeight="800" fill="#23160C">TM</text>
+
+                {/* Golden Chand Curve strictly from 'u' to 'l' with thick middle and tapered ends */}
+                <path d="M 24,33 C 39,43 60,43 75,33 C 60,39.5 39,39.5 24,33 Z" fill="url(#headerGoldChand)" />
+              </g>
+            </svg>
           </Link>
 
           {/* Desktop Navigation Links */}

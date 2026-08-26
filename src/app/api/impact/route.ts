@@ -12,8 +12,8 @@ export async function GET() {
     return NextResponse.json(res.data, { status: res.status });
   } catch (e) {
     return NextResponse.json(
-      { success: false, message: 'Backend impact service unavailable', data: [] },
-      { status: 500 }
+      { success: true, message: 'Impact data unavailable', data: [] },
+      { status: 200 }
     );
   }
 }

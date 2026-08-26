@@ -16,9 +16,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
   const [tokenInfo, setTokenInfo] = useState<{ accessToken?: string; refreshToken?: string; accessTokenExpiresIn?: string; refreshTokenExpiresIn?: string } | null>(null);
-  const [emailInput, setEmailInput] = useState('agr@guharoy.com');
-  const [passwordInput, setPasswordInput] = useState('123456');
-  const [nameInput, setNameInput] = useState('DARSHAN TECHNO SYSTEM');
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [nameInput, setNameInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -203,7 +203,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
             </div>
 
             <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.2rem' }}>
-              {userData?.name || 'DARSHAN TECHNO SYSTEM'}
+              {userData?.name || 'Customer'}
             </h3>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
               Logged in as <strong style={{ color: 'var(--color-forest)' }}>{userData?.email || emailInput}</strong>
@@ -287,10 +287,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                 <User size={22} color="var(--color-gold)" />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.2rem' }}>
-                {activeTab === 'login' ? 'NUTFLIX Login' : 'Create Account'}
+                {activeTab === 'login' ? 'Sign In to NUTFLIX' : 'Create Account'}
               </h3>
               <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                DARSHAN TECHNO SYSTEM • Account & Token Access
+                {activeTab === 'login' ? 'Welcome back! Please enter your details.' : 'Join NUTFLIX for fresh & premium dry fruits.'}
               </p>
             </div>
 
@@ -321,9 +321,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
             <div
               style={{
                 display: 'flex',
-                backgroundColor: '#f5efe6',
-                borderRadius: '30px',
+                backgroundColor: 'var(--color-cream-light)',
                 padding: '4px',
+                borderRadius: '30px',
                 marginBottom: '1.2rem',
               }}
             >
@@ -383,13 +383,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
               {activeTab === 'register' && (
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
-                    Business / Full Name
+                    Full Name *
                   </label>
                   <div style={{ position: 'relative' }}>
                     <User size={16} color="var(--color-text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                     <input
                       type="text"
-                      placeholder="DARSHAN TECHNO SYSTEM"
+                      placeholder="Enter your full name"
                       value={nameInput}
                       onChange={(e) => setNameInput(e.target.value)}
                       required
@@ -408,13 +408,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
-                  Email Address
+                  Email Address *
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Mail size={16} color="var(--color-text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                   <input
                     type="email"
-                    placeholder="agr@guharoy.com"
+                    placeholder="Enter your email address"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     required
@@ -432,13 +432,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
-                  Password
+                  Password *
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Lock size={16} color="var(--color-text-muted)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                   <input
                     type="password"
-                    placeholder="123456"
+                    placeholder="Enter your password"
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
                     required
@@ -454,10 +454,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                 </div>
               </div>
 
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', backgroundColor: '#f9f6f0', padding: '0.5rem 0.8rem', borderRadius: '8px' }}>
-                🔑 Default password: <strong>123456</strong> | Access Token: <strong>1 Day</strong> | Refresh Token: <strong>7 Days</strong>
-              </div>
-
               <button
                 type="submit"
                 disabled={loading}
@@ -470,7 +466,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                   borderRadius: '12px',
                 }}
               >
-                <span>{loading ? 'Authenticating...' : activeTab === 'login' ? 'Sign In & Fetch Tokens' : 'Create Account'}</span>
+                <span>{loading ? 'Authenticating...' : activeTab === 'login' ? 'Sign In' : 'Create Account'}</span>
                 <ArrowRight size={18} />
               </button>
             </form>

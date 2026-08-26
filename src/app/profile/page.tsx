@@ -633,32 +633,9 @@ export default function UserProfilePage() {
           </div>
         )}
 
-        {/* TAB 2: MY CART QUICK VIEW (LIVE DB API INTEGRATED) */}
+        {/* TAB 2: MY CART QUICK VIEW */}
         {activeTab === 'cart' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2d5c3', padding: '2rem' }}>
-            {/* API Status Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', padding: '0.75rem 1rem', backgroundColor: '#f0fdf4', borderRadius: '10px', border: '1px solid #bbf7d0', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 800, color: '#166534' }}>
-                <span style={{ height: '10px', width: '10px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block' }}></span>
-                Backend Database API Status: Live (Fetched from <code>GET /api/cart</code>)
-              </div>
-              <button
-                onClick={loadCartFromDbApi}
-                disabled={loadingDbCart}
-                style={{
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #166534',
-                  backgroundColor: '#fff',
-                  color: '#166534',
-                  fontWeight: 800,
-                  fontSize: '0.75rem',
-                  cursor: 'pointer'
-                }}
-              >
-                {loadingDbCart ? 'Fetching from API...' : '🔄 Refresh API Data'}
-              </button>
-            </div>
 
             {/* Cart Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>

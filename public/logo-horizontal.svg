@@ -1,65 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 100" width="420" height="100">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 62" width="190" height="62">
   <defs>
-    <radialGradient id="bgGradH" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FFFDF7" />
-      <stop offset="70%" stop-color="#FAF3E3" />
-      <stop offset="100%" stop-color="#EFE3CA" />
-    </radialGradient>
-    <linearGradient id="goldGradH" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#D4AF37" />
-      <stop offset="50%" stop-color="#AA7C11" />
-      <stop offset="100%" stop-color="#996515" />
+    <linearGradient id="goldChandExact" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C58526" />
+      <stop offset="50%" stop-color="#E0A43C" />
+      <stop offset="100%" stop-color="#C58526" />
     </linearGradient>
   </defs>
 
-  <!-- Left Circular Emblem Icon -->
-  <g transform="translate(50, 50)">
-    <circle cx="0" cy="0" r="44" fill="url(#bgGradH)" stroke="url(#goldGradH)" stroke-width="2.5" />
-    <circle cx="0" cy="0" r="40" fill="none" stroke="#C89D42" stroke-width="1" stroke-dasharray="4 2" />
-
-    <!-- Nuts Illustration inside Icon -->
-    <g transform="translate(0, -5) scale(0.65)">
-      <!-- Leaf -->
-      <path d="M -15,-10 C -35,-30 0,-40 5,-20 C 5,-5 -5,-5 -15,-10 Z" fill="#2E5A36" />
-      <!-- Almond -->
-      <g transform="translate(-14, -10) rotate(-20)">
-        <path d="M 0,-22 C 12,-14 15,7 0,22 C -15,7 -12,-14 0,-22 Z" fill="#8B4513" stroke="#5C2C09" stroke-width="1" />
-      </g>
-      <!-- Cashew -->
-      <g transform="translate(-4, 8) rotate(10)">
-        <path d="M -10,-12 C -3,-18 12,-16 15,-6 C 17,5 7,16 -5,14 C -14,12 -16,1 -12,-5 Z" fill="#F5E1A4" stroke="#D4B06A" stroke-width="1" />
-      </g>
-      <!-- Pistachio -->
-      <g transform="translate(16, -2) rotate(15)">
-        <path d="M -8,-16 C -14,-6 -13,10 -5,16 C -1,14 -5,-3 -8,-16 Z" fill="#E8D8C8" />
-        <path d="M 8,-16 C 14,-6 13,10 5,16 C 1,14 5,-3 8,-16 Z" fill="#DCC8B4" />
-        <path d="M -5,-13 C 0,-17 5,-13 6,-5 C 6,5 2,13 -4,13 Z" fill="#7C9D32" />
-      </g>
-    </g>
-    
-    <!-- Heart at bottom of emblem -->
-    <path d="M 0,32 C -1,31 -5,28 -5,25 C -5,22 -2,21 0,23 C 2,21 5,22 5,25 C 5,28 1,31 0,32 Z" fill="#C49A45" />
-  </g>
-
-  <!-- Typography Right Side -->
-  <g transform="translate(112, 54)">
-    <!-- Main Brand Name: nutflix -->
-    <text font-family="'Playfair Display', 'Georgia', serif" font-size="46" font-weight="900" y="0">
-      <tspan fill="#3E1906" letter-spacing="-1">nut</tspan><tspan fill="#1E4D2B" letter-spacing="-1">flix</tspan>
+  <g transform="translate(10, 6)">
+    <!-- 'nut' in rich chocolate brown -->
+    <text x="0" y="32" font-family="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" font-size="38" font-weight="900" fill="#23160C" letter-spacing="-0.5px">
+      nut
     </text>
-    
-    <!-- Leaf on 'x' -->
-    <path d="M 148,-36 C 154,-46 163,-43 159,-34 C 154,-28 149,-31 148,-36 Z" fill="#2E5A36" />
-    <!-- Gold Dot on 'i' -->
-    <ellipse cx="114" cy="-33" rx="3" ry="4" fill="#D4AF37" transform="rotate(15 114 -33)" />
 
-    <!-- Subtitle: DRY FRUITS -->
-    <g transform="translate(2, 22)">
-      <line x1="0" y1="-5" x2="35" y2="-5" stroke="#C49A45" stroke-width="1.5" />
-      <text x="45" y="0" font-family="'Cinzel', 'Georgia', serif" font-size="14" font-weight="bold" fill="#3E1906" letter-spacing="4">
-        DRY FRUITS
-      </text>
-      <line x1="175" y1="-5" x2="210" y2="-5" stroke="#C49A45" stroke-width="1.5" />
+    <!-- 'fl' in rich forest olive green -->
+    <text x="60" y="32" font-family="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" font-size="38" font-weight="900" fill="#1D4A22" letter-spacing="-0.5px">
+      fl
+    </text>
+
+    <!-- 'ı' stem without dot -->
+    <text x="90" y="32" font-family="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" font-size="38" font-weight="900" fill="#1D4A22">
+      ı
+    </text>
+
+    <!-- 'x' in rich forest olive green -->
+    <text x="101" y="32" font-family="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" font-size="38" font-weight="900" fill="#1D4A22" letter-spacing="-0.5px">
+      x
+    </text>
+
+    <!-- Leaf cluster on 'i' matching the exact photo -->
+    <g transform="translate(94, 9)">
+      <!-- Left small leaf -->
+      <path d="M 0,0 C -4,-8 -13,-9 -16,-3 C -18,3 -7,4 0,0 Z" fill="#1D4A22" />
+      <!-- Center top leaf -->
+      <path d="M 0,-1 C 0,-9 9,-13 13,-8 C 15,-3 6,-1 0,-1 Z" fill="#26612E" />
+      <!-- Right large leaf -->
+      <path d="M 2,-1 C 6,-10 18,-11 22,-5 C 24,2 11,3 2,-1 Z" fill="#1D4A22" />
     </g>
+
+    <!-- TM in small uppercase -->
+    <text x="127" y="11" font-family="'Inter', sans-serif" font-size="8.5" font-weight="800" fill="#23160C">TM</text>
+
+    <!-- Golden Chand Curve exactly from 'u' to 'l' with thick middle and tapered ends -->
+    <path d="M 27,37 C 45,50 68,50 86,37 C 68,45.5 45,45.5 27,37 Z" fill="url(#goldChandExact)" />
   </g>
 </svg>
