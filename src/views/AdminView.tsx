@@ -81,8 +81,14 @@ export default function AdminView() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
-        setIsSidebarCollapsed(true);
+      if (typeof window !== 'undefined') {
+        if (window.innerWidth <= 768) {
+          setIsSidebarCollapsed(false);
+        } else if (window.innerWidth <= 1024) {
+          setIsSidebarCollapsed(true);
+        } else {
+          setIsSidebarCollapsed(false);
+        }
       }
     };
     handleResize();

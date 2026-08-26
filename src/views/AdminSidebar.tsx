@@ -1,13 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   LogOut,
   ArrowLeft,
   ChevronRight,
   ChevronLeft,
-  Menu,
+  Store,
   X
 } from 'lucide-react';
 
@@ -42,6 +42,20 @@ export default function AdminSidebar({
   mobileOpen = false,
   setMobileOpen
 }: AdminSidebarProps) {
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+
+  useEffect(() => {
+    const checkScreen = () => {
+      setIsMobileScreen(window.innerWidth <= 768);
+    };
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+    return () => window.removeEventListener('resize', checkScreen);
+  }, []);
+
+  // When on mobile drawer, force collapsed to false so it always renders complete labels & proper width
+  const effectiveCollapsed = isCollapsed && !isMobileScreen && !mobileOpen;
+
   const handleItemClick = (id: string) => {
     setActiveMenu(id);
     if (setMobileOpen) {
@@ -59,42 +73,42 @@ export default function AdminSidebar({
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.65)',
-            backdropFilter: 'blur(3px)',
-            zIndex: 45,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 90,
           }}
         />
       )}
 
       <aside
-        className={`admin-sidebar-container ${isCollapsed ? 'is-collapsed' : 'is-expanded'} ${mobileOpen ? 'mobile-open' : ''}`}
+        className={`admin-sidebar-container ${effectiveCollapsed ? 'is-collapsed' : 'is-expanded'} ${mobileOpen ? 'mobile-open' : ''}`}
         style={{
-          width: isCollapsed ? '78px' : '270px',
-          background: 'linear-gradient(180deg, #0b1f16 0%, #112d20 50%, #0d1e15 100%)',
+          width: effectiveCollapsed ? '76px' : '265px',
+          background: 'linear-gradient(180deg, #091a12 0%, #0f291e 50%, #081710 100%)',
           color: '#fff',
           display: 'flex',
           flexDirection: 'column',
           flexShrink: 0,
-          borderRight: '1px solid rgba(217, 119, 6, 0.25)',
-          boxShadow: '8px 0 30px rgba(0, 0, 0, 0.18)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '4px 0 25px rgba(0, 0, 0, 0.3)',
           height: '100vh',
           position: 'sticky',
           top: 0,
           overflowY: 'auto',
           overflowX: 'hidden',
-          zIndex: 50,
+          zIndex: 95,
           transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Brand Header */}
         <div
           style={{
-            padding: isCollapsed ? '1.25rem 0.5rem' : '1.5rem 1.25rem',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            background: 'rgba(0,0,0,0.2)',
+            padding: effectiveCollapsed ? '1.25rem 0.5rem' : '1.25rem 1.15rem',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+            background: 'rgba(0,0,0,0.25)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: isCollapsed ? 'center' : 'space-between',
+            justifyContent: effectiveCollapsed ? 'center' : 'space-between',
             gap: '0.6rem',
             position: 'relative',
           }}
@@ -104,7 +118,7 @@ export default function AdminSidebar({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.7rem',
+              gap: '0.75rem',
               textDecoration: 'none',
               minWidth: 0,
             }}
@@ -114,91 +128,106 @@ export default function AdminSidebar({
               src="/logo.svg"
               alt="NUTFLIX LOGO"
               style={{
-                width: isCollapsed ? '38px' : '42px',
-                height: isCollapsed ? '38px' : '42px',
+                width: effectiveCollapsed ? '38px' : '40px',
+                height: effectiveCollapsed ? '38px' : '40px',
                 objectFit: 'contain',
-                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
+                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.35))',
                 flexShrink: 0,
               }}
             />
-            {!isCollapsed && (
+            {!effectiveCollapsed && (
               <div style={{ overflow: 'hidden' }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', letterSpacing: '0.04em', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', letterSpacing: '0.04em', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
                   NUT<span style={{ color: '#f59e0b' }}>FLIX</span>
                 </div>
-                <div style={{ fontSize: '0.65rem', color: '#a3b19b', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, marginTop: '0.2rem', whiteSpace: 'nowrap' }}>
-                  ADMIN SUITE • DARSHAN
+                <div style={{ fontSize: '0.62rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, marginTop: '0.2rem', whiteSpace: 'nowrap' }}>
+                  ADMIN SUITE
                 </div>
               </div>
             )}
           </Link>
 
-          {/* Toggle Button in Header */}
-          {setIsCollapsed && (
+          {/* Desktop Toggle Button in Header */}
+          {setIsCollapsed && !isMobileScreen && (
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="sidebar-collapse-btn"
               style={{
-                border: 'none',
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: '#cbd5e1',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: '#94a3b8',
                 padding: '0.35rem',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                display: isCollapsed ? 'none' : 'flex',
+                display: effectiveCollapsed ? 'none' : 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.2s',
                 flexShrink: 0,
               }}
               title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
+                e.currentTarget.style.color = '#fff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.color = '#94a3b8';
+              }}
             >
-              <ChevronLeft size={17} />
+              <ChevronLeft size={16} />
             </button>
           )}
 
-          {/* Mobile Close Button */}
-          {setMobileOpen && (
+          {/* Mobile Drawer Close Button */}
+          {setMobileOpen && isMobileScreen && (
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="sidebar-mobile-close-btn"
               style={{
-                display: 'none',
                 border: 'none',
-                background: 'rgba(239, 68, 68, 0.2)',
+                background: 'rgba(239, 68, 68, 0.15)',
                 color: '#f87171',
-                padding: '0.35rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-              }}
-            >
-              <X size={18} />
-            </button>
-          )}
-        </div>
-
-        {/* Collapsed Expand Quick Button */}
-        {isCollapsed && setIsCollapsed && (
-          <div style={{ padding: '0.5rem 0.5rem 0', display: 'flex', justifyContent: 'center' }}>
-            <button
-              type="button"
-              onClick={() => setIsCollapsed(false)}
-              style={{
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(255, 255, 255, 0.06)',
-                color: '#f59e0b',
                 padding: '0.4rem',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '100%',
+              }}
+              title="Close Menu"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+
+        {/* Collapsed Mode Expand Button */}
+        {effectiveCollapsed && setIsCollapsed && (
+          <div style={{ padding: '0.6rem 0.5rem 0', display: 'flex', justifyContent: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setIsCollapsed(false)}
+              style={{
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                background: 'rgba(245, 158, 11, 0.1)',
+                color: '#f59e0b',
+                width: '38px',
+                height: '32px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 transition: 'all 0.2s',
               }}
               title="Expand Sidebar"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+              }}
             >
               <ChevronRight size={16} />
             </button>
@@ -208,16 +237,17 @@ export default function AdminSidebar({
         {/* Navigation Menu */}
         <nav
           style={{
-            padding: isCollapsed ? '1rem 0.4rem' : '1.25rem 0.85rem',
+            padding: effectiveCollapsed ? '0.75rem 0.4rem' : '1rem 0.75rem',
             flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
-            gap: '0.35rem',
+            gap: effectiveCollapsed ? '0.45rem' : '0.3rem',
             overflowY: 'auto',
+            overflowX: 'hidden',
           }}
         >
-          {!isCollapsed && (
-            <div style={{ fontSize: '0.65rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.15em', padding: '0 0.75rem 0.4rem' }}>
+          {!effectiveCollapsed && (
+            <div style={{ fontSize: '0.62rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.14em', padding: '0 0.6rem 0.4rem' }}>
               MAIN MENU
             </div>
           )}
@@ -226,33 +256,117 @@ export default function AdminSidebar({
             const IconComponent = item.icon;
             const isActive = activeMenu === item.id;
 
+            if (effectiveCollapsed) {
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    position: 'relative',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleItemClick(item.id)}
+                    title={`${item.label}${item.badge !== null ? ` (${item.badge})` : ''}`}
+                    style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '12px',
+                      border: isActive ? '1px solid rgba(245, 158, 11, 0.5)' : '1px solid rgba(255, 255, 255, 0.05)',
+                      background: isActive
+                        ? 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)'
+                        : 'rgba(255, 255, 255, 0.04)',
+                      color: isActive ? '#fff' : '#94a3b8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: isActive ? '0 4px 14px rgba(217, 119, 6, 0.35)' : 'none',
+                      position: 'relative',
+                      padding: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                        e.currentTarget.style.color = '#fff';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)';
+                        e.currentTarget.style.color = '#94a3b8';
+                      }
+                    }}
+                  >
+                    <IconComponent size={19} color={isActive ? '#fff' : item.color || '#cbd5e1'} />
+                    {item.badge !== null && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '-3px',
+                          right: '-3px',
+                          backgroundColor: '#ef4444',
+                          color: '#fff',
+                          fontSize: '0.6rem',
+                          fontWeight: 900,
+                          borderRadius: '10px',
+                          minWidth: '16px',
+                          height: '16px',
+                          padding: '0 3px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1.5px solid #091a12',
+                        }}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              );
+            }
+
             return (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => handleItemClick(item.id)}
-                title={isCollapsed ? `${item.label}${item.badge !== null ? ` (${item.badge})` : ''}` : undefined}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: isCollapsed ? 'center' : 'space-between',
+                  justifyContent: 'space-between',
                   width: '100%',
-                  padding: isCollapsed ? '0.75rem 0.4rem' : '0.8rem 1rem',
+                  padding: '0.65rem 0.85rem',
                   borderRadius: '12px',
                   border: isActive ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid transparent',
                   background: isActive
                     ? 'linear-gradient(90deg, rgba(217, 119, 6, 0.9) 0%, rgba(245, 158, 11, 0.85) 100%)'
                     : 'transparent',
                   color: isActive ? '#fff' : '#cbd5e1',
-                  fontWeight: isActive ? 900 : 600,
+                  fontWeight: isActive ? 800 : 600,
                   fontSize: '0.86rem',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  boxShadow: isActive ? '0 6px 18px rgba(217, 119, 6, 0.3)' : 'none',
-                  position: 'relative',
+                  transition: 'all 0.18s ease',
+                  boxShadow: isActive ? '0 4px 14px rgba(217, 119, 6, 0.25)' : 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
+                    e.currentTarget.style.color = '#fff';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#cbd5e1';
+                  }
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: isCollapsed ? 0 : '0.8rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div
                     style={{
                       width: '32px',
@@ -262,58 +376,31 @@ export default function AdminSidebar({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      position: 'relative',
                       flexShrink: 0,
                     }}
                   >
-                    <IconComponent size={17} color={isActive ? '#fff' : item.color || '#a3b19b'} />
-                    {isCollapsed && item.badge !== null && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: '-4px',
-                          right: '-6px',
-                          backgroundColor: '#ef4444',
-                          color: '#fff',
-                          fontSize: '0.62rem',
-                          fontWeight: 900,
-                          borderRadius: '10px',
-                          minWidth: '16px',
-                          height: '16px',
-                          padding: '0 3px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '1.5px solid #0b1f16',
-                        }}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
+                    <IconComponent size={17} color={isActive ? '#fff' : item.color || '#cbd5e1'} />
                   </div>
-                  {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>}
+                  <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
                 </div>
 
-                {!isCollapsed && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    {item.badge !== null && (
-                      <span
-                        style={{
-                          padding: '0.15rem 0.5rem',
-                          borderRadius: '20px',
-                          fontSize: '0.7rem',
-                          fontWeight: 900,
-                          backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)',
-                          color: '#fff',
-                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
-                        }}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                    {isActive && <ChevronRight size={14} color="#fff" />}
-                  </div>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  {item.badge !== null && (
+                    <span
+                      style={{
+                        padding: '0.12rem 0.45rem',
+                        borderRadius: '20px',
+                        fontSize: '0.68rem',
+                        fontWeight: 900,
+                        backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)',
+                        color: '#fff',
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                  {isActive && <ChevronRight size={14} color="#fff" />}
+                </div>
               </button>
             );
           })}
@@ -322,88 +409,165 @@ export default function AdminSidebar({
         {/* User Footer */}
         <div
           style={{
-            padding: isCollapsed ? '1rem 0.4rem' : '1.25rem 1.25rem',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            background: 'rgba(0,0,0,0.2)',
+            padding: effectiveCollapsed ? '0.75rem 0.4rem' : '1rem 1rem',
+            borderTop: '1px solid rgba(255,255,255,0.07)',
+            background: 'rgba(0,0,0,0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.6rem',
           }}
         >
           {/* Back to Storefront Link */}
-          <Link
-            href="/"
-            style={{
-              color: '#f59e0b',
-              textDecoration: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              gap: '0.45rem',
-              marginBottom: '0.85rem',
-              transition: 'opacity 0.2s',
-              padding: isCollapsed ? '0.4rem' : '0',
-            }}
-            title="Back to Storefront"
-          >
-            <ArrowLeft size={16} />
-            {!isCollapsed && <span>Back to Storefront</span>}
-          </Link>
+          {effectiveCollapsed ? (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Link
+                href="/"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  border: '1px solid rgba(245, 158, 11, 0.25)',
+                  color: '#f59e0b',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s',
+                }}
+                title="Back to Storefront"
+              >
+                <Store size={18} />
+              </Link>
+            </div>
+          ) : (
+            <Link
+              href="/"
+              style={{
+                color: '#f59e0b',
+                textDecoration: 'none',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.4rem 0.5rem',
+                borderRadius: '8px',
+                transition: 'all 0.2s',
+              }}
+              title="Back to Storefront"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <ArrowLeft size={16} />
+              <span>Back to Storefront</span>
+            </Link>
+          )}
 
-          {/* User Profile Box */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'space-between',
-              backgroundColor: 'rgba(255,255,255,0.06)',
-              padding: isCollapsed ? '0.5rem 0.25rem' : '0.65rem 0.75rem',
-              borderRadius: '12px',
-              border: '1px solid rgba(255,255,255,0.08)',
-            }}
-          >
-            {!isCollapsed && (
+          {/* User Profile / Logout Box */}
+          {effectiveCollapsed ? (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={onLogout}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  color: '#f87171',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                title="Sign out of Admin Session"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                }}
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                padding: '0.55rem 0.75rem',
+                borderRadius: '12px',
+                border: '1px solid rgba(255,255,255,0.07)',
+              }}
+            >
               <div style={{ overflow: 'hidden', marginRight: '0.5rem' }}>
                 <div style={{ fontSize: '0.8rem', fontWeight: 900, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {adminUser?.name || 'Administrator'}
                 </div>
                 <div style={{ fontSize: '0.68rem', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {adminUser?.email || 'agr@guharoy.com'}
+                  {adminUser?.email || 'admin@nutflix.com'}
                 </div>
               </div>
-            )}
 
-            <button
-              type="button"
-              onClick={onLogout}
-              style={{
-                border: 'none',
-                background: 'rgba(239,68,68,0.15)',
-                color: '#f87171',
-                padding: '0.4rem 0.55rem',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 800,
-                fontSize: '0.75rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.3rem',
-                transition: 'all 0.2s',
-                flexShrink: 0,
-              }}
-              title="Sign out of Admin Session"
-            >
-              <LogOut size={14} />
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={onLogout}
+                style={{
+                  border: 'none',
+                  background: 'rgba(239,68,68,0.15)',
+                  color: '#f87171',
+                  padding: '0.4rem 0.55rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  flexShrink: 0,
+                }}
+                title="Sign out of Admin Session"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.15)';
+                }}
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
       <style jsx global>{`
-        @media (max-width: 1024px) {
-          .admin-sidebar-container.is-expanded {
-            width: 240px !important;
-          }
+        /* Clean sleek dark scrollbars for Admin Sidebar */
+        .admin-sidebar-container::-webkit-scrollbar,
+        .admin-sidebar-container nav::-webkit-scrollbar {
+          width: 4px;
+        }
+        .admin-sidebar-container::-webkit-scrollbar-track,
+        .admin-sidebar-container nav::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.15);
+        }
+        .admin-sidebar-container::-webkit-scrollbar-thumb,
+        .admin-sidebar-container nav::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.15);
+          border-radius: 4px;
+        }
+        .admin-sidebar-container::-webkit-scrollbar-thumb:hover,
+        .admin-sidebar-container nav::-webkit-scrollbar-thumb:hover {
+          background: rgba(245, 158, 11, 0.5);
         }
 
         @media (max-width: 768px) {
@@ -413,17 +577,13 @@ export default function AdminSidebar({
             bottom: 0 !important;
             left: 0 !important;
             height: 100vh !important;
-            width: 270px !important;
+            width: 280px !important;
             transform: translateX(-100%);
             z-index: 100 !important;
           }
 
           .admin-sidebar-container.mobile-open {
             transform: translateX(0) !important;
-          }
-
-          .sidebar-mobile-close-btn {
-            display: flex !important;
           }
         }
       `}</style>
