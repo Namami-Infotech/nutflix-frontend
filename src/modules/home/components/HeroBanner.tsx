@@ -14,7 +14,7 @@ interface HeroBannerProps {
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
   banners = [],
-  autoScrollInterval = 3000,
+  autoScrollInterval = 4500,
   onUpdateBanner,
 }) => {
   const [activeBanners, setActiveBanners] = useState<MasterBanner[]>(banners);
@@ -107,34 +107,51 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         overflow: 'hidden',
       }}
     >
-      {/* Full Width Banner Image Container */}
-      {currentBanner.ctaLink ? (
-        <Link href={currentBanner.ctaLink} style={{ display: 'block', width: '100%' }}>
-          <img
-            key={`banner-img-${currentBanner.id}`}
-            src={currentBanner.imageUrl}
-            alt={currentBanner.title || 'Hero Banner'}
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-              animation: 'fastFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-          />
-        </Link>
-      ) : (
-        <img
-          key={`banner-img-${currentBanner.id}`}
-          src={currentBanner.imageUrl}
-          alt={currentBanner.title || 'Hero Banner'}
-          style={{
-            width: '100%',
-            height: 'auto',
-            display: 'block',
-            animation: 'fastFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        />
-      )}
+      {/* Smooth Sliding Track Container */}
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          transform: `translate3d(-${currentIndex * 100}%, 0, 0)`,
+          transition: 'transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)',
+          willChange: 'transform',
+        }}
+      >
+        {activeBanners.map((banner, index) => {
+          const imgElement = (
+            <img
+              src={banner.imageUrl}
+              alt={banner.title || `Hero Banner ${index + 1}`}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+              draggable={false}
+              className="hero-banner-img"
+              style={{
+                userSelect: 'none',
+              }}
+            />
+          );
+
+          return (
+            <div
+              key={banner.id || `banner-${index}`}
+              style={{
+                flex: '0 0 100%',
+                minWidth: '100%',
+                maxWidth: '100%',
+              }}
+            >
+              {banner.ctaLink ? (
+                <Link href={banner.ctaLink} style={{ display: 'block', width: '100%', textDecoration: 'none' }}>
+                  {imgElement}
+                </Link>
+              ) : (
+                imgElement
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       {/* Floating Carousel Navigation Bar over Image */}
       {activeBanners.length > 1 && (
@@ -145,7 +162,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               const isActive = idx === currentIndex;
               return (
                 <button
-                  key={banner.id}
+                  key={banner.id || `dot-${idx}`}
                   onClick={() => setCurrentIndex(idx)}
                   aria-label={`Go to banner ${idx + 1}`}
                   className={`hero-banner-dot ${isActive ? 'active' : ''}`}
@@ -196,17 +213,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         onSave={handleSaveBanner}
       />
 
-      {/* Fast Animation Keyframes & Responsive Styles */}
+      {/* Responsive Styles */}
       <style jsx global>{`
-        @keyframes fastFadeIn {
-          from {
-            opacity: 0.3;
-            transform: scale(1.008);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
+        .hero-banner-img {
+          width: 100%;
+          height: auto;
+          display: block;
         }
 
         .hero-banner-controls {
@@ -296,6 +308,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
         /* Responsive Breakpoints */
         @media (max-width: 768px) {
+          .hero-banner-img {
+            min-height: 240px;
+            height: 240px;
+            object-fit: cover;
+            object-position: center;
+          }
+
           .hero-banner-controls {
             bottom: 0.5rem;
             padding: 0.22rem 0.6rem;
@@ -327,6 +346,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         }
 
         @media (max-width: 480px) {
+          .hero-banner-img {
+            min-height: 220px;
+            height: 220px;
+            object-fit: cover;
+            object-position: center;
+          }
+
           .hero-banner-controls {
             bottom: 0.35rem;
             padding: 0.15rem 0.45rem;
@@ -369,6 +395,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         }
 
         @media (max-width: 360px) {
+          .hero-banner-img {
+            min-height: 195px;
+            height: 200px;
+            object-fit: cover;
+            object-position: center;
+          }
+
           .hero-banner-controls {
             bottom: 0.25rem;
             padding: 0.12rem 0.35rem;
