@@ -30,22 +30,6 @@ export default function DashboardView({
 }: DashboardViewProps) {
   const cards = [
     {
-      title: 'Total Users',
-      value: usersCount,
-      subtext: 'Active Registered Base',
-      icon: Users,
-      bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      color: '#fff'
-    },
-    {
-      title: 'Active Products',
-      value: productsCount,
-      subtext: 'Live Catalog Items',
-      icon: Package,
-      bg: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-      color: '#fff'
-    },
-    {
       title: 'Total Received Orders',
       value: ordersCount,
       subtext: `${newOrdersCount} New Orders Pending`,
@@ -62,11 +46,11 @@ export default function DashboardView({
       color: '#fff'
     },
     {
-      title: 'Cancelled / Returned',
-      value: cancelledCount,
-      subtext: 'Order Exception Count',
-      icon: XCircle,
-      bg: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+      title: 'Active Products',
+      value: productsCount,
+      subtext: 'Live Catalog Items',
+      icon: Package,
+      bg: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
       color: '#fff'
     },
     {
@@ -75,6 +59,22 @@ export default function DashboardView({
       subtext: 'Active Revenue Stream',
       icon: TrendingUp,
       bg: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+      color: '#fff'
+    },
+    {
+      title: 'Total Users',
+      value: usersCount,
+      subtext: 'Active Registered Base',
+      icon: Users,
+      bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      color: '#fff'
+    },
+    {
+      title: 'Cancelled / Returned',
+      value: cancelledCount,
+      subtext: 'Order Exception Count',
+      icon: XCircle,
+      bg: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
       color: '#fff'
     }
   ];
