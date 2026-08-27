@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Lock,
   CheckCircle,
+  AlertCircle,
   Crown,
   Sparkles,
   Tag,
@@ -417,11 +418,13 @@ export default function AdminView() {
   };
 
   const handleDeleteProduct = async (id: number) => {
-    if (confirm('Delete this product permanently?')) {
+    if (confirm('Deactivate this product? (Status will be set to inactive)')) {
       const res = await deleteProduct(id);
       if (res.success) {
-        showToast('Product deleted');
+        showToast('Product status set to inactive');
         setProducts(prev => prev.filter(p => p.id !== id));
+      } else {
+        showToast(res.message || 'Failed to deactivate product', 'error');
       }
     }
   };
@@ -473,11 +476,13 @@ export default function AdminView() {
   };
 
   const handleDeleteCategory = async (id: number) => {
-    if (confirm('Delete this category?')) {
+    if (confirm('Deactivate this category? (Status will be set to inactive)')) {
       const res = await deleteCategory(id);
       if (res.success) {
-        showToast('Category deleted');
+        showToast('Category status set to inactive');
         setCategories(prev => prev.filter(c => c.id !== id));
+      } else {
+        showToast(res.message || 'Failed to deactivate category', 'error');
       }
     }
   };
@@ -523,11 +528,13 @@ export default function AdminView() {
   };
 
   const handleDeleteBanner = async (id: number) => {
-    if (confirm('Delete this banner?')) {
+    if (confirm('Deactivate this banner? (Status will be set to inactive)')) {
       const res = await deleteBanner(id);
       if (res.success) {
-        showToast('Banner deleted');
+        showToast('Banner status set to inactive');
         setBanners(prev => prev.filter(b => b.id !== id));
+      } else {
+        showToast(res.message || 'Failed to deactivate banner', 'error');
       }
     }
   };
@@ -583,19 +590,20 @@ export default function AdminView() {
           position: 'fixed',
           top: '24px',
           right: '24px',
-          zIndex: 9999,
+          zIndex: 1000000,
           backgroundColor: toastMsg.type === 'error' ? '#ef4444' : '#10b981',
           color: '#fff',
           padding: '0.85rem 1.4rem',
           borderRadius: '12px',
-          boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
+          boxShadow: '0 12px 35px rgba(0,0,0,0.3)',
           fontWeight: 800,
           fontSize: '0.9rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.6rem'
+          gap: '0.6rem',
+          animation: 'fadeIn 0.2s ease-out'
         }}>
-          <CheckCircle size={20} />
+          {toastMsg.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
           {toastMsg.text}
         </div>
       )}

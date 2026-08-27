@@ -333,16 +333,17 @@ export default function UserProfilePage() {
           position: 'fixed',
           top: '20px',
           right: '20px',
-          zIndex: 9999,
+          zIndex: 1000000,
           backgroundColor: '#10b981',
           color: '#fff',
           padding: '0.75rem 1.25rem',
           borderRadius: '8px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.25)',
           fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem'
+          gap: '0.5rem',
+          animation: 'fadeIn 0.2s ease-out'
         }}>
           <CheckCircle size={18} />
           {toastMsg}

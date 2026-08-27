@@ -104,7 +104,7 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
   return (
     <div className="container" style={{ padding: '3rem 1.5rem 5rem', position: 'relative' }}>
       {toastMsg && (
-        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, backgroundColor: '#10b981', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '8px', fontWeight: 800, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000000, backgroundColor: '#10b981', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '8px', fontWeight: 800, boxShadow: '0 4px 12px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', gap: '0.5rem', animation: 'fadeIn 0.2s ease-out' }}>
           <CheckCircle2 size={18} />
           <span>{toastMsg}</span>
         </div>
