@@ -73,7 +73,7 @@ export const EditBannerModal: React.FC<EditBannerModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Hero Banner" maxWidth="720px">
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        
+
         {/* Top Notification / Tip */}
         <div
           style={{
@@ -360,8 +360,8 @@ export const EditBannerModal: React.FC<EditBannerModalProps> = ({
         isOpen={isCropperOpen}
         onClose={() => setIsCropperOpen(false)}
         imageSrc={cropperImageSrc}
-        aspect={1920 / 650}
-        title="Crop Hero Banner Image (1920×650 Low Height)"
+        aspect={1900 / 650}
+        title="Crop Hero Banner Image (1900×650)"
         onCropComplete={(croppedDataUrl: string) => {
           handleChange('imageUrl', croppedDataUrl);
         }}

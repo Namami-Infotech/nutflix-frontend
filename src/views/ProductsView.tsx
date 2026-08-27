@@ -116,34 +116,34 @@ export default function ProductsView({
                       )}
                     </div>
                   </td>
-                <td style={{ padding: '0.55rem 0.75rem' }}>
-                  {prod.isFeatured ? (
-                    <span style={{ backgroundColor: '#fef3c7', color: '#b45309', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.68rem', fontWeight: 900, border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                      <Sparkles size={11} /> FEATURED
-                    </span>
-                  ) : (
-                    <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Standard</span>
-                  )}
-                </td>
-                <td style={{ padding: '0.55rem 0.75rem', borderTopRightRadius: '8px', borderBottomRightRadius: '8px' }}>
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    <button
-                      onClick={() => onEditProduct(prod)}
-                      style={{ padding: '0.3rem 0.6rem', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                    >
-                      <Edit size={13} /> Edit
-                    </button>
-                    <button
-                      onClick={() => onDeleteProduct(prod.id)}
-                      style={{ padding: '0.3rem 0.6rem', backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                    >
-                      <Trash2 size={13} /> Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
+                  <td style={{ padding: '0.55rem 0.75rem' }}>
+                    {prod.isFeatured ? (
+                      <span style={{ backgroundColor: '#fef3c7', color: '#b45309', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.68rem', fontWeight: 900, border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                        <Sparkles size={11} /> FEATURED
+                      </span>
+                    ) : (
+                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Standard</span>
+                    )}
+                  </td>
+                  <td style={{ padding: '0.55rem 0.75rem', borderTopRightRadius: '8px', borderBottomRightRadius: '8px' }}>
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      <button
+                        onClick={() => onEditProduct(prod)}
+                        style={{ padding: '0.3rem 0.6rem', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                      >
+                        <Edit size={13} /> Edit
+                      </button>
+                      <button
+                        onClick={() => onDeleteProduct(prod.id)}
+                        style={{ padding: '0.3rem 0.6rem', backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                      >
+                        <Trash2 size={13} /> Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

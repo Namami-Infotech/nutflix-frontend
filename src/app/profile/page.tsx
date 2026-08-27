@@ -2,21 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  User, 
-  ShoppingBag, 
-  Package, 
-  Truck, 
-  CheckCircle, 
-  XCircle, 
-  RotateCcw, 
-  Clock, 
-  ArrowLeft, 
-  LogOut, 
-  MapPin, 
-  Phone, 
-  FileText, 
-  Trash2, 
+import {
+  User,
+  ShoppingBag,
+  Package,
+  Truck,
+  CheckCircle,
+  XCircle,
+  RotateCcw,
+  Clock,
+  ArrowLeft,
+  LogOut,
+  MapPin,
+  Phone,
+  FileText,
+  Trash2,
   ArrowRight,
   ShieldCheck,
   CreditCard,
@@ -172,7 +172,7 @@ export default function UserProfilePage() {
     setLoadingDbCart(true);
     try {
       const dbData = await fetchCartApi();
-      console.log(dbData,"dbDatadbDatadbDatadbData")
+      console.log(dbData, "dbDatadbDatadbDatadbData")
       if (dbData && Array.isArray(dbData)) {
         setDbCartItems(dbData);
       } else {
@@ -186,10 +186,10 @@ export default function UserProfilePage() {
   };
 
   useEffect(() => {
-  
-      
-      loadCartFromDbApi();
-    
+
+
+    loadCartFromDbApi();
+
   }, []);
 
   const handleDbCartUpdateQuantity = async (productId: number, newQty: number) => {
@@ -500,178 +500,178 @@ export default function UserProfilePage() {
                   📦 Order History & Tracking Details
                 </h2>
 
-            {loadingOrders ? (
-              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#666' }}>Loading order history...</div>
-            ) : orders.length === 0 ? (
-              <div style={{ backgroundColor: '#fff', padding: '3rem', borderRadius: '16px', border: '1px solid #e2d5c3', textAlign: 'center' }}>
-                <Package size={48} color="var(--color-gold)" style={{ marginBottom: '1rem' }} />
-                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.2rem', fontWeight: 900 }}>No Past Orders Found</h3>
-                <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1.5rem' }}>You haven't placed any orders yet. Explore our handcrafted dry fruits collection!</p>
-                <Link href="/" style={{ backgroundColor: 'var(--color-forest)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '8px', textDecoration: 'none', fontWeight: 800, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                  Browse Products <ArrowRight size={16} />
-                </Link>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {orders.map((ord) => {
-                  const statusColor = 
-                    ord.status === 'delivered' ? '#10b981' :
-                    ord.status === 'shipped' ? '#3b82f6' :
-                    ord.status === 'cancelled' ? '#ef4444' :
-                    ord.status === 'returned' ? '#f97316' : '#8b5cf6';
+                {loadingOrders ? (
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#666' }}>Loading order history...</div>
+                ) : orders.length === 0 ? (
+                  <div style={{ backgroundColor: '#fff', padding: '3rem', borderRadius: '16px', border: '1px solid #e2d5c3', textAlign: 'center' }}>
+                    <Package size={48} color="var(--color-gold)" style={{ marginBottom: '1rem' }} />
+                    <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.2rem', fontWeight: 900 }}>No Past Orders Found</h3>
+                    <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1.5rem' }}>You haven't placed any orders yet. Explore our handcrafted dry fruits collection!</p>
+                    <Link href="/" style={{ backgroundColor: 'var(--color-forest)', color: '#fff', padding: '0.75rem 1.5rem', borderRadius: '8px', textDecoration: 'none', fontWeight: 800, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                      Browse Products <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    {orders.map((ord) => {
+                      const statusColor =
+                        ord.status === 'delivered' ? '#10b981' :
+                          ord.status === 'shipped' ? '#3b82f6' :
+                            ord.status === 'cancelled' ? '#ef4444' :
+                              ord.status === 'returned' ? '#f97316' : '#8b5cf6';
 
-                  return (
-                    <div key={ord.id} style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2d5c3', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                      {/* Order Top Bar */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                        <div>
-                          <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Order Number</span>
-                          <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--color-forest)' }}>{ord.orderNumber}</div>
-                        </div>
+                      return (
+                        <div key={ord.id} style={{ backgroundColor: '#fff', borderRadius: '16px', border: '1px solid #e2d5c3', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                          {/* Order Top Bar */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                            <div>
+                              <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Order Number</span>
+                              <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--color-forest)' }}>{ord.orderNumber}</div>
+                            </div>
 
-                        <div>
-                          <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Date Placed</span>
-                          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#333' }}>
-                            {new Date(ord.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                          </div>
-                        </div>
-
-                        <div>
-                          <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Total Paid</span>
-                          <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--color-forest)' }}>
-                            ₹{parseFloat(ord.totalAmount || 0).toFixed(2)}
-                          </div>
-                        </div>
-
-                        <div>
-                          <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Payment Mode</span>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#3b82f6' }}>
-                            💳 {ord.paymentMethod || (ord.paymentType === 'cash' ? 'Cash on Delivery' : 'Online / UPI')}
-                          </div>
-                        </div>
-
-                        <div>
-                          <span style={{
-                            display: 'inline-block',
-                            padding: '0.35rem 0.8rem',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
-                            fontWeight: 900,
-                            textTransform: 'uppercase',
-                            backgroundColor: statusColor + '20',
-                            color: statusColor,
-                            border: `1px solid ${statusColor}`
-                          }}>
-                            Status: {ord.status}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Items Purchased List */}
-                      <div style={{ marginBottom: '1rem' }}>
-                        <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#666', textTransform: 'uppercase', fontWeight: 800 }}>Items Purchased</h4>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                          {Array.isArray(ord.items) && ord.items.map((item: any, idx: number) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fdfbf7', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #f0e6d8' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <img
-                                  src={item.imageUrl || 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=200&q=80'}
-                                  alt={item.name || 'Product'}
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).onerror = null;
-                                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=200&q=80';
-                                  }}
-                                  style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
-                                />
-                                <div>
-                                  <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--color-forest)' }}>{item.name || `Product #${item.productId}`}</div>
-                                  <div style={{ fontSize: '0.75rem', color: '#666' }}>Quantity: {item.quantity} unit(s)</div>
-                                </div>
-                              </div>
-                              <div style={{ fontWeight: 900, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
-                                ₹{((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)}
+                            <div>
+                              <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Date Placed</span>
+                              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#333' }}>
+                                {new Date(ord.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
 
-                      {/* Delivery Address & Actions */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #eee', paddingTop: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
-                        <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                          📍 <strong>Shipping Address:</strong> {ord.shippingAddress}
-                        </div>
+                            <div>
+                              <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Total Paid</span>
+                              <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--color-forest)' }}>
+                                ₹{parseFloat(ord.totalAmount || 0).toFixed(2)}
+                              </div>
+                            </div>
 
-                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                          <button
-                            onClick={() => {
-                              setTrackingOrder(ord);
-                              setIsTrackerOpen(true);
-                            }}
-                            style={{
-                              padding: '0.45rem 0.9rem',
-                              borderRadius: '8px',
-                              border: 'none',
-                              backgroundColor: 'var(--color-forest)',
-                              color: '#ffffff',
-                              fontWeight: 800,
-                              fontSize: '0.78rem',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.4rem',
-                              boxShadow: '0 2px 6px rgba(22,35,26,0.15)'
-                            }}
-                          >
-                            <Truck size={15} color="var(--color-gold)" /> Track Order Status
-                          </button>
+                            <div>
+                              <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Payment Mode</span>
+                              <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#3b82f6' }}>
+                                💳 {ord.paymentMethod || (ord.paymentType === 'cash' ? 'Cash on Delivery' : 'Online / UPI')}
+                              </div>
+                            </div>
 
-                          {ord.status !== 'cancelled' && ord.status !== 'returned' && ord.status !== 'delivered' && (
-                            <button
-                              onClick={() => handleCancelOrder(ord.id)}
-                              style={{ padding: '0.45rem 0.8rem', borderRadius: '8px', border: '1px solid #fca5a5', backgroundColor: '#fef2f2', color: '#ef4444', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
-                            >
-                              Cancel Order
-                            </button>
-                          )}
+                            <div>
+                              <span style={{
+                                display: 'inline-block',
+                                padding: '0.35rem 0.8rem',
+                                borderRadius: '20px',
+                                fontSize: '0.75rem',
+                                fontWeight: 900,
+                                textTransform: 'uppercase',
+                                backgroundColor: statusColor + '20',
+                                color: statusColor,
+                                border: `1px solid ${statusColor}`
+                              }}>
+                                Status: {ord.status}
+                              </span>
+                            </div>
+                          </div>
 
-                          {ord.status === 'delivered' && (
-                            <>
+                          {/* Items Purchased List */}
+                          <div style={{ marginBottom: '1rem' }}>
+                            <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#666', textTransform: 'uppercase', fontWeight: 800 }}>Items Purchased</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                              {Array.isArray(ord.items) && ord.items.map((item: any, idx: number) => (
+                                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fdfbf7', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #f0e6d8' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <img
+                                      src={item.imageUrl || 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=200&q=80'}
+                                      alt={item.name || 'Product'}
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).onerror = null;
+                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=200&q=80';
+                                      }}
+                                      style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
+                                    />
+                                    <div>
+                                      <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--color-forest)' }}>{item.name || `Product #${item.productId}`}</div>
+                                      <div style={{ fontSize: '0.75rem', color: '#666' }}>Quantity: {item.quantity} unit(s)</div>
+                                    </div>
+                                  </div>
+                                  <div style={{ fontWeight: 900, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
+                                    ₹{((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Delivery Address & Actions */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #eee', paddingTop: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                              📍 <strong>Shipping Address:</strong> {ord.shippingAddress}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                               <button
-                                onClick={() => openReviewModal(ord)}
+                                onClick={() => {
+                                  setTrackingOrder(ord);
+                                  setIsTrackerOpen(true);
+                                }}
                                 style={{
-                                  padding: '0.45rem 0.85rem',
+                                  padding: '0.45rem 0.9rem',
                                   borderRadius: '8px',
-                                  border: '1px solid #fde047',
-                                  backgroundColor: '#fefce8',
-                                  color: '#854d0e',
+                                  border: 'none',
+                                  backgroundColor: 'var(--color-forest)',
+                                  color: '#ffffff',
                                   fontWeight: 800,
-                                  fontSize: '0.75rem',
+                                  fontSize: '0.78rem',
                                   cursor: 'pointer',
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: '0.35rem',
-                                  boxShadow: '0 2px 6px rgba(234,179,8,0.15)'
+                                  gap: '0.4rem',
+                                  boxShadow: '0 2px 6px rgba(22,35,26,0.15)'
                                 }}
                               >
-                                <Star size={14} fill="#eab308" color="#eab308" /> Write Review
+                                <Truck size={15} color="var(--color-gold)" /> Track Order Status
                               </button>
-                              <button
-                                onClick={() => handleReturnOrder(ord.id)}
-                                style={{ padding: '0.45rem 0.8rem', borderRadius: '8px', border: '1px solid #fed7aa', backgroundColor: '#fff7ed', color: '#ea580c', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
-                              >
-                                Request Return
-                              </button>
-                            </>
-                          )}
+
+                              {ord.status !== 'cancelled' && ord.status !== 'returned' && ord.status !== 'delivered' && (
+                                <button
+                                  onClick={() => handleCancelOrder(ord.id)}
+                                  style={{ padding: '0.45rem 0.8rem', borderRadius: '8px', border: '1px solid #fca5a5', backgroundColor: '#fef2f2', color: '#ef4444', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
+                                >
+                                  Cancel Order
+                                </button>
+                              )}
+
+                              {ord.status === 'delivered' && (
+                                <>
+                                  <button
+                                    onClick={() => openReviewModal(ord)}
+                                    style={{
+                                      padding: '0.45rem 0.85rem',
+                                      borderRadius: '8px',
+                                      border: '1px solid #fde047',
+                                      backgroundColor: '#fefce8',
+                                      color: '#854d0e',
+                                      fontWeight: 800,
+                                      fontSize: '0.75rem',
+                                      cursor: 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.35rem',
+                                      boxShadow: '0 2px 6px rgba(234,179,8,0.15)'
+                                    }}
+                                  >
+                                    <Star size={14} fill="#eab308" color="#eab308" /> Write Review
+                                  </button>
+                                  <button
+                                    onClick={() => handleReturnOrder(ord.id)}
+                                    style={{ padding: '0.45rem 0.8rem', borderRadius: '8px', border: '1px solid #fed7aa', backgroundColor: '#fff7ed', color: '#ea580c', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer' }}
+                                  >
+                                    Request Return
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            </>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { 
-  X, 
-  CheckCircle2, 
-  Package, 
-  Truck, 
-  MapPin, 
-  Clock, 
-  AlertCircle, 
+import {
+  X,
+  CheckCircle2,
+  Package,
+  Truck,
+  MapPin,
+  Clock,
+  AlertCircle,
   ShoppingBag,
   RotateCcw,
   XCircle,

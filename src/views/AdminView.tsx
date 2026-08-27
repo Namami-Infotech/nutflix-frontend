@@ -235,8 +235,8 @@ export default function AdminView() {
       reader.onloadend = () => {
         if (reader.result) {
           setAdminCropperSrc(reader.result as string);
-          setAdminCropperAspect(1920 / 650); // 1920x650 low height ratio for hero banner
-          setAdminCropperTitle('Crop Hero Banner Image (1920×650 Low Height)');
+          setAdminCropperAspect(1900 / 650); // 1900x650 ratio for hero banner
+          setAdminCropperTitle('Crop Hero Banner Image (1900×650)');
           setAdminCropperTarget('banner');
           setAdminCropperOpen(true);
         }
@@ -549,7 +549,7 @@ export default function AdminView() {
   const newOrdersList = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'returned');
   const deliveredOrdersList = orders.filter(o => o.status === 'delivered');
   const cancelledOrdersList = orders.filter(o => o.status === 'cancelled' || o.status === 'returned');
-  
+
   const totalRevenue = orders
     .filter(o => o.status !== 'cancelled' && o.status !== 'returned')
     .reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0);
@@ -924,7 +924,7 @@ export default function AdminView() {
       {productModalOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ backgroundColor: '#ffffff', width: '100%', maxWidth: '820px', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            
+
             {/* Modal Header */}
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff' }}>
               <div>
@@ -1023,7 +1023,7 @@ export default function AdminView() {
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
                       Product Image *
                     </label>
-                    
+
                     {/* Integrated File Upload & Preview Box */}
                     <div style={{
                       border: '2px dashed #0284c7',
@@ -1227,7 +1227,7 @@ export default function AdminView() {
       {categoryModalOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ backgroundColor: '#ffffff', width: '100%', maxWidth: '780px', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            
+
             {/* Modal Header */}
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff' }}>
               <div>
@@ -1337,7 +1337,7 @@ export default function AdminView() {
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
                       Category Cover Image *
                     </label>
-                    
+
                     {/* Integrated File Upload & Preview Box */}
                     <div style={{
                       border: '2px dashed #8b5cf6',
@@ -1439,7 +1439,7 @@ export default function AdminView() {
       {bannerModalOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ backgroundColor: '#ffffff', width: '100%', maxWidth: '780px', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            
+
             {/* Modal Header */}
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff' }}>
               <div>
@@ -1499,7 +1499,7 @@ export default function AdminView() {
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
                       Banner Image *
                     </label>
-                    
+
                     {/* Integrated File Upload & Preview Box */}
                     <div style={{
                       border: '2px dashed #f59e0b',

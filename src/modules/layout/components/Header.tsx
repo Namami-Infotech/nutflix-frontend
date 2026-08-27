@@ -55,7 +55,7 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
       try {
         const parsed = JSON.parse(keywords);
         if (Array.isArray(parsed)) return parsed.some(k => String(k).toLowerCase().includes(q));
-      } catch (e) {}
+      } catch (e) { }
       return keywords.toLowerCase().includes(q);
     }
     return false;
@@ -63,28 +63,28 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
 
   const matchedCategories = debouncedQuery.trim()
     ? categoriesList.filter(c => {
-        const q = debouncedQuery.toLowerCase();
-        return (
-          c.name.toLowerCase().includes(q) ||
-          c.slug.toLowerCase().includes(q) ||
-          matchKeyword(c.keywords, q)
-        );
-      }).slice(0, 3)
+      const q = debouncedQuery.toLowerCase();
+      return (
+        c.name.toLowerCase().includes(q) ||
+        c.slug.toLowerCase().includes(q) ||
+        matchKeyword(c.keywords, q)
+      );
+    }).slice(0, 3)
     : [];
 
   const matchedProducts = debouncedQuery.trim()
     ? productsList.filter(p => {
-        const q = debouncedQuery.toLowerCase();
-        const cat = categoriesList.find(c => c.id === p.categoryId);
-        return (
-          p.name.toLowerCase().includes(q) ||
-          (p.description && p.description.toLowerCase().includes(q)) ||
-          (p.origin && p.origin.toLowerCase().includes(q)) ||
-          matchKeyword(p.keywords, q) ||
-          (cat && cat.name.toLowerCase().includes(q)) ||
-          (cat && matchKeyword(cat.keywords, q))
-        );
-      }).slice(0, 5)
+      const q = debouncedQuery.toLowerCase();
+      const cat = categoriesList.find(c => c.id === p.categoryId);
+      return (
+        p.name.toLowerCase().includes(q) ||
+        (p.description && p.description.toLowerCase().includes(q)) ||
+        (p.origin && p.origin.toLowerCase().includes(q)) ||
+        matchKeyword(p.keywords, q) ||
+        (cat && cat.name.toLowerCase().includes(q)) ||
+        (cat && matchKeyword(cat.keywords, q))
+      );
+    }).slice(0, 5)
     : [];
 
   const handleSearchSubmit = (e: React.FormEvent) => {

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Product, formatWeightAndUnit } from '@/lib/api';
 import { useCart } from '../../cart/cart.context';
 import { useAuth } from '@/modules/auth';
-import { Star, ShoppingBag, Heart, Eye } from 'lucide-react';
+import { Star, ShoppingBag, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props {
@@ -150,14 +150,6 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             <p className="product-desc" style={{ cursor: 'pointer' }}>{product.description}</p>
           </Link>
 
-          {/* Impact Tag */}
-          {product.impactDescription && (
-            <div className="product-impact-tag">
-              <Heart size={12} fill="var(--color-gold)" color="var(--color-gold)" style={{ flexShrink: 0, marginTop: 1 }} />
-              <span className="impact-text">{product.impactDescription}</span>
-            </div>
-          )}
-
           {/* Stock Quantity / Out of Stock Indicator */}
           <div style={{ marginBottom: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.74rem' }}>
             {isOutOfStock ? (
@@ -193,12 +185,12 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             style={
               isOutOfStock || isAdmin
                 ? {
-                    backgroundColor: '#e2e8f0',
-                    color: '#94a3b8',
-                    cursor: 'not-allowed',
-                    boxShadow: 'none',
-                    border: '1px solid #cbd5e1',
-                  }
+                  backgroundColor: '#e2e8f0',
+                  color: '#94a3b8',
+                  cursor: 'not-allowed',
+                  boxShadow: 'none',
+                  border: '1px solid #cbd5e1',
+                }
                 : {}
             }
             title={isOutOfStock ? 'Item is Out of Stock' : isAdmin ? 'Admin accounts cannot add to cart' : 'Add to Basket'}
@@ -331,26 +323,7 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           overflow: hidden;
         }
 
-        .product-impact-tag {
-          display: flex;
-          align-items: flex-start;
-          gap: 0.35rem;
-          font-size: 0.72rem;
-          font-weight: 600;
-          color: #794d13;
-          background-color: var(--color-gold-light);
-          padding: 0.35rem 0.55rem;
-          border-radius: 6px;
-          margin-bottom: 0.8rem;
-          line-height: 1.3;
-        }
 
-        .impact-text {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
 
         .product-card-footer {
           display: flex;
@@ -392,11 +365,7 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           .product-desc {
             display: none;
           }
-          .product-impact-tag {
-            padding: 0.25rem 0.45rem;
-            font-size: 0.68rem;
-            margin-bottom: 0.6rem;
-          }
+
           .price-main {
             font-size: 1.02rem;
           }
