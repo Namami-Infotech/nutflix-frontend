@@ -150,25 +150,6 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             <p className="product-desc" style={{ cursor: 'pointer' }}>{product.description}</p>
           </Link>
 
-          {/* Stock Quantity / Out of Stock Indicator */}
-          <div style={{ marginBottom: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.74rem' }}>
-            {isOutOfStock ? (
-              <span style={{ color: '#dc2626', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#dc2626' }}></span>
-                Out of Stock (0 units)
-              </span>
-            ) : stockNum <= 5 ? (
-              <span style={{ color: '#ea580c', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#ea580c' }}></span>
-                Only {stockNum} left in stock!
-              </span>
-            ) : (
-              <span style={{ color: '#15803d', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span>
-                Quantity: <strong>{stockNum} in stock</strong>
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Pricing & Add to Cart Action */}

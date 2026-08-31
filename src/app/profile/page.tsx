@@ -547,8 +547,13 @@ export default function UserProfilePage() {
                             <div>
                               <span style={{ fontSize: '0.75rem', color: '#888', textTransform: 'uppercase', fontWeight: 800 }}>Payment Mode</span>
                               <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#3b82f6' }}>
-                                💳 {ord.paymentMethod || (ord.paymentType === 'cash' ? 'Cash on Delivery' : 'Online / UPI')}
+                                💳 {ord.paymentMethod?.split('(')[0]?.trim() || (ord.paymentType === 'cash' ? 'Cash on Delivery' : 'Online / UPI')}
                               </div>
+                              {(ord.transactionId || ord.razorpayPaymentId || (ord.paymentMethod && ord.paymentMethod.includes('pay_'))) && (
+                                <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 700, fontFamily: 'monospace', marginTop: '2px' }}>
+                                  Txn: {ord.transactionId || ord.razorpayPaymentId || ord.paymentMethod.match(/pay_[a-zA-Z0-9]+/)?.[0]}
+                                </div>
+                              )}
                             </div>
 
                             <div>

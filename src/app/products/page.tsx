@@ -247,9 +247,9 @@ function CatalogContent() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text-muted)' }}>
+            {/* <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text-muted)' }}>
               Showing {displayedProducts.length} of {sortedProducts.length} items
-            </span>
+            </span> */}
             <ProductSort sortBy={sortBy} onSortChange={setSortBy} />
           </div>
         </div>

@@ -121,13 +121,14 @@ export default function AdminSidebar({
               alignItems: 'center',
               textDecoration: 'none',
               minWidth: 0,
+              flex: 1,
             }}
             title="NUTFLIX Storefront"
           >
             {effectiveCollapsed ? (
-              <BrandLogo width={40} height={28} variant="dark" showAdminBadge={false} />
+              <BrandLogo width={42} height={32} variant="dark" />
             ) : (
-              <BrandLogo width={135} height={38} variant="dark" showAdminBadge={true} />
+              <BrandLogo width="100%" height={52} variant="dark" />
             )}
           </Link>
 

@@ -18,8 +18,8 @@ export default function NewOrdersView({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  const filteredOrders = orders.filter(
-    o => (!searchQuery || o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredOrders = (orders || []).filter(
+    o => (!searchQuery || (o?.orderNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) || (o?.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const totalPages = Math.ceil(filteredOrders.length / pageSize) || 1;
@@ -73,9 +73,33 @@ export default function NewOrdersView({
                   ₹{ord.totalAmount}
                 </td>
                 <td style={{ padding: '0.55rem 0.75rem' }}>
-                  <span style={{ backgroundColor: '#f1f5f9', color: '#334155', padding: '0.2rem 0.5rem', borderRadius: '6px', fontWeight: 700, fontSize: '0.72rem' }}>
-                    {ord.paymentMethod || 'UPI'}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'flex-start' }}>
+                    <span style={{ backgroundColor: '#f1f5f9', color: '#334155', padding: '0.2rem 0.5rem', borderRadius: '6px', fontWeight: 700, fontSize: '0.72rem' }}>
+                      {ord.paymentMethod?.split('(')[0]?.trim() || (ord.paymentType === 'cash' ? 'Cash on Delivery' : 'Online / UPI')}
+                    </span>
+                    {(ord.transactionId || ord.razorpayPaymentId || (ord.paymentMethod && ord.paymentMethod.includes('pay_'))) && (
+                      <span
+                        title={ord.transactionId || ord.razorpayPaymentId || ord.paymentMethod}
+                        style={{
+                          backgroundColor: '#ecfdf5',
+                          color: '#065f46',
+                          border: '1px solid #a7f3d0',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '4px',
+                          fontWeight: 700,
+                          fontSize: '0.66rem',
+                          fontFamily: 'monospace',
+                          display: 'inline-block',
+                          maxWidth: '130px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        Txn: {ord.transactionId || ord.razorpayPaymentId || ord.paymentMethod.match(/pay_[a-zA-Z0-9]+/)?.[0] || ord.paymentMethod}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td style={{ padding: '0.55rem 0.75rem', borderTopRightRadius: '8px', borderBottomRightRadius: '8px' }}>
                   <select

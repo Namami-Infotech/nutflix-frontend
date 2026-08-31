@@ -421,7 +421,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
                   <Package size={18} />
-                  <span>Cashews & Nuts</span>
+                  <span>Categories</span>
                 </div>
                 <ChevronRight size={15} color="var(--color-text-muted)" />
               </Link>
@@ -531,6 +531,28 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
                 <ChevronRight size={15} color="var(--color-text-muted)" />
               </Link>
 
+              {/* Return & Refund Policy */}
+              <Link
+                href="/refund-policy"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0.65rem 0.8rem',
+                  borderRadius: '10px',
+                  color: pathname === '/refund-policy' ? 'var(--color-gold)' : 'var(--color-forest)',
+                  fontWeight: pathname === '/refund-policy' ? 800 : 600,
+                  fontSize: '0.9rem',
+                  textDecoration: 'none',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                  <Package size={18} color="var(--color-gold)" />
+                  <span>Return &amp; Refund Policy</span>
+                </div>
+                <ChevronRight size={15} color="var(--color-text-muted)" />
+              </Link>
+
               {/* Shipping & Delivery Policy */}
               <Link
                 href="/shipping-policy"
@@ -565,39 +587,31 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
             }}
           >
             <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>
-              Need Help? Contact Us
+              NUTFLIX (Darshan Techno System)
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.78rem' }}>
               <a
-                href="tel:+919876543210"
+                href="tel:9330193041"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem',
                   color: 'var(--color-forest)',
                   textDecoration: 'none',
-                  fontWeight: 600,
+                  fontWeight: 700,
                 }}
               >
                 <Phone size={14} color="var(--color-gold)" />
-                +91 98765 43210
+                9330193041
               </a>
-              <a
-                href="mailto:support@nutflix.in"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  color: 'var(--color-forest)',
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                }}
-              >
-                <Mail size={14} color="var(--color-gold)" />
-                support@nutflix.in
-              </a>
+              <div style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem', lineHeight: '1.4' }}>
+                📍 43, Karaya Road, Kolkata – 700017
+              </div>
+              <div style={{ color: 'var(--color-gold)', fontSize: '0.72rem', fontWeight: 700 }}>
+                FSSAI Lic.: 22826039000325
+              </div>
               <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                🕒 Mon - Sat: 9:00 AM - 7:00 PM
+                🌐 www.nutflix.in
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { MapPin, Phone, Mail, MessageSquare, Clock, Send, CheckCircle2, ShieldCheck, Headphones } from 'lucide-react';
+import { MapPin, Phone, Globe, MessageSquare, Clock, Send, CheckCircle2, ShieldCheck, Headphones, Award } from 'lucide-react';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -19,7 +19,6 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate brief network submission
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
@@ -58,14 +57,17 @@ export default function ContactPage() {
             }}
           >
             <Headphones size={16} />
-            <span>We&apos;re Here to Help</span>
+            <span>Support &amp; Inquiries</span>
           </div>
           <h1 style={{ fontSize: '2.9rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.02em', color: '#ffffff' }}>
             Contact Us
           </h1>
-          <p style={{ fontSize: '1.08rem', color: 'var(--color-cream)', lineHeight: '1.6', maxWidth: '600px', margin: '0 auto' }}>
-            Have a question about your order, bulk dry fruit inquiries, or feedback? Reach out to our Kolkata team anytime.
+          <p style={{ fontSize: '1.08rem', color: 'var(--color-cream)', lineHeight: '1.6', maxWidth: '640px', margin: '0 auto' }}>
+            For orders, product enquiries, delivery assistance, returns, refunds or other support, we are here to assist you.
           </p>
+          <div style={{ marginTop: '0.8rem', fontSize: '0.92rem', color: 'var(--color-gold)', fontWeight: 800 }}>
+            NUTFLIX – Quality Dry Fruits, Delivered Fresh.
+          </div>
         </div>
       </section>
 
@@ -82,57 +84,17 @@ export default function ContactPage() {
           {/* Left Column: Direct Contact Information Cards */}
           <div>
             <div style={{ marginBottom: '2rem' }}>
-              <span className="badge-impact" style={{ marginBottom: '0.6rem' }}>Customer Desk</span>
+              <span className="badge-impact" style={{ marginBottom: '0.6rem' }}>Reach Our Team</span>
               <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.6rem' }}>
-                Get in Touch Directly
+                Customer Care &amp; Office
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-                Whether you need assistance with an existing order or want to discuss custom gift hampers, our team is just a call or message away.
+                NUTFLIX is a brand of Darshan Techno System, serving customers through both online and offline channels.
               </p>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {/* Address Card */}
-              <div
-                style={{
-                  backgroundColor: '#ffffff',
-                  padding: '1.5rem',
-                  borderRadius: '20px',
-                  border: '1px solid var(--color-border)',
-                  boxShadow: 'var(--shadow-sm)',
-                  display: 'flex',
-                  gap: '1.2rem',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div
-                  style={{
-                    padding: '0.85rem',
-                    borderRadius: '16px',
-                    backgroundColor: 'var(--color-gold-light)',
-                    color: '#794d13',
-                    flexShrink: 0,
-                  }}
-                >
-                  <MapPin size={24} />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
-                    Registered Address
-                  </h3>
-                  <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', lineHeight: '1.5', fontWeight: 600 }}>
-                    43, KARAYA ROAD, KOLKATA – 700017
-                  </p>
-                  <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
-                    West Bengal, India
-                  </p>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-gold)', fontWeight: 800, marginTop: '0.4rem' }}>
-                    DARSHAN TECHNO SYSTEM (GSTIN: 19ADZPG6957G3ZN)
-                  </div>
-                </div>
-              </div>
-
-              {/* Phone / Call Card */}
+              {/* Phone / Call / WhatsApp Card */}
               <div
                 style={{
                   backgroundColor: '#ffffff',
@@ -158,36 +120,43 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
-                    Phone Support
+                    Phone &amp; WhatsApp Support
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <a
-                      href="tel:9830055527"
-                      style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--color-forest)', textDecoration: 'none' }}
+                      href="tel:9330193041"
+                      style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--color-forest)', textDecoration: 'none' }}
                     >
-                      +91 98300-55527
+                      9330193041
                     </a>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                      Available for orders, enquiries, deliveries, returns &amp; refunds.
+                    </p>
+                  </div>
+                  <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                     <a
                       href="tel:9330193041"
-                      style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', textDecoration: 'none' }}
-                    >
-                      Alternative: +91 9330193041
-                    </a>
-                  </div>
-                  <div style={{ marginTop: '0.75rem' }}>
-                    <a
-                      href="tel:9830055527"
                       className="btn-primary"
                       style={{ padding: '0.5rem 1.2rem', fontSize: '0.82rem', borderRadius: 'var(--radius-pill)', display: 'inline-flex', gap: '0.4rem' }}
                     >
                       <Phone size={14} />
-                      <span>Call Now</span>
+                      <span>Call: 9330193041</span>
+                    </a>
+                    <a
+                      href="https://wa.me/919330193041"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary"
+                      style={{ padding: '0.5rem 1.2rem', fontSize: '0.82rem', borderRadius: 'var(--radius-pill)', display: 'inline-flex', gap: '0.4rem' }}
+                    >
+                      <MessageSquare size={14} />
+                      <span>WhatsApp</span>
                     </a>
                   </div>
                 </div>
               </div>
 
-              {/* WhatsApp & Email Card */}
+              {/* Website & FSSAI Card */}
               <div
                 style={{
                   backgroundColor: '#ffffff',
@@ -209,52 +178,69 @@ export default function ContactPage() {
                     flexShrink: 0,
                   }}
                 >
-                  <MessageSquare size={24} />
+                  <Globe size={24} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
-                    WhatsApp & Email
+                    Website &amp; Regulatory
                   </h3>
                   <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
-                    <strong>Email:</strong>{' '}
-                    <a href="mailto:agr@guharoy.com" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>
-                      agr@guharoy.com
+                    <strong>Official Website:</strong>{' '}
+                    <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>
+                      www.nutflix.in
                     </a>
                   </p>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
-                    <strong>WhatsApp:</strong> +91 98300-55527
-                  </p>
-                  <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                    <a
-                      href="https://wa.me/919830055527"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-secondary"
-                      style={{ padding: '0.5rem 1.2rem', fontSize: '0.82rem', borderRadius: 'var(--radius-pill)', display: 'inline-flex', gap: '0.4rem' }}
-                    >
-                      <MessageSquare size={14} />
-                      <span>Chat on WhatsApp</span>
-                    </a>
+                  <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.8rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--color-forest)', fontWeight: 800 }}>
+                      FSSAI LICENSE NO.
+                    </div>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 900, color: 'var(--color-gold)' }}>
+                      22826039000325
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Working Hours */}
+              {/* Registered Office Address Card */}
               <div
                 style={{
-                  backgroundColor: 'var(--color-cream-light)',
-                  padding: '1.25rem 1.5rem',
-                  borderRadius: '16px',
+                  backgroundColor: '#ffffff',
+                  padding: '1.5rem',
+                  borderRadius: '20px',
                   border: '1px solid var(--color-border)',
+                  boxShadow: 'var(--shadow-sm)',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
+                  gap: '1.2rem',
+                  alignItems: 'flex-start',
                 }}
               >
-                <Clock size={22} color="var(--color-gold)" style={{ flexShrink: 0 }} />
+                <div
+                  style={{
+                    padding: '0.85rem',
+                    borderRadius: '16px',
+                    backgroundColor: 'var(--color-gold-light)',
+                    color: '#794d13',
+                    flexShrink: 0,
+                  }}
+                >
+                  <MapPin size={24} />
+                </div>
                 <div>
-                  <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.9rem' }}>Business Hours</div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Monday – Saturday: 10:00 AM to 7:00 PM IST (Sunday Closed)</div>
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
+                    Registered Office
+                  </h3>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', lineHeight: '1.5', fontWeight: 600 }}>
+                    43, Karaya Road
+                  </p>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', lineHeight: '1.5', fontWeight: 600 }}>
+                    Kolkata – 700017
+                  </p>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
+                    West Bengal, India
+                  </p>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-gold)', fontWeight: 800, marginTop: '0.4rem' }}>
+                    A Brand of Darshan Techno System
+                  </div>
                 </div>
               </div>
             </div>
@@ -274,7 +260,7 @@ export default function ContactPage() {
               Send Us a Message
             </h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', marginBottom: '1.8rem' }}>
-              Fill in your inquiry details below and our team will get back to you within 24 business hours.
+              Fill in your inquiry details below and our team will get back to you promptly.
             </p>
 
             {submitted ? (
@@ -303,10 +289,10 @@ export default function ContactPage() {
                   <CheckCircle2 size={36} />
                 </div>
                 <h4 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>
-                  Thank You for Reaching Out!
+                  Thank You for Contacting NUTFLIX!
                 </h4>
                 <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.6', maxWidth: '380px', margin: '0 auto 1.5rem' }}>
-                  Your message has been received. Our support team at Karaya Road, Kolkata will review your request and contact you promptly.
+                  Your message has been received. Our team at 43, Karaya Road, Kolkata will assist you shortly.
                 </p>
                 <button
                   type="button"
@@ -412,11 +398,11 @@ export default function ContactPage() {
                     }}
                   >
                     <option value="">Select Topic...</option>
-                    <option value="Order Status / Tracking">Order Status / Tracking</option>
-                    <option value="Bulk / Corporate Gift Hamper Inquiry">Bulk / Corporate Gift Hamper Inquiry</option>
-                    <option value="Return / Replacement Request">Return / Replacement Request</option>
-                    <option value="Product Quality / Ingredients Query">Product Quality / Ingredients Query</option>
-                    <option value="General Feedback">General Feedback</option>
+                    <option value="Order Status / Delivery Assistance">Order Status / Delivery Assistance</option>
+                    <option value="Product Enquiries">Product Enquiries</option>
+                    <option value="Return / Refund Request">Return / Refund Request</option>
+                    <option value="Bulk / Wholesale Inquiry">Bulk / Wholesale Inquiry</option>
+                    <option value="General Support">General Support</option>
                   </select>
                 </div>
 
@@ -427,7 +413,7 @@ export default function ContactPage() {
                   <textarea
                     required
                     rows={4}
-                    placeholder="Please mention your query or Order ID..."
+                    placeholder="Please write your query, order ID, or product requirement..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     style={{
@@ -460,45 +446,6 @@ export default function ContactPage() {
                 </button>
               </form>
             )}
-          </div>
-        </div>
-
-        {/* Map / Location Showcase */}
-        <div
-          style={{
-            marginTop: '3.5rem',
-            backgroundColor: '#ffffff',
-            borderRadius: '24px',
-            padding: '2rem 2.5rem',
-            border: '1px solid var(--color-border)',
-            boxShadow: 'var(--shadow-sm)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '2rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div>
-            <span className="badge-impact" style={{ marginBottom: '0.4rem' }}>Central Kolkata Hub</span>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
-              Visit Our Kolkata Office & Distribution Center
-            </h3>
-            <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)' }}>
-              DARSHAN TECHNO SYSTEM • 43, KARAYA ROAD, KOLKATA – 700017, West Bengal
-            </p>
-          </div>
-          <div>
-            <a
-              href="https://maps.google.com/?q=43+Karaya+Road+Kolkata+700017"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-outline"
-              style={{ display: 'inline-flex', gap: '0.5rem', alignItems: 'center' }}
-            >
-              <MapPin size={16} />
-              <span>View On Google Maps</span>
-            </a>
           </div>
         </div>
       </div>

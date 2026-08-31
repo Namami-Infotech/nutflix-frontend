@@ -2,14 +2,33 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/modules/cart';
-import { submitOrder, fetchPaymentTypes, PaymentType, getAuthToken } from '@/lib/api';
+import { submitOrder, fetchPaymentTypes, PaymentType, getAuthToken, createRazorpayOrder, verifyRazorpayPayment, getRazorpayKey } from '@/lib/api';
 import { useAuth } from '@/modules/auth';
-import { ShoppingBag, ShieldCheck, CheckCircle2, ArrowRight, Truck, CreditCard, Banknote, User, Lock } from 'lucide-react';
+import { ShoppingBag, ShieldCheck, CheckCircle2, ArrowRight, Truck, CreditCard, Banknote, User, Lock, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+
+// Dynamically load Razorpay standard Checkout script
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') return resolve(false);
+    if ((window as any).Razorpay) return resolve(true);
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => {
+      console.error('Failed to load Razorpay SDK');
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+};
 
 export const CheckoutForm: React.FC = () => {
   const { items, subtotal, clearCart } = useCart();
   const { isLoggedIn, user, openLoginModal } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
@@ -18,7 +37,12 @@ export const CheckoutForm: React.FC = () => {
   const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<string>('online');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [orderComplete, setOrderComplete] = useState<any | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -28,12 +52,21 @@ export const CheckoutForm: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
+    // Preload Razorpay SDK script in the background
+    loadRazorpayScript();
+
     async function loadPayments() {
-      const types = await fetchPaymentTypes();
-      const active = types.filter((t) => t.status === 'active');
-      setPaymentTypes(active);
-      if (active.length > 0) {
-        setSelectedPayment(active[0].code);
+      try {
+        const types = await fetchPaymentTypes();
+        const active = (types || []).filter((t) => t.status === 'active');
+        setPaymentTypes(active);
+        if (active.length > 0) {
+          setSelectedPayment((prev) => (active.some((t) => t.code === prev) ? prev : active[0].code));
+        } else {
+          setSelectedPayment('');
+        }
+      } catch (err) {
+        console.error('Error loading payment types:', err);
       }
     }
     loadPayments();
@@ -41,17 +74,24 @@ export const CheckoutForm: React.FC = () => {
 
   const shippingCost = subtotal >= 30 ? 0 : 3.99;
   const totalAmount = subtotal + shippingCost;
+  const isOnlineActive = paymentTypes.some((t) => t.code === 'online');
+  const isCashActive = paymentTypes.some((t) => t.code === 'cash');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
+    setErrorMessage('');
 
-    setLoading(true);
-    const fullAddress = `${shippingAddress}, ${city}, ${postalCode}`;
+    if (!selectedPayment) {
+      setErrorMessage('Please select a payment method.');
+      return;
+    }
+
+    const fullAddress = `${shippingAddress.trim()}, ${city.trim()}, ${postalCode.trim()}`;
 
     const orderPayload = {
-      customerName,
-      customerEmail,
+      customerName: customerName.trim(),
+      customerEmail: customerEmail.trim().toLowerCase(),
       shippingAddress: fullAddress,
       paymentType: selectedPayment,
       totalAmount,
@@ -59,17 +99,137 @@ export const CheckoutForm: React.FC = () => {
         productId: item.product.id,
         quantity: item.quantity,
         price: parseFloat(item.product.price),
+        name: item.product.name,
+        imageUrl: item.product.imageUrl,
       })),
     };
 
-    const res = await submitOrder(orderPayload);
-    setLoading(false);
+    // If Cash on Delivery is selected
+    if (selectedPayment === 'cash') {
+      setLoading(true);
+      try {
+        const res = await submitOrder(orderPayload);
+        setLoading(false);
+        if (res.success && res.data) {
+          setOrderComplete(res.data);
+          clearCart();
+        } else {
+          setErrorMessage(res.message || 'Failed to place Cash on Delivery order.');
+        }
+      } catch (err: any) {
+        setLoading(false);
+        setErrorMessage(err?.message || 'Error processing COD order.');
+      }
+      return;
+    }
 
-    if (res.success) {
-      setOrderComplete(res.data);
-      clearCart();
+    // Razorpay Online Gateway Checkout Flow
+    setLoading(true);
+
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || !(window as any).Razorpay) {
+      setLoading(false);
+      setErrorMessage('Unable to load Razorpay payment gateway. Please check your internet connection or try again.');
+      return;
+    }
+
+    try {
+      // 1. Create Razorpay Order on Backend
+      const orderRes = await createRazorpayOrder({
+        amount: totalAmount,
+        currency: 'INR',
+        receipt: `nutflix_${Date.now()}`,
+        notes: {
+          customerName: orderPayload.customerName,
+          customerEmail: orderPayload.customerEmail,
+          address: fullAddress,
+        },
+      });
+
+      if (!orderRes || (!orderRes.id && !orderRes.data?.id)) {
+        setLoading(false);
+        setErrorMessage(orderRes?.message || 'Could not initialize payment with Razorpay.');
+        return;
+      }
+
+      const rzpOrderData = orderRes.data || orderRes;
+      const keyId = rzpOrderData.keyId || (await getRazorpayKey()) || 'rzp_test_RqJtOyGfDiW0vw';
+
+      // 2. Configure Razorpay Standard Checkout options
+      const options = {
+        key: keyId,
+        amount: rzpOrderData.amount, // in paise
+        currency: rzpOrderData.currency || 'INR',
+        name: 'Nutflix Tanzania',
+        description: `Order Checkout (₹${totalAmount.toFixed(2)})`,
+        order_id: rzpOrderData.id,
+        prefill: {
+          name: customerName,
+          email: customerEmail,
+        },
+        theme: {
+          color: '#1b4332',
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+          },
+        },
+        handler: async (response: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) => {
+          try {
+            setLoading(true);
+            // 3. Verify Razorpay Payment Signature on Backend & Confirm Order
+            const verifyRes = await verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              orderData: orderPayload,
+            });
+
+            setLoading(false);
+            if (verifyRes && (verifyRes.success || verifyRes.data)) {
+              setOrderComplete(verifyRes.data || verifyRes);
+              clearCart();
+            } else {
+              setErrorMessage(verifyRes?.message || 'Payment verification failed. Please contact support if your account was charged.');
+            }
+          } catch (err: any) {
+            setLoading(false);
+            setErrorMessage(err?.message || 'Error confirming payment verification.');
+          }
+        },
+      };
+
+      const razorpayInstance = new (window as any).Razorpay(options);
+
+      razorpayInstance.on('payment.failed', (response: any) => {
+        setLoading(false);
+        setErrorMessage(response?.error?.description || 'Payment was unsuccessful or cancelled by user.');
+      });
+
+      razorpayInstance.open();
+    } catch (err: any) {
+      setLoading(false);
+      setErrorMessage(err?.message || 'An unexpected error occurred during Razorpay checkout.');
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="container" style={{ padding: '5rem 1rem', maxWidth: '600px', textAlign: 'center' }}>
+        <div style={{ padding: '3rem 2rem', backgroundColor: '#ffffff', borderRadius: '24px', border: '1px solid var(--color-border)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <Loader2 size={32} className="animate-spin" color="var(--color-forest)" />
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.95rem' }}>Loading checkout securely...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (orderComplete) {
     return (
@@ -103,8 +263,25 @@ export const CheckoutForm: React.FC = () => {
           </h1>
           <p style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
             Thank you, <strong>{orderComplete.customerName}</strong>! Your order number is{' '}
-            <strong style={{ color: 'var(--color-forest)' }}>#{orderComplete.orderNumber}</strong>.
+            <strong style={{ color: 'var(--color-forest)' }}>#{orderComplete.orderNumber || orderComplete.customId || orderComplete.id}</strong>.
           </p>
+
+          {(orderComplete.transactionId || orderComplete.razorpayPaymentId) && (
+            <div
+              style={{
+                backgroundColor: '#ecfdf5',
+                border: '1px solid #10b981',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                fontSize: '0.85rem',
+                color: '#065f46',
+                marginBottom: '1.5rem',
+                textAlign: 'center',
+              }}
+            >
+              ✅ <strong>Transaction ID:</strong> <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{orderComplete.transactionId || orderComplete.razorpayPaymentId}</span>
+            </div>
+          )}
 
           <div
             style={{
@@ -118,8 +295,8 @@ export const CheckoutForm: React.FC = () => {
             }}
           >
             <div style={{ fontWeight: 800, marginBottom: '0.4rem' }}>🌟 Impact Created with this Order:</div>
-            <div>• Directly supported 3 smallholder farmer households</div>
-            <div>• Funded essential health checks in Southern Tanzania</div>
+            <div>• Directly supported smallholder farmer households</div>
+            <div>• Funded sustainable community farming in Tanzania</div>
           </div>
 
           <Link href="/" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
@@ -267,6 +444,26 @@ export const CheckoutForm: React.FC = () => {
         Secure Checkout
       </h1>
 
+      {errorMessage && (
+        <div
+          style={{
+            backgroundColor: '#fef2f2',
+            border: '1.5px solid #ef4444',
+            padding: '1rem 1.25rem',
+            borderRadius: '14px',
+            color: '#b91c1c',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <AlertCircle size={22} style={{ flexShrink: 0 }} />
+          <div>{errorMessage}</div>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '2.5rem', alignItems: 'flex-start' }}>
         {/* Form Left */}
         <form onSubmit={handleSubmit} style={{ backgroundColor: '#ffffff', padding: '1.75rem', borderRadius: '24px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
@@ -325,7 +522,7 @@ export const CheckoutForm: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="London"
+                  placeholder="London / Mumbai"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
@@ -338,7 +535,7 @@ export const CheckoutForm: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="SW1A 1AA"
+                  placeholder="400001"
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
                   style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
@@ -352,80 +549,142 @@ export const CheckoutForm: React.FC = () => {
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem' }}>
-            {paymentTypes.length > 0 ? (
-              paymentTypes.map((pt) => {
-                const isSelected = selectedPayment === pt.code;
-                const isCash = pt.code === 'cash';
-                return (
-                  <div
-                    key={pt.id}
-                    onClick={() => setSelectedPayment(pt.code)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '1rem',
-                      padding: '1rem',
-                      borderRadius: '14px',
-                      border: isSelected ? '2px solid var(--color-gold)' : '1.5px solid var(--color-border)',
-                      backgroundColor: isSelected ? 'var(--color-gold-light)' : '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentType"
-                      checked={isSelected}
-                      onChange={() => setSelectedPayment(pt.code)}
-                      style={{ width: '18px', height: '18px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
-                    />
-                    {isCash ? <Banknote size={24} color="var(--color-forest)" /> : <CreditCard size={24} color="var(--color-forest)" />}
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--color-forest)' }}>
-                        {isCash ? 'Cash on Delivery (COD)' : 'UPI Payment (Google Pay / PhonePe / Paytm / BHIM UPI)'}
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-                        {isCash ? 'Pay cash upon delivery at your doorstep' : 'Fast & instant UPI payment'}
-                      </div>
-                    </div>
+            {/* Razorpay Online Option */}
+            {isOnlineActive && (
+              <div
+                onClick={() => setSelectedPayment('online')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '1rem 1.15rem',
+                  borderRadius: '14px',
+                  border: selectedPayment === 'online' ? '2px solid var(--color-gold)' : '1.5px solid var(--color-border)',
+                  backgroundColor: selectedPayment === 'online' ? 'var(--color-gold-light)' : '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="paymentType"
+                  checked={selectedPayment === 'online'}
+                  onChange={() => setSelectedPayment('online')}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+                />
+                <CreditCard size={26} color="var(--color-forest)" />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.94rem', color: 'var(--color-forest)' }}>
+                      Razorpay Secure Payment
+                    </span>
+                    <span style={{ backgroundColor: '#2563eb', color: '#ffffff', fontSize: '0.68rem', fontWeight: 800, padding: '2px 7px', borderRadius: '6px' }}>
+                      UPI / Cards / NetBanking
+                    </span>
                   </div>
-                );
-              })
-            ) : (
-              <div style={{ padding: '1rem', border: '1px solid var(--color-border)', borderRadius: '12px', fontSize: '0.88rem' }}>
-                UPI Payment & Cash on Delivery Available
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                    Pay securely via Google Pay, PhonePe, Paytm, BHIM, Cards & NetBanking
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Cash on Delivery Option */}
+            {isCashActive && (
+              <div
+                onClick={() => setSelectedPayment('cash')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '1rem 1.15rem',
+                  borderRadius: '14px',
+                  border: selectedPayment === 'cash' ? '2px solid var(--color-gold)' : '1.5px solid var(--color-border)',
+                  backgroundColor: selectedPayment === 'cash' ? 'var(--color-gold-light)' : '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="paymentType"
+                  checked={selectedPayment === 'cash'}
+                  onChange={() => setSelectedPayment('cash')}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+                />
+                <Banknote size={26} color="var(--color-forest)" />
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '0.94rem', color: 'var(--color-forest)' }}>
+                    Cash on Delivery (COD)
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                    Pay with cash upon delivery at your doorstep
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* No active payment methods alert */}
+            {!isOnlineActive && !isCashActive && (
+              <div style={{ padding: '1rem 1.2rem', borderRadius: '14px', border: '1.5px dashed #fca5a5', backgroundColor: '#fef2f2', color: '#b91c1c', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <AlertCircle size={20} />
+                <span>Currently no payment methods are enabled. Please contact support.</span>
               </div>
             )}
           </div>
 
-          <div style={{ padding: '0.9rem', borderRadius: '12px', border: '1px solid var(--color-gold)', backgroundColor: 'var(--color-gold-light)', fontSize: '0.85rem', color: '#794d13', marginBottom: '1.5rem' }}>
-            🔒 Test Mode Enabled: Click "Complete Order" to simulate instant payment confirmation.
-          </div>
+          {isOnlineActive && (
+            <div style={{ padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #bfdbfe', backgroundColor: '#eff6ff', fontSize: '0.82rem', color: '#1e40af', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Lock size={16} />
+              <span>256-Bit SSL Encrypted & Secured by Razorpay Gateway</span>
+            </div>
+          )}
 
           <button
             type="submit"
-            disabled={loading || isAdmin}
+            disabled={loading || isAdmin || !selectedPayment}
             className="btn-primary"
             style={{
               width: '100%',
-              height: '50px',
-              fontSize: '0.98rem',
+              height: '52px',
+              fontSize: '1rem',
+              fontWeight: 800,
               justifyContent: 'center',
-              backgroundColor: isAdmin ? '#e2e8f0' : undefined,
-              color: isAdmin ? '#94a3b8' : undefined,
-              cursor: isAdmin ? 'not-allowed' : 'pointer',
-              border: isAdmin ? '1px solid #cbd5e1' : undefined,
-              boxShadow: isAdmin ? 'none' : undefined,
+              backgroundColor: isAdmin || !selectedPayment ? '#e2e8f0' : undefined,
+              color: isAdmin || !selectedPayment ? '#94a3b8' : undefined,
+              cursor: isAdmin || !selectedPayment ? 'not-allowed' : 'pointer',
+              border: isAdmin || !selectedPayment ? '1px solid #cbd5e1' : undefined,
+              boxShadow: isAdmin || !selectedPayment ? 'none' : undefined,
+              gap: '0.6rem',
             }}
           >
-            {loading ? 'Processing Order...' : isAdmin ? 'Admin (Cannot Place Order)' : `Complete Order • ₹${totalAmount.toFixed(2)}`}
+            {loading ? (
+              <>
+                <Loader2 size={20} className="animate-spin" />
+                <span>Processing Payment...</span>
+              </>
+            ) : isAdmin ? (
+              'Admin (Cannot Place Order)'
+            ) : !selectedPayment ? (
+              'No Payment Method Available'
+            ) : selectedPayment === 'online' ? (
+              <>
+                <CreditCard size={18} />
+                <span>Pay with Razorpay • ₹{totalAmount.toFixed(2)}</span>
+              </>
+            ) : (
+              <>
+                <Banknote size={18} />
+                <span>Place COD Order • ₹{totalAmount.toFixed(2)}</span>
+              </>
+            )}
           </button>
         </form>
 
         {/* Summary Right */}
         <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.75rem', borderRadius: '24px', border: '1px solid var(--color-border)' }}>
           <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '1.2rem' }}>
-            Order Summary ({items.length} items)
+            Order Summary ({items.length} {items.length === 1 ? 'item' : 'items'})
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem', maxHeight: '300px', overflowY: 'auto' }}>
@@ -464,3 +723,5 @@ export const CheckoutForm: React.FC = () => {
     </div>
   );
 };
+
+export default CheckoutForm;

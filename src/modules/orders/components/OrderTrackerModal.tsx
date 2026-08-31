@@ -201,8 +201,13 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({ order, isO
             <div>
               <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 800 }}>Payment Method</span>
               <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#3b82f6', marginTop: '2px' }}>
-                {order.paymentMethod || 'Prepaid / UPI'}
+                {order.paymentMethod?.split('(')[0]?.trim() || 'Prepaid / UPI'}
               </div>
+              {(order.transactionId || order.razorpayPaymentId || (order.paymentMethod && order.paymentMethod.includes('pay_'))) && (
+                <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 700, marginTop: '2px', fontFamily: 'monospace' }}>
+                  Txn: {order.transactionId || order.razorpayPaymentId || order.paymentMethod.match(/pay_[a-zA-Z0-9]+/)?.[0]}
+                </div>
+              )}
             </div>
           </div>
 

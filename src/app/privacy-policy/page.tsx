@@ -1,10 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Lock, Eye, FileText, Bell, HelpCircle, Mail, Phone, MapPin } from 'lucide-react';
+import { ShieldCheck, Lock, Eye, FileText, Bell, HelpCircle, Mail, Phone, MapPin, Globe } from 'lucide-react';
 
 export const metadata = {
-  title: 'Privacy Policy | NUTFLIX - Premium Dry Fruits',
-  description: 'Privacy Policy for NUTFLIX (Darshan Techno System). Learn how we collect, protect, and handle your personal information.',
+  title: 'Privacy Policy | NUTFLIX - Quality Dry Fruits',
+  description: 'Privacy Policy for NUTFLIX (A Brand of Darshan Techno System). Learn how we collect, protect, and handle your personal information.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -42,16 +42,16 @@ export default function PrivacyPolicyPage() {
             }}
           >
             <ShieldCheck size={16} />
-            <span>Legal & Trust</span>
+            <span>Legal & Privacy</span>
           </div>
           <h1 style={{ fontSize: '2.8rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.02em', color: '#ffffff' }}>
             Privacy Policy
           </h1>
           <p style={{ fontSize: '1.05rem', color: 'var(--color-cream)', lineHeight: '1.6', maxWidth: '640px', margin: '0 auto' }}>
-            We respect your privacy and are committed to protecting your personal data in accordance with the highest standards of data security.
+            At NUTFLIX, we respect your privacy. Learn how we handle and protect your personal information.
           </p>
           <div style={{ marginTop: '1.2rem', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-            Last Updated: {lastUpdated} • Darshan Techno System (NUTFLIX)
+            Last Updated: {lastUpdated} • NUTFLIX (A Brand of Darshan Techno System)
           </div>
         </div>
       </section>
@@ -78,32 +78,12 @@ export default function PrivacyPolicyPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
-                <Lock size={20} />
-              </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>100% Secure Data</h3>
-            </div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              Your financial transactions and payment data are encrypted with industry-standard 256-bit SSL protocols.
-            </p>
-          </div>
-
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              padding: '1.5rem',
-              borderRadius: 'var(--radius-card)',
-              border: '1px solid var(--color-border)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
                 <Eye size={20} />
               </div>
               <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>No Data Selling</h3>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              We never sell, rent, or trade your personal information to third parties for marketing campaigns.
+              We do not sell or misuse customers&apos; personal information under any circumstances.
             </p>
           </div>
 
@@ -118,12 +98,32 @@ export default function PrivacyPolicyPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
-                <Bell size={20} />
+                <Lock size={20} />
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>You Are in Control</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Purposeful Collection</h3>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              Easily manage your communication preferences or request deletion of your account at any time.
+              Information is collected solely for order fulfillment, customer support, and delivery service.
+            </p>
+          </div>
+
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              padding: '1.5rem',
+              borderRadius: 'var(--radius-card)',
+              border: '1px solid var(--color-border)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
+                <ShieldCheck size={20} />
+              </div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Secure Processing</h3>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
+              Shared only with trusted delivery partners and payment gateways when required to complete your order.
             </p>
           </div>
         </div>
@@ -140,110 +140,102 @@ export default function PrivacyPolicyPage() {
           }}
           className="policy-content"
         >
-          <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              1. Introduction
+          {/* Core Official Policy Declaration */}
+          <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.5rem 1.8rem', borderRadius: '16px', border: '1px solid var(--color-border)', marginBottom: '2.5rem' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              NUTFLIX Privacy Statement
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              Welcome to <strong>NUTFLIX</strong>, operated by <strong>DARSHAN TECHNO SYSTEM</strong> (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;). We are committed to safeguarding the privacy of our website visitors and valued customers. This Privacy Policy describes how we collect, use, process, and protect your personal information when you visit our website, place orders for dry fruits and nuts, or interact with our services.
+            <p style={{ color: 'var(--color-forest)', lineHeight: '1.8', fontSize: '0.98rem', fontWeight: 600 }}>
+              At NUTFLIX, we respect your privacy.
+            </p>
+            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginTop: '0.5rem' }}>
+              Information such as your name, mobile number, address, email address and order details may be collected only for processing orders, providing customer service, making deliveries and improving our services.
+            </p>
+            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginTop: '0.5rem' }}>
+              We do not sell or misuse customers&apos; personal information. Information may be shared with payment gateways, delivery partners or service providers only when required for completing your order or complying with applicable law.
+            </p>
+            <p style={{ color: 'var(--color-forest)', lineHeight: '1.7', fontSize: '0.95rem', fontWeight: 700, marginTop: '0.6rem' }}>
+              By using <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', textDecoration: 'underline' }}>www.nutflix.in</a>, you agree to this Privacy Policy.
             </p>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              2. Information We Collect
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              1. Information We Collect
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginBottom: '0.8rem' }}>
-              We collect information that you directly provide to us to process orders and improve your shopping experience:
+              When you purchase or interact with our platform, we collect only the necessary information:
             </p>
             <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li><strong>Personal Contact Information:</strong> Name, phone number, email address, delivery/shipping address, and billing address.</li>
-              <li><strong>Order & Transaction History:</strong> Items ordered, order amounts, payment methods, delivery preferences, and invoice records.</li>
-              <li><strong>Account Credentials:</strong> Username, encrypted passwords, and profile preferences if you create an account with us.</li>
-              <li><strong>Technical & Browsing Data:</strong> IP address, device type, browser version, operating system, and pages viewed to optimize user experience.</li>
+              <li><strong>Contact Information:</strong> Name, mobile phone number, and email address.</li>
+              <li><strong>Delivery Information:</strong> Shipping address, landmark, postal pincode, and billing details.</li>
+              <li><strong>Order & Transaction Details:</strong> Products purchased, quantities, order date, payment status, and delivery instructions.</li>
             </ul>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              3. How We Use Your Information
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              2. Purpose of Information Use
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginBottom: '0.8rem' }}>
-              We use your personal data for clear, legitimate business purposes:
+              The collected information is used strictly for legitimate business and service operations:
             </p>
             <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li>To confirm, process, pack, and fulfill your dry fruit orders.</li>
-              <li>To send order status updates, shipment tracking links, and delivery notifications via SMS/WhatsApp/Email.</li>
-              <li>To provide dedicated customer support and respond to inquiries.</li>
-              <li>To detect and prevent fraudulent transactions or unauthorized account access.</li>
-              <li>To inform you about special festive discounts, new stock arrivals, or offers (only if you opt-in; you may unsubscribe at any time).</li>
+              <li>Processing, packing, and dispatching your dry fruit orders.</li>
+              <li>Providing active customer support, order updates, and tracking details via SMS/WhatsApp/Call.</li>
+              <li>Facilitating efficient and timely doorstep deliveries through our logistics partners.</li>
+              <li>Improving our website performance, product offerings, and overall customer satisfaction.</li>
             </ul>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              4. Payment Security
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              3. Information Sharing & Third Parties
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              We do not store your credit card, debit card, or net banking credentials on our servers. All digital payments are processed through RBI-authorized, PCI-DSS compliant payment gateway partners (such as Razorpay / UPI / NetBanking / Cards) ensuring high-grade bank-level encryption.
-            </p>
-          </div>
-
-          <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              5. Cookies and Tracking Technologies
-            </h2>
-            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              Our website uses essential cookies to remember items in your shopping cart, maintain your logged-in session, and measure general website traffic. You can choose to disable cookies through your browser settings, although certain features of the store may not function optimally.
-            </p>
-          </div>
-
-          <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              6. Sharing of Information
-            </h2>
-            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              We only share necessary details with trusted third-party service providers who assist our operations:
+              We do not sell, rent, or trade your personal data. Data is shared only under specific operational conditions:
             </p>
             <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li><strong>Courier & Delivery Partners:</strong> Sharing your name, delivery address, and phone number so delivery executives can deliver your parcel.</li>
-              <li><strong>Payment Gateway Partners:</strong> For processing online payments safely.</li>
-              <li><strong>Legal Obligations:</strong> If required by Indian law, court order, or governmental regulations.</li>
+              <li><strong>Payment Gateways:</strong> Securely processing electronic payments via encrypted banking channels.</li>
+              <li><strong>Delivery Partners:</strong> Providing courier executives with your shipping address and phone number for successful order delivery.</li>
+              <li><strong>Legal Compliance:</strong> When strictly required by applicable Indian law or government authorities.</li>
             </ul>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              7. Your Rights & Choices
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              4. Data Protection & Security
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              You have the right to access, review, update, or request deletion of your personal data held by us. If you wish to close your account or stop receiving promotional updates, please reach out to our privacy officer using the contact details below.
+              We implement appropriate physical, electronic, and managerial safeguards to protect your personal information against unauthorized access, alteration, or disclosure.
             </p>
           </div>
 
+          {/* Contact Box */}
           <div style={{ padding: '1.5rem', borderRadius: '16px', backgroundColor: 'var(--color-cream-light)', border: '1px solid var(--color-border)' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <HelpCircle size={20} color="var(--color-gold)" />
-              <span>Grievance & Contact Information</span>
+              <span>Contact for Privacy Inquiries</span>
             </h3>
             <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '1rem' }}>
-              For any queries, privacy concerns, or data correction requests regarding this Privacy Policy, please contact our Grievance Officer:
+              If you have any questions or requests regarding your personal information or this Privacy Policy, please contact:
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-forest)' }}>
-              <div><strong>Business Entity:</strong> DARSHAN TECHNO SYSTEM (Brand: NUTFLIX)</div>
-              <div><strong>GSTIN:</strong> 19ADZPG6957G3ZN</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <MapPin size={16} color="var(--color-gold)" />
-                <span>43, KARAYA ROAD, KOLKATA – 700017</span>
+              <div><strong>Brand:</strong> NUTFLIX</div>
+              <div><strong>Business:</strong> A Brand of Darshan Techno System</div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <MapPin size={16} color="var(--color-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <span><strong>Registered Office:</strong> 43, Karaya Road, Kolkata – 700017, West Bengal, India</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Phone size={16} color="var(--color-gold)" />
-                <span>Phone: <a href="tel:9830055527" style={{ color: 'var(--color-forest)', fontWeight: 700 }}>98300-55527</a> / <a href="tel:9330193041" style={{ color: 'var(--color-forest)', fontWeight: 700 }}>9330193041</a></span>
+                <span><strong>Phone / WhatsApp:</strong> <a href="tel:9330193041" style={{ color: 'var(--color-forest)', fontWeight: 700 }}>9330193041</a></span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Mail size={16} color="var(--color-gold)" />
-                <span>Email: <a href="mailto:agr@guharoy.com" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>agr@guharoy.com</a></span>
+                <Globe size={16} color="var(--color-gold)" />
+                <span><strong>Website:</strong> <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>www.nutflix.in</a></span>
               </div>
+              <div><strong>FSSAI License No.:</strong> 22826039000325</div>
             </div>
           </div>
         </div>
@@ -252,6 +244,9 @@ export default function PrivacyPolicyPage() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginTop: '2.5rem', flexWrap: 'wrap' }}>
           <Link href="/terms" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
             Terms & Conditions
+          </Link>
+          <Link href="/refund-policy" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
+            Return & Refund Policy
           </Link>
           <Link href="/shipping-policy" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
             Shipping & Delivery Policy

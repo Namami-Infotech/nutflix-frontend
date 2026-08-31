@@ -1,10 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { RotateCcw, ShieldAlert, CheckCircle, Clock, Banknote, HelpCircle, Mail, Phone, MapPin } from 'lucide-react';
+import { RotateCcw, Clock, Banknote, ShieldAlert, CheckCircle2, HelpCircle, Mail, Phone, MapPin, Globe } from 'lucide-react';
 
 export const metadata = {
-  title: 'Return & Refund Policy | NUTFLIX - Premium Dry Fruits',
-  description: 'Return, Replacement and Refund Policy for NUTFLIX (Darshan Techno System). Hassle-free resolution for our valued dry fruit customers.',
+  title: 'Return & Refund Policy | NUTFLIX - Quality Dry Fruits',
+  description: 'Return and Refund Policy for NUTFLIX (A Brand of Darshan Techno System). Quality dry fruits with prompt resolution and 48-hour refund processing.',
 };
 
 export default function RefundPolicyPage() {
@@ -48,10 +48,10 @@ export default function RefundPolicyPage() {
             Return & Refund Policy
           </h1>
           <p style={{ fontSize: '1.05rem', color: 'var(--color-cream)', lineHeight: '1.6', maxWidth: '640px', margin: '0 auto' }}>
-            Your satisfaction and health are our top priorities. Learn about our clear, hassle-free return and refund guidelines for premium dry fruits.
+            Customer satisfaction is important to us. Clear guidelines for returns, replacements, and refunds.
           </p>
           <div style={{ marginTop: '1.2rem', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-            Last Updated: {lastUpdated} • Darshan Techno System (NUTFLIX)
+            Last Updated: {lastUpdated} • NUTFLIX (A Brand of Darshan Techno System)
           </div>
         </div>
       </section>
@@ -80,10 +80,10 @@ export default function RefundPolicyPage() {
               <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
                 <Clock size={20} />
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>48-Hour Reporting</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Prompt Assistance</h3>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              Notify us within 48 hours of parcel delivery in case of damaged, defective, or incorrect items.
+              Contact us promptly upon delivery if you receive a damaged, defective, or incorrect product.
             </p>
           </div>
 
@@ -100,10 +100,10 @@ export default function RefundPolicyPage() {
               <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
                 <Banknote size={20} />
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>5–7 Days Refund</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>48-Hour Initiation</h3>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              Approved refunds are directly processed back to your original payment method (Bank/UPI/Card).
+              Approved refunds are initiated within 48 hours of verification to your original payment mode.
             </p>
           </div>
 
@@ -118,12 +118,12 @@ export default function RefundPolicyPage() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
-                <CheckCircle size={20} />
+                <CheckCircle2 size={20} />
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Free Replacement</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Customer Focused</h3>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              We will ship a fresh replacement batch at zero extra shipping cost for genuine transit issues.
+              Dedicated support to ensure complete satisfaction with every dry fruit order.
             </p>
           </div>
         </div>
@@ -139,82 +139,77 @@ export default function RefundPolicyPage() {
             color: 'var(--color-text-dark)',
           }}
         >
-          <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              1. Return Eligibility for Food & Dry Fruit Items
+          {/* Core Official Policy Declaration Box */}
+          <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.8rem', borderRadius: '16px', border: '1px solid var(--color-border)', marginBottom: '2.5rem' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              NUTFLIX Return & Refund Policy
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              Because premium dry fruits, nuts, and roasted edibles are food products with stringent hygiene considerations, we accept returns or issue replacements under the following conditions:
+            <p style={{ color: 'var(--color-forest)', fontSize: '1rem', fontWeight: 800, marginBottom: '0.75rem' }}>
+              Customer satisfaction is important to us.
             </p>
-            <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li><strong>Transit Damage:</strong> The outer package or seal arrived physically torn, tampered with, or leaking.</li>
-              <li><strong>Incorrect Item Received:</strong> The product received differs from what was ordered (e.g. wrong weight, different nut variety).</li>
-              <li><strong>Quality or Freshness Concern:</strong> Genuine freshness issues noticed immediately upon opening the vacuum seal.</li>
-            </ul>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.7' }}>
+              <p>
+                • If you receive a damaged, defective, incorrect or materially unsatisfactory product, please contact NUTFLIX promptly after delivery.
+              </p>
+              <p>
+                • Eligible products should be returned in their original packaging, as far as reasonably possible.
+              </p>
+              <p>
+                • After receiving and verifying the returned material, the approved refund will be initiated within <strong>48 hours</strong>.
+              </p>
+              <p>
+                • Refunds will normally be made through the original mode of payment. Any applicable bank or payment-gateway processing time may be additional.
+              </p>
+              <p>
+                • Products that have been substantially consumed, altered or damaged after delivery may not be eligible for return or refund.
+              </p>
+            </div>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              2. Non-Returnable Items
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              1. How to Request a Return / Refund
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              In accordance with FSSAI hygiene standards, items cannot be returned under the following circumstances:
+            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginBottom: '1rem' }}>
+              To report an issue with your order:
             </p>
-            <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li>Items that have been significantly consumed, modified, or improperly stored after opening.</li>
-              <li>Requests submitted after more than 48 hours from the timestamp of parcel delivery.</li>
-              <li>Minor subjective taste preferences or natural differences in individual nut sizes/coloring inherent to organic farming.</li>
-            </ul>
-          </div>
-
-          <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              3. How to Request a Return or Replacement
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-              <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
-                <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.2rem', marginBottom: '0.3rem' }}>Step 1</div>
-                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.95rem', marginBottom: '0.4rem' }}>Take Photos / Video</div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-                  Capture clear photos or a short video showing the parcel label, seal, and damaged item.
-                </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <div style={{ padding: '1.25rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '14px', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.1rem', marginBottom: '0.3rem' }}>Step 1</div>
+                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>Contact Support</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Call or WhatsApp <strong>9330193041</strong> with your Order ID.</div>
               </div>
-              <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
-                <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.2rem', marginBottom: '0.3rem' }}>Step 2</div>
-                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.95rem', marginBottom: '0.4rem' }}>Contact Support</div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-                  WhatsApp / Call us at <strong>98300-55527</strong> or email <strong>agr@guharoy.com</strong> with your Order ID.
-                </div>
+              <div style={{ padding: '1.25rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '14px', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.1rem', marginBottom: '0.3rem' }}>Step 2</div>
+                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>Verification</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Provide photos/details of the damaged or incorrect item.</div>
               </div>
-              <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
-                <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.2rem', marginBottom: '0.3rem' }}>Step 3</div>
-                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.95rem', marginBottom: '0.4rem' }}>Instant Resolution</div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-                  Our team validates your request within 24 hours and initiates free replacement dispatch or full refund.
-                </div>
+              <div style={{ padding: '1.25rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '14px', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.1rem', marginBottom: '0.3rem' }}>Step 3</div>
+                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>48h Initiation</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Approved refund is initiated within 48 hours to original payment mode.</div>
               </div>
             </div>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              4. Refund Processing & Timelines
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              2. Eligibility Criteria
             </h2>
-            <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              Once your refund request is approved:
-            </p>
-            <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li><strong>Prepaid Orders (UPI / Cards / NetBanking):</strong> Refund is credited directly to the original bank account/card within <strong>5–7 business days</strong>.</li>
-              <li><strong>Cash on Delivery (COD) Orders:</strong> Our support team will request your UPI ID or Bank Account Details (Account No. & IFSC) to securely initiate a NEFT/IMPS/UPI transfer within <strong>3–5 business days</strong>.</li>
+            <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <li>Products that arrived defective, tampered, or damaged during transit.</li>
+              <li>Incorrect items delivered (wrong variant or quantity).</li>
+              <li>Items must be in their original packaging as far as reasonably possible.</li>
+              <li>Items substantially consumed or modified after delivery are non-returnable.</li>
             </ul>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              5. Order Cancellation Policy
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
+              3. Refund Mode & Timelines
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              You may cancel your order at any time <strong>before the parcel is dispatched</strong> from our facility by contacting our helpline at 9330193041 or visiting your account page. Once the order has been handed over to the courier partner, cancellation is no longer possible, but you may avail of return/replacement upon arrival if eligible.
+              Approved refunds are initiated within 48 hours to the original mode of payment (UPI, Credit/Debit Card, Net Banking, or direct bank transfer for COD). Additional processing time may depend on your issuing bank or payment gateway.
             </p>
           </div>
 
@@ -222,25 +217,26 @@ export default function RefundPolicyPage() {
           <div style={{ padding: '1.5rem', borderRadius: '16px', backgroundColor: 'var(--color-cream-light)', border: '1px solid var(--color-border)' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <HelpCircle size={20} color="var(--color-gold)" />
-              <span>Need Help with a Return or Refund?</span>
+              <span>Returns & Refund Assistance</span>
             </h3>
             <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '1rem' }}>
-              Our dedicated support team is here to assist you from Monday to Saturday (10:00 AM – 7:00 PM IST):
+              Please reach out to our customer care desk for any return or refund support:
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-forest)' }}>
-              <div><strong>Business Entity:</strong> DARSHAN TECHNO SYSTEM (Brand: NUTFLIX)</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <MapPin size={16} color="var(--color-gold)" />
-                <span>43, KARAYA ROAD, KOLKATA – 700017</span>
+              <div><strong>Brand:</strong> NUTFLIX (A Brand of Darshan Techno System)</div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <MapPin size={16} color="var(--color-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <span><strong>Registered Office:</strong> 43, Karaya Road, Kolkata – 700017, West Bengal, India</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Phone size={16} color="var(--color-gold)" />
-                <span>Support Hotline: <a href="tel:9830055527" style={{ color: 'var(--color-forest)', fontWeight: 700 }}>98300-55527</a> / <a href="tel:9330193041" style={{ color: 'var(--color-forest)', fontWeight: 700 }}>9330193041</a></span>
+                <span><strong>Phone / WhatsApp:</strong> <a href="tel:9330193041" style={{ color: 'var(--color-forest)', fontWeight: 700 }}>9330193041</a></span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Mail size={16} color="var(--color-gold)" />
-                <span>Email: <a href="mailto:agr@guharoy.com" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>agr@guharoy.com</a></span>
+                <Globe size={16} color="var(--color-gold)" />
+                <span><strong>Website:</strong> <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>www.nutflix.in</a></span>
               </div>
+              <div><strong>FSSAI License No.:</strong> 22826039000325</div>
             </div>
           </div>
         </div>

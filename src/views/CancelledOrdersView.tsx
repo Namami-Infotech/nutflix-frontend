@@ -18,8 +18,8 @@ export default function CancelledOrdersView({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  const filteredOrders = orders.filter(
-    o => (!searchQuery || o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) || o.customerName.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredOrders = (orders || []).filter(
+    o => (!searchQuery || (o?.orderNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) || (o?.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const totalPages = Math.ceil(filteredOrders.length / pageSize) || 1;

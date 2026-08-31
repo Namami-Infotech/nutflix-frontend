@@ -114,6 +114,81 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
           boxSizing: 'border-box',
         }}
       >
+        {/* Full-width Mobile Search Bar Overlay */}
+        {searchOpen && (
+          <div
+            className="mobile-search-overlay"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#ffffff',
+              zIndex: 65,
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 0.75rem',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
+            }}
+          >
+            <Search size={18} color="var(--color-forest)" style={{ flexShrink: 0 }} />
+            <form onSubmit={handleSearchSubmit} style={{ flex: 1, display: 'flex', alignItems: 'center', minWidth: 0, margin: 0 }}>
+              <input
+                type="text"
+                placeholder="Search category or product..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                style={{
+                  width: '100%',
+                  border: 'none',
+                  background: 'transparent',
+                  outline: 'none',
+                  fontSize: '0.92rem',
+                  color: 'var(--color-forest)',
+                  fontWeight: 600,
+                }}
+                autoFocus
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}
+                  title="Clear text"
+                >
+                  <X size={16} color="var(--color-text-muted)" />
+                </button>
+              )}
+            </form>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchOpen(false);
+                setShowSuggestions(false);
+              }}
+              style={{
+                padding: '0.35rem 0.75rem',
+                backgroundColor: 'var(--color-cream-light)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '20px',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                color: 'var(--color-forest)',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
         <div className="container header-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '65px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0 }}>
             {/* Mobile Hamburger Menu Button (visible on mobile / tablet <= 992px) */}
@@ -139,46 +214,18 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
               <Menu size={19} />
             </button>
 
-            {/* Brand Logo - Exact nutflix wordmark with dual-color, leaf on i and chand from u to l */}
+            {/* Brand Logo - Exact nutflix image */}
             <Link href="/" className="header-brand-logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', minWidth: 0 }}>
-              <svg viewBox="0 0 145 44" width="145" height="44" style={{ display: 'block', overflow: 'visible', maxWidth: '100%' }}>
-                <defs>
-                  <linearGradient id="headerGoldChand" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#C58526" />
-                    <stop offset="50%" stopColor="#E5A638" />
-                    <stop offset="100%" stopColor="#C58526" />
-                  </linearGradient>
-                </defs>
-                <g transform="translate(0, 2)">
-                  {/* 'nut' in rich chocolate brown */}
-                  <text x="0" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#23160C" letterSpacing="-0.5px">
-                    nut
-                  </text>
-                  {/* 'fl' in rich forest olive green */}
-                  <text x="52" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22" letterSpacing="-0.5px">
-                    fl
-                  </text>
-                  {/* 'ı' stem without dot */}
-                  <text x="78" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22">
-                    ı
-                  </text>
-                  {/* 'x' */}
-                  <text x="88" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#1D4A22" letterSpacing="-0.5px">
-                    x
-                  </text>
-                  {/* Leaf cluster on 'i' matching photo */}
-                  <g transform="translate(82, 8)">
-                    <path d="M 0,0 C -3.5,-7 -11,-8 -14,-3 C -16,2 -6,3 0,0 Z" fill="#1D4A22" />
-                    <path d="M 0,-1 C 0,-7 7,-11 11,-7 C 13,-2.5 5,-1 0,-1 Z" fill="#26612E" />
-                    <path d="M 1.5,-1 C 5,-8 15,-9 19,-4 C 21,1.5 9,2.5 1.5,-1 Z" fill="#1D4A22" />
-                  </g>
-                  {/* TM in small uppercase */}
-                  <text x="110" y="10" fontFamily="'Inter', sans-serif" fontSize="7.5" fontWeight="800" fill="#23160C">TM</text>
-
-                  {/* Golden Chand Curve strictly from 'u' to 'l' with thick middle and tapered ends */}
-                  <path d="M 24,33 C 39,43 60,43 75,33 C 60,39.5 39,39.5 24,33 Z" fill="url(#headerGoldChand)" />
-                </g>
-              </svg>
+              <img
+                src="/brand-logo.png"
+                alt="NUTFLIX"
+                style={{
+                  height: '42px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
+              />
             </Link>
           </div>
 
@@ -191,7 +238,7 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
               Shop All
             </Link>
             <Link href="/categories/cashews-nuts" style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
-              Cashews & Nuts
+             Categories
             </Link>
             <Link href="/about" style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
               About
@@ -203,9 +250,10 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
 
           {/* Action Buttons */}
           <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
-            {/* Search Bar with Debounced Suggestions */}
+            {/* Search Bar Container */}
             <div ref={searchContainerRef} style={{ position: 'relative' }}>
-              <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center' }}>
+              {/* Desktop Expandable Search Form */}
+              <form onSubmit={handleSearchSubmit} className="desktop-search-form" style={{ display: 'flex', alignItems: 'center' }}>
                 {searchOpen ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: '#f5efe6', padding: '0.2rem 0.5rem', borderRadius: '30px', border: '1px solid var(--color-border)' }}>
                     <input
@@ -249,9 +297,21 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
                 )}
               </form>
 
+              {/* Mobile Search Trigger Icon Button */}
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className="header-action-btn mobile-search-trigger"
+                style={{ display: 'none', padding: '0.45rem', borderRadius: '50%', backgroundColor: 'var(--color-cream-light)', border: 'none', cursor: 'pointer' }}
+                title="Search Products & Categories"
+              >
+                <Search size={17} color="var(--color-forest)" />
+              </button>
+
               {/* Debounced Predictive Suggestions Popup Dropdown */}
               {searchOpen && showSuggestions && debouncedQuery.trim() !== '' && (
                 <div
+                  className="search-suggestions-dropdown"
                   style={{
                     position: 'absolute',
                     top: '115%',
@@ -446,47 +506,49 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
               </Link>
             )}
 
-            {/* Cart Trigger */}
-            <button
-              onClick={openCart}
-              className="header-cart-btn"
-              style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.3rem',
-                backgroundColor: 'var(--color-forest)',
-                color: '#fff',
-                padding: '0.45rem 0.75rem',
-                borderRadius: 'var(--radius-pill)',
-                fontWeight: 700,
-                fontSize: '0.82rem',
-                transition: 'var(--transition)',
-                flexShrink: 0,
-              }}
-            >
-              <ShoppingBag size={16} color="var(--color-gold)" />
-              <span className="cart-text">Basket</span>
-              {totalItems > 0 && (
-                <span
-                  style={{
-                    backgroundColor: 'var(--color-gold)',
-                    color: '#fff',
-                    fontSize: '0.7rem',
-                    fontWeight: 900,
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginLeft: '2px',
-                  }}
-                >
-                  {totalItems}
-                </span>
-              )}
-            </button>
+            {/* Cart Trigger (Hidden for Admin) */}
+            {!isAdmin && (
+              <button
+                onClick={openCart}
+                className="header-cart-btn"
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  backgroundColor: 'var(--color-forest)',
+                  color: '#fff',
+                  padding: '0.45rem 0.75rem',
+                  borderRadius: 'var(--radius-pill)',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  transition: 'var(--transition)',
+                  flexShrink: 0,
+                }}
+              >
+                <ShoppingBag size={16} color="var(--color-gold)" />
+                <span className="cart-text">Basket</span>
+                {totalItems > 0 && (
+                  <span
+                    style={{
+                      backgroundColor: 'var(--color-gold)',
+                      color: '#fff',
+                      fontSize: '0.7rem',
+                      fontWeight: 900,
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginLeft: '2px',
+                    }}
+                  >
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -501,6 +563,32 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
         @media (max-width: 992px) {
           .mobile-menu-toggle-btn {
             display: flex !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .desktop-search-form {
+            display: none !important;
+          }
+          .mobile-search-trigger {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+          }
+          .search-suggestions-dropdown {
+            position: fixed !important;
+            top: 66px !important;
+            left: 10px !important;
+            right: 10px !important;
+            width: auto !important;
+            max-width: calc(100vw - 20px) !important;
+            max-height: 72vh !important;
+            overflow-y: auto !important;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2) !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .mobile-search-overlay {
+            display: none !important;
           }
         }
         @media (max-width: 480px) {

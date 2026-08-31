@@ -104,53 +104,27 @@ export const Footer: React.FC = () => {
           {/* Brand Info */}
           <div style={{ gridColumn: 'span 1' }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.8rem' }}>
-              <svg viewBox="0 0 145 44" width="145" height="44" style={{ display: 'block', overflow: 'visible' }}>
-                <defs>
-                  <linearGradient id="footerGoldChand" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#C58526" />
-                    <stop offset="50%" stopColor="#E5A638" />
-                    <stop offset="100%" stopColor="#C58526" />
-                  </linearGradient>
-                </defs>
-                <g transform="translate(0, 2)">
-                  {/* 'nut' in crisp white */}
-                  <text x="0" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#FFFFFF" letterSpacing="-0.5px">
-                    nut
-                  </text>
-                  {/* 'fl' in bright herbal green */}
-                  <text x="52" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#4ADE80" letterSpacing="-0.5px">
-                    fl
-                  </text>
-                  {/* 'ı' stem without dot */}
-                  <text x="78" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#4ADE80">
-                    ı
-                  </text>
-                  {/* 'x' */}
-                  <text x="88" y="28" fontFamily="'Outfit', 'Poppins', 'Montserrat', -apple-system, sans-serif" fontSize="33" fontWeight="900" fill="#4ADE80" letterSpacing="-0.5px">
-                    x
-                  </text>
-                  {/* Leaf cluster on 'i' */}
-                  <g transform="translate(82, 8)">
-                    <path d="M 0,0 C -3.5,-7 -11,-8 -14,-3 C -16,2 -6,3 0,0 Z" fill="#4ADE80" />
-                    <path d="M 0,-1 C 0,-7 7,-11 11,-7 C 13,-2.5 5,-1 0,-1 Z" fill="#86EFAC" />
-                    <path d="M 1.5,-1 C 5,-8 15,-9 19,-4 C 21,1.5 9,2.5 1.5,-1 Z" fill="#4ADE80" />
-                  </g>
-                  {/* TM */}
-                  <text x="110" y="10" fontFamily="'Inter', sans-serif" fontSize="7.5" fontWeight="800" fill="#E5A638">TM</text>
-
-                  {/* Golden Chand Curve strictly from 'u' to 'l' */}
-                  <path d="M 24,33 C 39,43 60,43 75,33 C 60,39.5 39,39.5 24,33 Z" fill="url(#footerGoldChand)" />
-                </g>
-              </svg>
+              <img
+                src="/brand-logo-original.png"
+                alt="NUTFLIX"
+                style={{
+                  height: '44px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  borderRadius: '6px',
+                  display: 'block',
+                }}
+              />
             </div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-gold)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '0.8rem' }}>
-              DARSHAN TECHNO SYSTEM
+            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-gold)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '0.6rem' }}>
+              A Brand of DARSHAN TECHNO SYSTEM
             </div>
-            <p style={{ fontSize: '0.85rem', color: '#a0b0a4', lineHeight: '1.5', marginBottom: '1rem' }}>
-              Premium handcrafted dry fruits, almonds, giant roasted cashews, walnuts, and organic produce. Delivered fresh to your doorstep.
+            <p style={{ fontSize: '0.85rem', color: '#a0b0a4', lineHeight: '1.5', marginBottom: '0.8rem' }}>
+              Fresh, hygienically packed, carefully selected quality dry fruits delivered fresh to your doorstep.
             </p>
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-gold)', fontWeight: 600 }}>
-              GSTIN: 19ADZPG6957G3ZN
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--color-gold)', fontWeight: 600 }}>
+              <div>GSTIN: 19ADZPG6957G3ZN</div>
+              <div>FSSAI Lic. No.: 22826039000325</div>
             </div>
           </div>
 
@@ -159,20 +133,21 @@ export const Footer: React.FC = () => {
             <h4 style={{ color: '#ffffff', fontSize: '1rem', fontWeight: 800, marginBottom: '1rem' }}>Contact Details</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.85rem', color: '#a0b0a4' }}>
               <li style={{ lineHeight: '1.4' }}>
-                <strong style={{ color: '#fff' }}>Address:</strong><br />
-                43, KARAYA ROAD, KOLKATA - 700017
+                <strong style={{ color: '#fff' }}>Registered Office:</strong><br />
+                43, Karaya Road, Kolkata – 700017<br />
+                West Bengal, India
               </li>
               <li>
-                <strong style={{ color: '#fff' }}>Mobile:</strong>{' '}
-                <a href="tel:9830055527" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: 700 }}>98300-55527</a>
+                <strong style={{ color: '#fff' }}>Phone / Helpline:</strong>{' '}
+                <a href="tel:9330193041" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: 700 }}>9330193041</a>
               </li>
               <li>
                 <strong style={{ color: '#fff' }}>WhatsApp:</strong>{' '}
-                <a href="https://wa.me/919830055527" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', textDecoration: 'none', fontWeight: 700 }}>98300-55527</a>
+                <a href="https://wa.me/919330193041" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', textDecoration: 'none', fontWeight: 700 }}>9330193041</a>
               </li>
               <li>
-                <strong style={{ color: '#fff' }}>Email:</strong>{' '}
-                <a href="mailto:agr@guharoy.com" style={{ color: '#a0b0a4', textDecoration: 'none' }}>agr@guharoy.com</a>
+                <strong style={{ color: '#fff' }}>Website:</strong>{' '}
+                <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: '#a0b0a4', textDecoration: 'none' }}>www.nutflix.in</a>
               </li>
             </ul>
           </div>
@@ -185,10 +160,8 @@ export const Footer: React.FC = () => {
               <li><Link href="/contact" style={{ color: '#a0b0a4' }}>Contact Us</Link></li>
               <li><Link href="/products" style={{ color: '#a0b0a4' }}>Shop All Produce</Link></li>
               <li><Link href="/categories/cashews-nuts" style={{ color: '#a0b0a4' }}>Cashews &amp; Nuts</Link></li>
-              {isAdmin ? (
+              {isAdmin && (
                 <li><Link href="/admin" style={{ color: '#f59e0b', fontWeight: 700 }}>Admin Dashboard</Link></li>
-              ) : (
-                <li><Link href="/my-orders" style={{ color: '#a0b0a4' }}>Track My Order</Link></li>
               )}
             </ul>
           </div>
@@ -199,8 +172,9 @@ export const Footer: React.FC = () => {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.88rem', color: '#a0b0a4' }}>
               <li><Link href="/privacy-policy" style={{ color: '#a0b0a4' }}>Privacy Policy</Link></li>
               <li><Link href="/terms" style={{ color: '#a0b0a4' }}>Terms &amp; Conditions</Link></li>
+              <li><Link href="/refund-policy" style={{ color: '#a0b0a4' }}>Return &amp; Refund Policy</Link></li>
               <li><Link href="/shipping-policy" style={{ color: '#a0b0a4' }}>Shipping &amp; Delivery</Link></li>
-              <li><Link href="/contact" style={{ color: '#a0b0a4' }}>Contact Support</Link></li>
+              <li><Link href="/contact" style={{ color: '#a0b0a4' }}>Customer Support</Link></li>
             </ul>
           </div>
 
@@ -251,9 +225,10 @@ export const Footer: React.FC = () => {
             <Link href="/contact" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Contact Us</Link>
             <Link href="/privacy-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Privacy Policy</Link>
             <Link href="/terms" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Terms &amp; Conditions</Link>
+            <Link href="/refund-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Return &amp; Refund Policy</Link>
             <Link href="/shipping-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Shipping &amp; Delivery</Link>
           </div>
-          <p>© {new Date().getFullYear()} DARSHAN TECHNO SYSTEM (Brand: NUTFLIX). All rights reserved. GSTIN: 19ADZPG6957G3ZN.</p>
+          <p>© {new Date().getFullYear()} DARSHAN TECHNO SYSTEM (Brand: NUTFLIX). All rights reserved. GSTIN: 19ADZPG6957G3ZN • FSSAI Lic. No.: 22826039000325.</p>
         </div>
       </footer>
 

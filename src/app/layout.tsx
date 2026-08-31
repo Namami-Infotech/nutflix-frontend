@@ -5,7 +5,7 @@ import { CartProvider, CartDrawer } from '@/modules/cart';
 import { AnnouncementBar, Header, Footer } from '@/modules/layout';
 
 export const metadata = {
-  title: 'NUTFLIX | Premium Dry Fruits, Cashews & Nuts',
+  title: 'NUTFLIX | Premium Dry Fruits, Categories',
   description: 'NUTFLIX - Premium handcrafted dry fruits, almonds, giant roasted cashews, and organic walnuts.',
   icons: {
     icon: '/favicon.svg',

@@ -29,7 +29,7 @@ export const AnnouncementBar: React.FC = () => {
     >
       <Sparkles size={14} color="var(--color-gold)" style={{ flexShrink: 0 }} />
       <span className="announcement-bar-text" style={{ lineHeight: 1.3 }}>
-        ✨ Welcome to NUTFLIX by DARSHAN TECHNO SYSTEM • Call/WhatsApp: +91 98300-55527
+        ✨ Welcome to NUTFLIX • Quality Dry Fruits, Delivered Fresh • Call / WhatsApp: +91 9330193041
       </span>
       <Sparkles size={14} color="var(--color-gold)" style={{ flexShrink: 0 }} />
     </div>

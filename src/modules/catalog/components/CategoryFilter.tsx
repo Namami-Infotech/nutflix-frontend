@@ -46,7 +46,7 @@ export const CategoryFilter: React.FC<Props> = ({ categories, selectedSlug, onSe
           cursor: 'pointer',
         }}
       >
-        <span>All Dry Fruits</span>
+        <span>All Fruits</span>
       </button>
 
       {categories.map((cat) => (

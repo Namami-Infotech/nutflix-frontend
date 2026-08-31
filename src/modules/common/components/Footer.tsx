@@ -101,7 +101,7 @@ export const Footer: React.FC = () => {
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.9rem', color: '#a0b0a4' }}>
             <li><Link href="/">Home</Link></li>
             <li><Link href="/products">Shop All Produce</Link></li>
-            <li><Link href="/categories/cashews-nuts">Cashews & Nuts</Link></li>
+            <li><Link href="/categories/cashews-nuts">Categories</Link></li>
             <li><Link href="/my-orders">My Orders</Link></li>
           </ul>
         </div>

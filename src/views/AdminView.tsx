@@ -994,33 +994,18 @@ export default function AdminView() {
                     </select>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
-                        Price (₹) *
-                      </label>
-                      <input
-                        type="text"
-                        value={productForm.price}
-                        onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                        required
-                        placeholder="e.g. 999"
-                        style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
-                        Stock Units *
-                      </label>
-                      <input
-                        type="text"
-                        value={productForm.stock}
-                        onChange={(e) => setProductForm({ ...productForm, stock: e.target.value.replace(/\D/g, '') })}
-                        required
-                        placeholder="e.g. 100"
-                        style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
-                      />
-                    </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
+                      Price (₹) *
+                    </label>
+                    <input
+                      type="text"
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                      required
+                      placeholder="e.g. 999"
+                      style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
+                    />
                   </div>
                 </div>
 

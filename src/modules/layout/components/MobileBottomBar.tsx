@@ -20,7 +20,7 @@ export const MobileBottomBar: React.FC = () => {
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop All', href: '/products', icon: ShoppingBag },
-    { label: 'Cashews & Nuts', href: '/categories/cashews-nuts', icon: Package },
+    { label: 'Categories', href: '/categories/cashews-nuts', icon: Package },
     isAdmin
       ? { label: 'Admin', href: '/admin', icon: ShieldCheck }
       : { label: 'My Orders', href: '/my-orders', icon: User },

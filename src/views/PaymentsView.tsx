@@ -201,57 +201,6 @@ export default function PaymentsView({
         </div>
       </div>
 
-      {/* SECTION 2: PAYMENT METHODS SUMMARY */}
-      <div style={{ backgroundColor: '#fff', padding: '1rem', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: '#0f291e', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <CreditCard size={18} color="#0284c7" /> Payment Methods Summary & Distribution
-          </h3>
-          <p style={{ margin: '0.15rem 0 0', fontSize: '0.78rem', color: '#64748b' }}>
-            Current breakdown of transactions by payment mode.
-          </p>
-        </div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
-          {Object.keys(paymentBreakdown || {}).map((method) => {
-            const IconComponent = methodIcons[method] || CreditCard;
-            const data = paymentBreakdown[method] || { total: 0, count: 0 };
-            return (
-              <div
-                key={method}
-                style={{
-                  backgroundColor: '#faf8f5',
-                  padding: '0.85rem 1rem',
-                  borderRadius: '10px',
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.5rem'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>
-                    {method}
-                  </span>
-                  <div style={{ width: '30px', height: '30px', borderRadius: '8px', backgroundColor: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <IconComponent size={16} color="#0284c7" />
-                  </div>
-                </div>
-
-                <div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f291e', lineHeight: 1.1 }}>
-                    ₹{data.total.toFixed(2)}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#10b981', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    <CheckCircle2 size={12} /> {data.count} Successful Orders
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* SECTION 3: TOTAL REVENUE & DATE RANGE FILTER (AT BOTTOM) */}
       <div style={{ backgroundColor: '#fff', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>

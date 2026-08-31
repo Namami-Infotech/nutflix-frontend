@@ -353,7 +353,67 @@ export async function submitOrder(orderData: any) {
   };
 }
 
+// ================= RAZORPAY INTEGRATION =================
+export async function getRazorpayKey(): Promise<string> {
+  try {
+    const res = await api.get('/payment/razorpay/key');
+    if (res.data?.data?.keyId) {
+      return res.data.data.keyId;
+    }
+  } catch (e) {
+    console.warn('Failed to fetch Razorpay key from backend, using fallback.');
+  }
+  return process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_RqJtOyGfDiW0vw';
+}
+
+export async function createRazorpayOrder(orderParams: {
+  amount: number;
+  currency?: string;
+  receipt?: string;
+  notes?: Record<string, string>;
+}) {
+  try {
+    const res = await api.post('/payment/razorpay/create-order', orderParams);
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || {
+      success: false,
+      message: error?.message || 'Failed to initialize Razorpay payment',
+    };
+  }
+}
+
+export async function verifyRazorpayPayment(paymentData: {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+  orderData: any;
+}) {
+  try {
+    const res = await api.post('/payment/razorpay/verify', paymentData);
+    if (res.data && res.data.data) {
+      const confirmedOrder = res.data.data;
+      LOCAL_ORDERS_STORE.unshift(confirmedOrder);
+      if (typeof window !== 'undefined') {
+        try {
+          const existing = JSON.parse(localStorage.getItem('nutflix_user_orders') || '[]');
+          existing.unshift(confirmedOrder);
+          localStorage.setItem('nutflix_user_orders', JSON.stringify(existing));
+        } catch (e) {}
+      }
+      return res.data;
+    }
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || {
+      success: false,
+      message: error?.message || 'Payment verification failed',
+    };
+  }
+}
+
 export async function loginUser(credentials: { email: string; password: string }) {
+
   try {
     const res = await api.post('/users/login', credentials);
     return res.data;

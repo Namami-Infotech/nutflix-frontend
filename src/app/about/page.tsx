@@ -1,10 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { Award, Leaf, ShieldCheck, Heart, Sparkles, Truck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Award, Leaf, ShieldCheck, Heart, Sparkles, Truck, CheckCircle2, ArrowRight, Phone, MapPin, Globe } from 'lucide-react';
 
 export const metadata = {
-  title: 'About Us | NUTFLIX - Pure, Premium Handcrafted Dry Fruits',
-  description: 'Learn about NUTFLIX by Darshan Techno System. Our heritage of delivering fresh, authentic, and naturally wholesome dry fruits across India.',
+  title: 'About Us | NUTFLIX - Quality Dry Fruits, Delivered Fresh',
+  description: 'Welcome to NUTFLIX, a brand of Darshan Techno System. Fresh, hygienically packed and carefully selected quality dry fruits at competitive prices.',
 };
 
 export default function AboutPage() {
@@ -15,7 +15,7 @@ export default function AboutPage() {
         style={{
           backgroundColor: 'var(--color-forest)',
           color: '#ffffff',
-          padding: '5.5rem 0 4.5rem',
+          padding: '5rem 0 4rem',
           textAlign: 'center',
           position: 'relative',
           overflow: 'hidden',
@@ -40,21 +40,21 @@ export default function AboutPage() {
             }}
           >
             <Sparkles size={16} />
-            <span>Our Story & Mission</span>
+            <span>About NUTFLIX</span>
           </div>
 
-          <h1 style={{ fontSize: '3.2rem', fontWeight: 900, marginBottom: '1.2rem', letterSpacing: '-0.02em', lineHeight: '1.15', color: '#ffffff' }}>
-            Pure Crunch, Honest Nutrition &amp; Royal Flavor
+          <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '1.2rem', letterSpacing: '-0.02em', lineHeight: '1.2', color: '#ffffff' }}>
+            Quality Dry Fruits, Delivered Fresh
           </h1>
 
-          <p style={{ fontSize: '1.15rem', color: 'var(--color-cream)', lineHeight: '1.7', maxWidth: '680px', margin: '0 auto' }}>
-            At <strong>NUTFLIX</strong>, we believe snacking should be both deeply satisfying and genuinely healthy. We bring nature’s finest dry fruits, roasted nuts, and superfoods directly from trusted farms to your table.
+          <p style={{ fontSize: '1.15rem', color: 'var(--color-cream)', lineHeight: '1.7', maxWidth: '700px', margin: '0 auto' }}>
+            Welcome to <strong>NUTFLIX</strong>, your destination for quality dry fruits at competitive prices. A brand of <strong>Darshan Techno System</strong>, serving customers across India through both online and offline channels.
           </p>
         </div>
       </section>
 
-      {/* Brand Value Pillars */}
-      <section className="container" style={{ maxWidth: '1100px', marginTop: '-2rem', position: 'relative', zIndex: 2 }}>
+      {/* Brand Value Pillars: Quality • Freshness • Value • Convenience */}
+      <section className="container" style={{ maxWidth: '1100px', marginTop: '-2.5rem', position: 'relative', zIndex: 2 }}>
         <div
           style={{
             display: 'grid',
@@ -85,11 +85,11 @@ export default function AboutPage() {
                 marginBottom: '1rem',
               }}
             >
-              <Leaf size={28} />
+              <Award size={28} />
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>100% Naturally Sourced</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>Quality</h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-              Zero chemical preservatives, no artificial colors, and zero adulteration. Only pure, wholesome dry fruits.
+              Rigorous selection of premium, handpicked dry fruits and nuts to ensure top-tier taste and nutrition.
             </p>
           </div>
 
@@ -116,11 +116,11 @@ export default function AboutPage() {
                 marginBottom: '1rem',
               }}
             >
-              <Award size={28} />
+              <Leaf size={28} />
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>Handpicked Jumbo Grade</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>Freshness</h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-              Rigorous multi-stage sorting to ensure every pouch is packed with giant, crispy, uniform-sized kernels.
+              Hygienically packed with aroma-lock seals to preserve natural aroma, crunchy texture, and pure wholesome goodness.
             </p>
           </div>
 
@@ -149,9 +149,9 @@ export default function AboutPage() {
             >
               <ShieldCheck size={28} />
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>Aroma-Lock Freshness</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>Value</h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-              Food-grade nitrogen vacuum sealing retains the crunch and rich nutty aroma for maximum shelf freshness.
+              Direct sourcing enables us to offer competitive, transparent prices without compromising on grade or purity.
             </p>
           </div>
 
@@ -178,18 +178,18 @@ export default function AboutPage() {
                 marginBottom: '1rem',
               }}
             >
-              <Heart size={28} />
+              <Truck size={28} />
             </div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>Farmer Empowerment</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>Convenience</h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-              Ethically sourced through direct grower partnerships, providing fair value and sustainable farming support.
+              Seamless online ordering, fast prompt dispatch, and dedicated customer support at your fingertips.
             </p>
           </div>
         </div>
       </section>
 
-      {/* The NUTFLIX Story */}
-      <section className="container" style={{ maxWidth: '1000px', marginTop: '4.5rem' }}>
+      {/* The NUTFLIX Story & Mission */}
+      <section className="container" style={{ maxWidth: '1000px', marginTop: '4rem' }}>
         <div
           style={{
             backgroundColor: '#ffffff',
@@ -201,58 +201,96 @@ export default function AboutPage() {
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem', alignItems: 'center' }}>
             <div>
-              <span className="badge-impact" style={{ marginBottom: '0.8rem' }}>Behind The Brand</span>
+              <span className="badge-impact" style={{ marginBottom: '0.8rem' }}>Darshan Techno System</span>
               <h2 style={{ fontSize: '2.1rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '1.2rem', lineHeight: '1.2' }}>
-                Crafting The Standard for Premium Dry Fruits
+                About NUTFLIX
               </h2>
               <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.96rem', marginBottom: '1.2rem' }}>
-                Founded under <strong>DARSHAN TECHNO SYSTEM</strong>, <strong>NUTFLIX</strong> was created with a clear, singular vision: to eliminate the ambiguity around dry fruit quality and bring genuine, luxury-grade dry fruits to Indian households at fair, transparent prices.
+                <strong>NUTFLIX</strong> is a brand of <strong>Darshan Techno System</strong>, engaged in the online and offline sale of quality dry fruits.
               </p>
-              <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.96rem', marginBottom: '1.5rem' }}>
-                From hand-roasted jumbo cashews and rich Californian almonds to organic Kashmiri walnuts and golden raisins, every single product under NUTFLIX undergoes strict grading, hygienic vacuum sealing, and rigorous testing before it leaves our Kolkata headquarters.
+              <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.96rem', marginBottom: '1.2rem' }}>
+                We aim to provide fresh, hygienically packed and carefully selected dry fruits with convenient ordering and prompt delivery. Our promise is simple and steadfast: <strong>Quality • Freshness • Value • Convenience</strong>.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.92rem' }}>
                   <CheckCircle2 size={20} color="var(--color-gold)" />
-                  <span>Direct sourcing from the most fertile growing regions</span>
+                  <span>Fresh, carefully selected and graded dry fruits</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.92rem' }}>
                   <CheckCircle2 size={20} color="var(--color-gold)" />
-                  <span>Zero compromises on hygiene and packaging integrity</span>
+                  <span>Hygienically packed to retain natural crunch and aroma</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.92rem' }}>
                   <CheckCircle2 size={20} color="var(--color-gold)" />
-                  <span>Prompt, nationwide doorstep shipping with care</span>
+                  <span>Convenient ordering with fast delivery across India</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.92rem' }}>
+                  <CheckCircle2 size={20} color="var(--color-gold)" />
+                  <span>FSSAI Certified: License No. 22826039000325</span>
                 </div>
               </div>
             </div>
 
-            {/* Visual Highlight Card */}
+            {/* Official Business Information Card */}
             <div
               style={{
                 backgroundColor: 'var(--color-forest)',
                 color: '#ffffff',
                 borderRadius: '24px',
-                padding: '2.5rem',
-                textAlign: 'center',
+                padding: '2.2rem',
                 position: 'relative',
                 overflow: 'hidden',
               }}
             >
-              <div style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--color-gold)', lineHeight: '1', marginBottom: '0.5rem' }}>
-                100%
+              <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-gold)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                Brand & Corporate Office
               </div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.5rem', color: '#ffffff' }}>
-                Quality &amp; Satisfaction Guarantee
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.4rem', color: '#ffffff' }}>
+                NUTFLIX
               </div>
-              <p style={{ fontSize: '0.88rem', color: 'var(--color-cream)', lineHeight: '1.6', marginBottom: '2rem' }}>
-                If you are ever unsatisfied with the crunch, flavor, or condition of your order, our dedicated customer desk will make it right with an instant replacement or refund.
-              </p>
+              <div style={{ fontSize: '0.9rem', color: '#c0d4c5', marginBottom: '1.5rem', fontWeight: 600 }}>
+                A Brand of Darshan Techno System
+              </div>
 
-              <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.15)', paddingTop: '1.5rem', fontSize: '0.85rem', color: 'var(--color-gold)' }}>
-                <strong>DARSHAN TECHNO SYSTEM</strong><br />
-                <span style={{ color: '#eadfcb' }}>Kolkata – 700017, West Bengal</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.88rem', color: '#eadfcb', borderTop: '1px solid rgba(255, 255, 255, 0.15)', paddingTop: '1.2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
+                  <MapPin size={18} color="var(--color-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong>Registered Office:</strong><br />
+                    43, Karaya Road, Kolkata – 700017<br />
+                    West Bengal, India
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <Phone size={18} color="var(--color-gold)" style={{ flexShrink: 0 }} />
+                  <div>
+                    <strong>Phone / WhatsApp:</strong>{' '}
+                    <a href="tel:9330193041" style={{ color: '#ffffff', fontWeight: 700, textDecoration: 'none' }}>
+                      9330193041
+                    </a>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <Globe size={18} color="var(--color-gold)" style={{ flexShrink: 0 }} />
+                  <div>
+                    <strong>Website:</strong>{' '}
+                    <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700, textDecoration: 'none' }}>
+                      www.nutflix.in
+                    </a>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '0.5rem', padding: '0.6rem 0.8rem', backgroundColor: 'rgba(200, 157, 102, 0.18)', borderRadius: '12px', border: '1px solid rgba(200, 157, 102, 0.35)' }}>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-gold)', fontWeight: 800 }}>
+                    FSSAI LICENSE NUMBER
+                  </div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#ffffff', letterSpacing: '0.04em' }}>
+                    22826039000325
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -270,10 +308,10 @@ export default function AboutPage() {
           }}
         >
           <h2 style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.8rem' }}>
-            Ready to Experience Fresh Healthy Snacking?
+            Experience Fresh, Wholesome Snacking
           </h2>
           <p style={{ fontSize: '0.98rem', color: 'var(--color-text-muted)', marginBottom: '1.8rem', maxWidth: '520px', margin: '0 auto 1.8rem' }}>
-            Explore our curated catalog of freshly roasted cashews, premium almonds, walnuts, and gift collections today.
+            Explore our curated catalog of freshly packed cashews, premium almonds, walnuts, raisins, and dried fruits today.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/products" className="btn-primary">
@@ -281,7 +319,7 @@ export default function AboutPage() {
               <ArrowRight size={18} />
             </Link>
             <Link href="/contact" className="btn-outline">
-              <span>Get In Touch</span>
+              <span>Contact Us</span>
             </Link>
           </div>
         </div>

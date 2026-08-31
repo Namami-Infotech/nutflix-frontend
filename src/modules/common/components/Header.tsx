@@ -83,7 +83,7 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
             Shop All
           </Link>
           <Link href="/categories/cashews-nuts" style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-forest)' }}>
-            Cashews & Nuts
+            Categories
           </Link>
         </nav>
 
