@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { CreditCard, IndianRupee, Wallet, CheckCircle2, Sliders, Calendar, TrendingUp, RefreshCw, AlertCircle } from 'lucide-react';
 import { PaymentType } from '@/types';
+import { formatPrice } from '@/lib/api';
 
 interface PaymentsViewProps {
   paymentBreakdown: any;
@@ -282,7 +283,7 @@ export default function PaymentsView({
               </div>
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 900, margin: '0.5rem 0 0.2rem 0', color: '#ffffff' }}>
-              ₹{onlineRevenue.toFixed(2)}
+              ₹{formatPrice(onlineRevenue)}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>{startDate || endDate ? `Filtered: ${startDate || 'Start'} to ${endDate || 'Today'}` : 'All-time online sales'}</span>
@@ -310,7 +311,7 @@ export default function PaymentsView({
               </div>
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 900, margin: '0.5rem 0 0.2rem 0', color: '#ffffff' }}>
-              ₹{cashRevenue.toFixed(2)}
+              ₹{formatPrice(cashRevenue)}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>{startDate || endDate ? `Filtered: ${startDate || 'Start'} to ${endDate || 'Today'}` : 'All-time cash sales'}</span>

@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Product, Category } from '@/types';
 import { PlusCircle, Image as ImageIcon, Sparkles, Check, Upload, Info } from 'lucide-react';
 
-import { uploadImage, formatWeightAndUnit } from '@/lib/api';
+import { uploadImage, formatWeightAndUnit, formatPrice } from '@/lib/api';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -26,7 +26,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [categoryId, setCategoryId] = useState<number>(categories[0]?.id || 1);
-  const [price, setPrice] = useState('9.99');
+  const [price, setPrice] = useState('999');
+  const [sellingPrice, setSellingPrice] = useState('');
   const [weight, setWeight] = useState('250g');
   const [origin, setOrigin] = useState('Mtwara, Tanzania');
   const [imageUrl, setImageUrl] = useState('');
@@ -60,6 +61,29 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const rawPrice = price.startsWith('₹') || price.startsWith('$') ? price.slice(1) : price;
+    const regPrice = parseFloat(rawPrice);
+    if (isNaN(regPrice) || regPrice <= 0) {
+      alert('Please enter a valid regular price (MRP) greater than 0.');
+      return;
+    }
+
+    let finalSellingPrice: string | undefined = undefined;
+    if (sellingPrice.trim()) {
+      const rawSelling = sellingPrice.startsWith('₹') || sellingPrice.startsWith('$') ? sellingPrice.slice(1) : sellingPrice;
+      const sellVal = parseFloat(rawSelling);
+      if (isNaN(sellVal) || sellVal < 0) {
+        alert('Please enter a valid selling price.');
+        return;
+      }
+      if (sellVal > regPrice) {
+        alert(`Selling price (₹${sellVal}) cannot be greater than Regular Price / MRP (₹${regPrice}).`);
+        return;
+      }
+      finalSellingPrice = String(sellVal);
+    }
+
     let finalImageUrl = imageUrl;
     if (finalImageUrl.startsWith('data:')) {
       const uploadRes = await uploadImage(finalImageUrl);
@@ -76,7 +100,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       name: name.trim(),
       slug,
       description: description || 'Freshly harvested artisanal Tanzanian produce, sourced directly with fair pay for local farming communities.',
-      price: price.startsWith('₹') || price.startsWith('$') ? price.slice(1) : price,
+      price: String(regPrice),
+      sellingPrice: finalSellingPrice,
       origin: origin || 'Tanzania',
       weight: formatWeightAndUnit(weight),
       impactDescription: impactDescription || 'Directly empowers local Tanzanian farmers and supports rural community development.',
@@ -94,6 +119,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     setName('');
     setDescription('');
     setImpactDescription('');
+    setSellingPrice('');
   };
 
   return (
@@ -135,7 +161,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={labelStyle}>Category</label>
               <select
@@ -152,14 +178,32 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             </div>
 
             <div>
-              <label style={labelStyle}>Price (₹) *</label>
+              <label style={labelStyle}>Regular Price / MRP (₹) *</label>
               <input
                 type="text"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                placeholder="11.99"
+                placeholder="999"
                 style={inputStyle}
                 required
+              />
+            </div>
+
+            <div>
+              <label style={{ ...labelStyle, color: '#047857' }}>Selling Price (₹)</label>
+              <input
+                type="text"
+                value={sellingPrice}
+                onChange={(e) => setSellingPrice(e.target.value)}
+                placeholder="799 (Optional)"
+                style={{
+                  ...inputStyle,
+                  borderColor: (() => {
+                    const reg = parseFloat(price) || 0;
+                    const sell = parseFloat(sellingPrice) || 0;
+                    return reg > 0 && sell > reg ? '#ef4444' : 'var(--color-gold-light, #d1d5db)';
+                  })()
+                }}
               />
             </div>
 
@@ -175,6 +219,46 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             </div>
           </div>
 
+          {/* Validation / Discount indicator */}
+          {(() => {
+            const reg = parseFloat(price) || 0;
+            const sell = parseFloat(sellingPrice) || 0;
+            if (reg > 0 && sell > reg) {
+              return (
+                <div style={{
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fca5a5',
+                  borderRadius: '8px',
+                  padding: '0.5rem 0.75rem',
+                  color: '#b91c1c',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  marginBottom: '1rem'
+                }}>
+                  ⚠️ Selling price (₹{sell}) cannot be greater than Regular Price / MRP (₹{reg}).
+                </div>
+              );
+            }
+            if (reg > 0 && sell > 0 && sell < reg) {
+              const pct = Math.round(((reg - sell) / reg) * 100);
+              return (
+                <div style={{
+                  backgroundColor: '#ecfdf5',
+                  border: '1px solid #a7f3d0',
+                  borderRadius: '8px',
+                  padding: '0.5rem 0.75rem',
+                  color: '#065f46',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  marginBottom: '1rem'
+                }}>
+                  🎉 {pct}% OFF (Customer saves ₹{formatPrice(reg - sell)})
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
               <label style={labelStyle}>Origin Location</label>
@@ -184,18 +268,6 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                 onChange={(e) => setOrigin(e.target.value)}
                 placeholder="e.g. Pemba Island, Zanzibar"
                 style={inputStyle}
-              />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Initial Stock Quantity</label>
-              <input
-                type="number"
-                value={stock}
-                onChange={(e) => setStock(Number(e.target.value))}
-                placeholder="100"
-                style={inputStyle}
-                min={0}
               />
             </div>
           </div>

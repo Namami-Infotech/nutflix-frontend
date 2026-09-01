@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Search, Menu, X, Heart, Leaf } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, Heart, Leaf } from 'lucide-react';
 import { useCart } from '../../cart/cart.context';
 
 export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSearch }) => {
@@ -144,7 +144,7 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
               transition: 'var(--transition)',
             }}
           >
-            <ShoppingBag size={18} color="var(--color-gold)" />
+            <ShoppingCart size={18} color="var(--color-gold)" />
             <span>Basket</span>
             {totalItems > 0 && (
               <span

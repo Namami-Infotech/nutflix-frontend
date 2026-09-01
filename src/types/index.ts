@@ -15,6 +15,7 @@ export interface Product {
   slug: string;
   description: string;
   price: string;
+  sellingPrice?: string | number | null;
   origin: string;
   weight: string;
   unit?: string;

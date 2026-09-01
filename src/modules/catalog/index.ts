@@ -4,4 +4,5 @@ export * from './components/CategoryFilter';
 export * from './components/ProductDetailModal';
 export * from './components/ProductSort';
 export * from './components/AddProductModal';
+export * from './components/ProductReviews';
 

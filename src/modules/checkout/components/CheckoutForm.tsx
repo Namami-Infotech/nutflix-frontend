@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/modules/cart';
-import { submitOrder, fetchPaymentTypes, PaymentType, getAuthToken, createRazorpayOrder, verifyRazorpayPayment, getRazorpayKey } from '@/lib/api';
+import { submitOrder, fetchPaymentTypes, PaymentType, getAuthToken, createRazorpayOrder, verifyRazorpayPayment, getRazorpayKey, getProductPrices, formatPrice } from '@/lib/api';
 import { useAuth } from '@/modules/auth';
-import { ShoppingBag, ShieldCheck, CheckCircle2, ArrowRight, Truck, CreditCard, Banknote, User, Lock, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { ShoppingCart, ShieldCheck, CheckCircle2, ArrowRight, Truck, CreditCard, Banknote, User, Lock, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 // Dynamically load Razorpay standard Checkout script
@@ -95,13 +95,16 @@ export const CheckoutForm: React.FC = () => {
       shippingAddress: fullAddress,
       paymentType: selectedPayment,
       totalAmount,
-      items: items.map((item) => ({
-        productId: item.product.id,
-        quantity: item.quantity,
-        price: parseFloat(item.product.price),
-        name: item.product.name,
-        imageUrl: item.product.imageUrl,
-      })),
+      items: items.map((item) => {
+        const { currentPrice } = getProductPrices(item.product);
+        return {
+          productId: item.product.id,
+          quantity: item.quantity,
+          price: currentPrice,
+          name: item.product.name,
+          imageUrl: item.product.imageUrl,
+        };
+      }),
     };
 
     // If Cash on Delivery is selected
@@ -161,7 +164,7 @@ export const CheckoutForm: React.FC = () => {
         amount: rzpOrderData.amount, // in paise
         currency: rzpOrderData.currency || 'INR',
         name: 'Nutflix Tanzania',
-        description: `Order Checkout (₹${totalAmount.toFixed(2)})`,
+        description: `Order Checkout (₹${formatPrice(totalAmount)})`,
         order_id: rzpOrderData.id,
         prefill: {
           name: customerName,
@@ -670,12 +673,12 @@ export const CheckoutForm: React.FC = () => {
             ) : selectedPayment === 'online' ? (
               <>
                 <CreditCard size={18} />
-                <span>Pay with Razorpay • ₹{totalAmount.toFixed(2)}</span>
+                <span>Pay with Razorpay • ₹{formatPrice(totalAmount)}</span>
               </>
             ) : (
               <>
                 <Banknote size={18} />
-                <span>Place COD Order • ₹{totalAmount.toFixed(2)}</span>
+                <span>Place COD Order • ₹{formatPrice(totalAmount)}</span>
               </>
             )}
           </button>
@@ -688,34 +691,44 @@ export const CheckoutForm: React.FC = () => {
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem', maxHeight: '300px', overflowY: 'auto' }}>
-            {items.map((item) => (
-              <div key={item.product.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.8rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <img src={item.product.imageUrl} alt={item.product.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px' }} />
-                  <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--color-forest)' }}>{item.product.name}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>Qty: {item.quantity} × ₹{parseFloat(item.product.price).toFixed(2)}</div>
+            {items.map((item) => {
+              const { currentPrice, regularPrice, hasDiscount } = getProductPrices(item.product);
+              return (
+                <div key={item.product.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.8rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                    <img src={item.product.imageUrl} alt={item.product.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <div>
+                      <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--color-forest)' }}>{item.product.name}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span>Qty: {item.quantity} × ₹{formatPrice(currentPrice)}</span>
+                        {hasDiscount && (
+                          <span style={{ textDecoration: 'line-through', color: '#dc2626', fontSize: '0.72rem', opacity: 0.85 }}>
+                            ₹{formatPrice(regularPrice)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--color-forest)' }}>
+                    ₹{formatPrice(currentPrice * item.quantity)}
                   </div>
                 </div>
-                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--color-forest)' }}>
-                  ₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.88rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-muted)' }}>
               <span>Subtotal</span>
-              <span>₹{subtotal.toFixed(2)}</span>
+              <span>₹{formatPrice(subtotal)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-muted)' }}>
               <span>Shipping</span>
-              <span>{shippingCost === 0 ? <strong style={{ color: '#276749' }}>FREE</strong> : `₹${shippingCost.toFixed(2)}`}</span>
+              <span>{shippingCost === 0 ? <strong style={{ color: '#276749' }}>FREE</strong> : `₹${formatPrice(shippingCost)}`}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 900, color: 'var(--color-forest)', paddingTop: '0.6rem', borderTop: '1px solid var(--color-border)' }}>
               <span>Total</span>
-              <span>₹{totalAmount.toFixed(2)}</span>
+              <span>₹{formatPrice(totalAmount)}</span>
             </div>
           </div>
         </div>

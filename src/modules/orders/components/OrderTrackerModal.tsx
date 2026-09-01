@@ -14,6 +14,7 @@ import {
   XCircle,
   FileCheck
 } from 'lucide-react';
+import { formatPrice } from '@/lib/api';
 
 export interface OrderTrackerModalProps {
   order: any | null;
@@ -194,7 +195,7 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({ order, isO
             <div>
               <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 800 }}>Total Amount</span>
               <div style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--color-forest)', marginTop: '2px' }}>
-                ₹{parseFloat(order.totalAmount || 0).toFixed(2)}
+                ₹{formatPrice(order.totalAmount || 0)}
               </div>
             </div>
 
@@ -391,7 +392,7 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({ order, isO
                   </div>
 
                   <div style={{ fontWeight: 900, fontSize: '0.88rem', color: 'var(--color-forest)' }}>
-                    ₹{((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)}
+                    ₹{formatPrice((parseFloat(item.price) || 0) * (item.quantity || 1))}
                   </div>
                 </div>
               ))}

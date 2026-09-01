@@ -14,7 +14,7 @@ import {
   Truck,
   LogOut,
   ChevronRight,
-  ShoppingBag,
+  ShoppingCart,
   Home,
   Mail,
   MessageCircle,
@@ -61,7 +61,9 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
 
   const handleLoginClick = () => {
     onClose();
-    openLoginModal();
+    openLoginModal(() => {
+      router.push('/');
+    });
   };
 
   return (
@@ -399,7 +401,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-                  <ShoppingBag size={18} />
+                  <ShoppingCart size={18} />
                   <span>Shop All Products</span>
                 </div>
                 <ChevronRight size={15} color="var(--color-text-muted)" />

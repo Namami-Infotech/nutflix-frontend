@@ -52,7 +52,8 @@ import {
   logoutUser,
   getUserFromCookie,
   setUserCookie,
-  setCookie
+  setCookie,
+  formatPrice
 } from '@/lib/api';
 
 import AdminSidebar, { SidebarItem } from './AdminSidebar';
@@ -117,6 +118,7 @@ export default function AdminView() {
   const [productForm, setProductForm] = useState({
     name: '',
     price: '',
+    sellingPrice: '',
     stock: '100',
     categoryId: 1,
     imageUrl: '',
@@ -377,6 +379,24 @@ export default function AdminView() {
     if (!productForm.imageUrl) {
       showToast('Please upload a product image first.', 'error');
       return;
+    }
+
+    const regPrice = parseFloat(productForm.price);
+    if (isNaN(regPrice) || regPrice <= 0) {
+      showToast('Please enter a valid regular price / MRP (greater than 0)', 'error');
+      return;
+    }
+
+    if (productForm.sellingPrice !== undefined && productForm.sellingPrice !== '' && productForm.sellingPrice !== null) {
+      const sellPrice = parseFloat(productForm.sellingPrice);
+      if (isNaN(sellPrice) || sellPrice < 0) {
+        showToast('Please enter a valid selling price', 'error');
+        return;
+      }
+      if (sellPrice > regPrice) {
+        showToast(`Selling price (₹${sellPrice}) cannot be greater than Regular Price / MRP (₹${regPrice})`, 'error');
+        return;
+      }
     }
 
     let finalImageUrl = productForm.imageUrl;
@@ -845,14 +865,14 @@ export default function AdminView() {
                   searchQuery={searchQuery}
                   onAddProduct={() => {
                     setEditingProduct(null);
-                    setProductForm({ name: '', price: '', stock: '100', categoryId: categories[0]?.id || 1, imageUrl: '', description: '', origin: 'Kolkata Reserve', weight: '250', unit: 'g', isFeatured: true });
+                    setProductForm({ name: '', price: '', sellingPrice: '', stock: '100', categoryId: categories[0]?.id || 1, imageUrl: '', description: '', origin: 'Kolkata Reserve', weight: '250', unit: 'g', isFeatured: true });
                     setProductKeywords([]);
                     setProductKeywordInput('');
                     setProductModalOpen(true);
                   }}
                   onEditProduct={(prod) => {
                     setEditingProduct(prod);
-                    setProductForm({ name: prod.name, price: prod.price, stock: String(prod.stock ?? 100), categoryId: prod.categoryId || 1, imageUrl: prod.imageUrl, description: prod.description || '', origin: prod.origin || 'Kolkata Reserve', weight: prod.weight || '250', unit: prod.unit || 'g', isFeatured: Boolean(prod.isFeatured) });
+                    setProductForm({ name: prod.name, price: prod.price, sellingPrice: prod.sellingPrice ? String(prod.sellingPrice) : '', stock: String(prod.stock ?? 100), categoryId: prod.categoryId || 1, imageUrl: prod.imageUrl, description: prod.description || '', origin: prod.origin || 'Kolkata Reserve', weight: prod.weight || '250', unit: prod.unit || 'g', isFeatured: Boolean(prod.isFeatured) });
                     const kws = Array.isArray(prod.keywords) ? prod.keywords : (prod.keywords ? JSON.parse(prod.keywords) : (prod.name ? [prod.name] : []));
                     setProductKeywords(kws);
                     setProductKeywordInput('');
@@ -994,19 +1014,108 @@ export default function AdminView() {
                     </select>
                   </div>
 
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
-                      Price (₹) *
-                    </label>
-                    <input
-                      type="text"
-                      value={productForm.price}
-                      onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                      required
-                      placeholder="e.g. 999"
-                      style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
-                    />
+                  {/* 2-Price Inputs: Regular Price (MRP) & Selling Price */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
+                        Regular Price / MRP (₹) *
+                      </label>
+                      <input
+                        type="text"
+                        value={productForm.price}
+                        onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                        required
+                        placeholder="e.g. 999"
+                        style={{ width: '100%', padding: '0.75rem 0.85rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                      <span style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '3px', display: 'block' }}>
+                        Cut-through price (<s>₹999</s>)
+                      </span>
+                    </div>
+
+                    <div>
+                      {(() => {
+                        const reg = parseFloat(productForm.price) || 0;
+                        const sell = parseFloat(productForm.sellingPrice) || 0;
+                        const isPriceInvalid = reg > 0 && sell > reg;
+
+                        return (
+                          <>
+                            <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: isPriceInvalid ? '#dc2626' : '#047857' }}>
+                              Selling Price (₹)
+                            </label>
+                            <input
+                              type="text"
+                              value={productForm.sellingPrice}
+                              onChange={(e) => setProductForm({ ...productForm, sellingPrice: e.target.value })}
+                              placeholder="e.g. 799 (Optional)"
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem 0.85rem',
+                                borderRadius: '10px',
+                                border: isPriceInvalid ? '1.5px solid #ef4444' : '1.5px solid #10b981',
+                                fontSize: '0.9rem',
+                                outline: 'none',
+                                backgroundColor: isPriceInvalid ? '#fef2f2' : '#f0fdf4',
+                                color: isPriceInvalid ? '#b91c1c' : '#065f46',
+                                fontWeight: 800,
+                                boxSizing: 'border-box'
+                              }}
+                            />
+                            <span style={{ fontSize: '0.7rem', color: isPriceInvalid ? '#dc2626' : '#059669', marginTop: '3px', display: 'block', fontWeight: isPriceInvalid ? 700 : 400 }}>
+                              {isPriceInvalid ? '⚠️ Cannot exceed MRP' : 'Actual customer pay price'}
+                            </span>
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
+
+                  {/* Calculated Live Discount Preview / Warning */}
+                  {(() => {
+                    const reg = parseFloat(productForm.price) || 0;
+                    const sell = parseFloat(productForm.sellingPrice) || 0;
+                    if (reg > 0 && sell > 0 && sell < reg) {
+                      const pct = Math.round(((reg - sell) / reg) * 100);
+                      const saved = formatPrice(reg - sell);
+                      return (
+                        <div style={{
+                          backgroundColor: '#ecfdf5',
+                          border: '1px solid #a7f3d0',
+                          borderRadius: '10px',
+                          padding: '0.6rem 0.85rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          color: '#065f46',
+                          fontSize: '0.82rem',
+                          fontWeight: 800
+                        }}>
+                          <span>🎉 Customer Discount: <strong style={{ color: '#047857', fontSize: '0.92rem' }}>{pct}% OFF</strong></span>
+                          <span>Save ₹{saved}</span>
+                        </div>
+                      );
+                    }
+                    if (reg > 0 && sell > reg) {
+                      return (
+                        <div style={{
+                          backgroundColor: '#fef2f2',
+                          border: '1.5px solid #fca5a5',
+                          borderRadius: '10px',
+                          padding: '0.6rem 0.85rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          color: '#b91c1c',
+                          fontSize: '0.82rem',
+                          fontWeight: 700
+                        }}>
+                          <span>⚠️ Selling price (₹{sell}) cannot be greater than Regular Price / MRP (₹{reg}).</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
 
                 {/* Right Column */}

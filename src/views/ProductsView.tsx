@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Package, Sparkles } from 'lucide-react';
 import Pagination from '@/components/Pagination';
+import { formatPrice } from '@/lib/api';
 
 interface ProductsViewProps {
   products: any[];
@@ -68,7 +69,6 @@ export default function ProductsView({
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Thumbnail</th>
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Product Details</th>
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Price</th>
-              <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Stock Units</th>
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Origin & Weight</th>
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Keywords</th>
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Featured</th>
@@ -91,13 +91,34 @@ export default function ProductsView({
                     <div style={{ fontWeight: 800, color: '#0f291e', fontSize: '0.88rem' }}>{prod.name}</div>
                     <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.1rem' }}>{prod.description?.substring(0, 50)}...</div>
                   </td>
-                  <td style={{ padding: '0.55rem 0.75rem', fontWeight: 900, color: '#10b981', fontSize: '0.88rem' }}>
-                    ₹{prod.price}
-                  </td>
                   <td style={{ padding: '0.55rem 0.75rem' }}>
-                    <span style={{ backgroundColor: '#e0f2fe', color: '#0369a1', padding: '0.2rem 0.55rem', borderRadius: '6px', fontWeight: 800, fontSize: '0.72rem' }}>
-                      {prod.stock || 100} in stock
-                    </span>
+                    {(() => {
+                      const reg = parseFloat(prod.price) || 0;
+                      const sell = prod.sellingPrice ? parseFloat(String(prod.sellingPrice)) : 0;
+                      if (sell > 0 && sell < reg) {
+                        const pct = Math.round(((reg - sell) / reg) * 100);
+                        return (
+                          <div>
+                            <div style={{ fontWeight: 900, color: '#047857', fontSize: '0.9rem' }}>
+                              ₹{formatPrice(sell)}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                              <span style={{ textDecoration: 'line-through', color: '#dc2626', fontSize: '0.72rem', opacity: 0.85 }}>
+                                ₹{formatPrice(reg)}
+                              </span>
+                              <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '1px 4px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 800 }}>
+                                {pct}% OFF
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <span style={{ fontWeight: 900, color: '#0f291e', fontSize: '0.88rem' }}>
+                          ₹{formatPrice(reg)}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td style={{ padding: '0.55rem 0.75rem', color: '#475569', fontWeight: 600 }}>
                     {prod.origin || 'Kolkata Reserve'} <span style={{ color: '#0284c7', fontWeight: 800 }}>({prod.weight || '250'} {prod.unit || 'g'})</span>

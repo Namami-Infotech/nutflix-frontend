@@ -167,7 +167,7 @@ function CatalogContent() {
             <Sparkles size={14} color="var(--color-gold)" /> Direct From Tanzanian Farmers
           </span>
           <h1 style={{ fontSize: '2.8rem', fontWeight: 900, marginBottom: '0.8rem' }}>
-            {activeCategoryObj ? activeCategoryObj.name : 'Harvest Collections'}
+            {activeCategoryObj ? activeCategoryObj.name : 'All Products'}
           </h1>
           <p style={{ fontSize: '1.1rem', color: 'var(--color-cream)', lineHeight: '1.6' }}>
             {activeCategoryObj

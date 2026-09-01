@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShoppingBag, Package, User, ShieldCheck } from 'lucide-react';
+import { Home, ShoppingCart, Package, User, ShieldCheck } from 'lucide-react';
 import { getUserFromCookie } from '@/lib/api';
 
 export const MobileBottomBar: React.FC = () => {
@@ -19,7 +19,7 @@ export const MobileBottomBar: React.FC = () => {
 
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
-    { label: 'Shop All', href: '/products', icon: ShoppingBag },
+    { label: 'Shop All', href: '/products', icon: ShoppingCart },
     { label: 'Categories', href: '/categories/cashews-nuts', icon: Package },
     isAdmin
       ? { label: 'Admin', href: '/admin', icon: ShieldCheck }

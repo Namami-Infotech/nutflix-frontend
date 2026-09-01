@@ -65,9 +65,9 @@ export default function HomePage() {
           {/* Section Header */}
           <div style={{ marginBottom: '2.2rem' }}>
             <div style={{ maxWidth: '680px' }}>
-              <span className="badge-impact" style={{ marginBottom: '0.8rem' }}>
+              {/* <span className="badge-impact" style={{ marginBottom: '0.8rem' }}>
                 Harvest Collections
-              </span>
+              </span> */}
               <h2
                 style={{
                   fontSize: '2.4rem',

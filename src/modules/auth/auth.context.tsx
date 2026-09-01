@@ -42,6 +42,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     checkAuth();
+    const handleAuthEvent = () => {
+      checkAuth();
+    };
+    window.addEventListener('authChange', handleAuthEvent);
+    window.addEventListener('storage', handleAuthEvent);
+    return () => {
+      window.removeEventListener('authChange', handleAuthEvent);
+      window.removeEventListener('storage', handleAuthEvent);
+    };
   }, [checkAuth]);
 
   const openLoginModal = useCallback((callback?: () => void, prompt?: string) => {

@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { fetchProductBySlug, fetchReviews, fetchPaymentTypes, formatWeightAndUnit, PaymentType } from '@/lib/api';
+import { useParams, useRouter } from 'next/navigation';
+import { fetchProductBySlug, fetchReviews, fetchPaymentTypes, formatWeightAndUnit, getProductPrices, formatPrice, PaymentType } from '@/lib/api';
 import { Product, Review } from '@/types';
 import { useCart } from '@/modules/cart';
 import { useAuth } from '@/modules/auth';
-import { Star, ShoppingBag, Heart, ArrowLeft, Plus, Minus, CreditCard, ShieldCheck, Truck, Share2, Sparkles, CheckCircle2, Leaf } from 'lucide-react';
+import { Star, ShoppingCart, Heart, ArrowLeft, Plus, Minus, CreditCard, ShieldCheck, Truck, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { ProductReviews } from '@/modules/catalog/components/ProductReviews';
+import { ProductReviews } from '@/modules/catalog';
 
 export const dynamic = 'force-dynamic';
 
 export default function ProductDetailPage({ params }: { params?: { slug?: string } }) {
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const routeParams = useParams();
   const slug = (params?.slug || routeParams?.slug || '') as string;
@@ -29,6 +30,9 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const cartItem = mounted && product && Array.isArray(cartItems) ? cartItems.find((i) => String(i.product.id) === String(product.id)) : null;
+  const cartQty = cartItem ? cartItem.quantity : 0;
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -75,6 +79,18 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
     }
   };
 
+  const handleBack = () => {
+    if (typeof window !== 'undefined') {
+      if (document.referrer && document.referrer.includes(window.location.origin)) {
+        router.back();
+      } else if (window.history.length > 1) {
+        router.back();
+      } else {
+        router.push('/products');
+      }
+    }
+  };
+
   if (!mounted || loading) {
     return (
       <div className="container" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
@@ -87,22 +103,23 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
     return (
       <div className="container" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
         <h2>Product not found</h2>
-        <Link href="/products" className="btn-primary" style={{ marginTop: '1rem' }}>
-          Back to Products Catalog
-        </Link>
+        <button onClick={handleBack} className="btn-primary" style={{ marginTop: '1rem', cursor: 'pointer' }}>
+          Back
+        </button>
       </div>
     );
   }
 
   const paymentModesText = activePayments.length > 0
-    ? activePayments.map((p) => (p.code === 'cash' ? 'Cash on Delivery' : 'UPI Payment')).join(' • ')
-    : 'Cash on Delivery • UPI Payment';
+    ? activePayments.map((p) => (p.code === 'cash' ? 'Cash on Delivery' : 'Online / UPI')).join(' • ')
+    : 'Cash on Delivery • Online / UPI';
 
   const stockNum = typeof product.stock === 'number' ? product.stock : parseInt(String(product.stock || 0), 10);
   const isOutOfStock = isNaN(stockNum) || stockNum <= 0;
+  const { regularPrice, currentPrice, hasDiscount, discountPercent, savings } = getProductPrices(product);
 
   return (
-    <div className="container" style={{ padding: '3rem 1.5rem 5rem', position: 'relative' }}>
+    <div className="container product-detail-container" style={{ padding: '1.25rem 1.5rem 4rem', position: 'relative' }}>
       {toastMsg && (
         <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000000, backgroundColor: '#10b981', color: '#fff', padding: '0.85rem 1.5rem', borderRadius: '8px', fontWeight: 800, boxShadow: '0 4px 12px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', gap: '0.5rem', animation: 'fadeIn 0.2s ease-out' }}>
           <CheckCircle2 size={18} />
@@ -110,28 +127,39 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
         </div>
       )}
 
-      <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-forest)', fontWeight: 700, marginBottom: '2rem', textDecoration: 'none' }}>
+      <button
+        type="button"
+        onClick={handleBack}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          color: 'var(--color-forest)',
+          fontWeight: 700,
+          marginBottom: '1rem',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: 0,
+          fontSize: '0.95rem',
+          fontFamily: 'inherit',
+          transition: 'color 0.15s ease',
+        }}
+      >
         <ArrowLeft size={18} />
-        Back to Products Catalog
-      </Link>
+        Back
+      </button>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '4rem', alignItems: 'flex-start' }}>
         {/* Product Gallery Left */}
         <div>
           <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)', position: 'relative' }}>
-            <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '440px', objectFit: 'cover' }} />
-          </div>
-
-          {/* Product Quality Assurance Badges */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginTop: '1.5rem' }}>
-            <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--color-border)', padding: '0.85rem 1rem', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <Leaf size={20} color="var(--color-forest)" />
-              <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--color-forest)' }}>100% Pure & Organic</div>
-            </div>
-            <div style={{ backgroundColor: '#ffffff', border: '1px solid var(--color-border)', padding: '0.85rem 1rem', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <Truck size={20} color="var(--color-gold)" />
-              <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--color-forest)' }}>Express Shipping</div>
-            </div>
+            <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '440px', objectFit: 'cover', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }} />
+            {hasDiscount && !isOutOfStock && (
+              <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', backgroundColor: '#15803d', color: '#ffffff', fontSize: '0.85rem', fontWeight: 900, padding: '0.35rem 0.85rem', borderRadius: '20px', boxShadow: '0 4px 12px rgba(21,128,61,0.35)' }}>
+                {discountPercent}% OFF
+              </div>
+            )}
           </div>
         </div>
 
@@ -139,20 +167,16 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
         <div>
           {/* Status Badges */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-            {cartItems.find((i) => String(i.product.id) === String(product.id)) && (
+            {cartQty > 0 && (
               <button
                 onClick={() => openCart()}
                 style={{ backgroundColor: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe', padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}
                 title="Click to view Cart"
               >
-                <ShoppingBag size={13} color="#2563eb" />
-                <span>{cartItems.find((i) => String(i.product.id) === String(product.id))?.quantity} in your Cart</span>
+                <ShoppingCart size={13} color="#2563eb" />
+                <span>{cartQty} in your Cart</span>
               </button>
             )}
-            <span style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span>
-              In Stock & Ready to Dispatch
-            </span>
             <span style={{ backgroundColor: '#fefce8', color: '#854d0e', border: '1px solid #fef08a', padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               <Sparkles size={12} color="#eab308" /> Direct Farm Sourced
             </span>
@@ -181,33 +205,28 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
             </span>
           </div>
 
+          {/* 2-Price Display */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-              <span style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--color-forest)' }}>
-                ₹{parseFloat(product.price).toFixed(2)}
-              </span>
-              <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)' }}>
-                / {formatWeightAndUnit(product.weight, product.unit)}
-              </span>
-            </div>
-
-            {/* Stock Quantity Badge */}
-            <div style={{ fontSize: '0.85rem', fontWeight: 800 }}>
-              {isOutOfStock ? (
-                <span style={{ color: '#dc2626', backgroundColor: '#fee2e2', padding: '0.35rem 0.85rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#dc2626' }}></span>
-                  Out of Stock (0 units)
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--color-forest)' }}>
+                  ₹{formatPrice(currentPrice)}
                 </span>
-              ) : stockNum <= 5 ? (
-                <span style={{ color: '#ea580c', backgroundColor: '#ffedd5', padding: '0.35rem 0.85rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#ea580c' }}></span>
-                  Only {stockNum} left in stock!
+                {hasDiscount && (
+                  <span style={{ fontSize: '1.3rem', fontWeight: 600, color: '#dc2626', textDecoration: 'line-through', opacity: 0.85 }}>
+                    ₹{formatPrice(regularPrice)}
+                  </span>
+                )}
+                <span style={{ fontSize: '1rem', color: 'var(--color-text-muted)' }}>
+                  / {formatWeightAndUnit(product.weight, product.unit)}
                 </span>
-              ) : (
-                <span style={{ color: '#166534', backgroundColor: '#dcfce7', padding: '0.35rem 0.85rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span>
-                  In Stock: <strong>{stockNum} units</strong>
-                </span>
+              </div>
+              {hasDiscount && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '3px 8px', borderRadius: '6px', fontSize: '0.82rem', fontWeight: 900 }}>
+                    🎉 You Save ₹{formatPrice(savings)} ({discountPercent}% OFF)
+                  </span>
+                </div>
               )}
             </div>
           </div>
@@ -216,55 +235,45 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
             {product.description}
           </p>
 
-          <div style={{ backgroundColor: 'var(--color-gold-light)', padding: '1rem 1.2rem', borderRadius: '14px', border: '1px solid var(--color-gold)', marginBottom: '1.5rem', display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
-            <Heart size={20} fill="var(--color-gold)" color="var(--color-gold)" style={{ marginTop: 2 }} />
-            <div>
-              <h4 style={{ fontWeight: 800, color: '#794d13', fontSize: '0.95rem' }}>Impact Contribution</h4>
-              <p style={{ fontSize: '0.88rem', color: '#794d13' }}>{product.impactDescription}</p>
-            </div>
-          </div>
-
-          {/* Action Row - Clean Horizontal Flex */}
+          {/* Action Row */}
           <div className="product-action-row">
             <div
               className="product-qty-selector"
               style={{
-                opacity: isOutOfStock || isAdmin ? 0.6 : 1,
+                opacity: isAdmin ? 0.6 : 1,
               }}
             >
-              <button disabled={isOutOfStock || isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} className="qty-btn" aria-label="Decrease quantity">
+              <button disabled={isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} className="qty-btn" aria-label="Decrease quantity">
                 <Minus size={16} color="var(--color-forest)" />
               </button>
-              <span className="qty-value">{isOutOfStock ? 0 : quantity}</span>
-              <button disabled={isOutOfStock || isAdmin || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} className="qty-btn" aria-label="Increase quantity">
+              <span className="qty-value">{quantity}</span>
+              <button disabled={isAdmin} onClick={() => setQuantity(quantity + 1)} className="qty-btn" aria-label="Increase quantity">
                 <Plus size={16} color="var(--color-forest)" />
               </button>
             </div>
 
             <button
-              onClick={() => !isOutOfStock && !isAdmin && addToCart(product, quantity)}
-              disabled={isOutOfStock || isAdmin}
+              onClick={() => !isAdmin && addToCart(product, quantity)}
+              disabled={isAdmin}
               className="btn-primary product-add-btn"
               style={{
-                backgroundColor: isOutOfStock || isAdmin ? '#e2e8f0' : undefined,
-                color: isOutOfStock || isAdmin ? '#94a3b8' : undefined,
-                cursor: isOutOfStock || isAdmin ? 'not-allowed' : 'pointer',
-                border: isOutOfStock || isAdmin ? '1px solid #cbd5e1' : undefined,
-                boxShadow: isOutOfStock || isAdmin ? 'none' : undefined,
+                backgroundColor: isAdmin ? '#e2e8f0' : undefined,
+                color: isAdmin ? '#94a3b8' : undefined,
+                cursor: isAdmin ? 'not-allowed' : 'pointer',
+                border: isAdmin ? '1px solid #cbd5e1' : undefined,
+                boxShadow: isAdmin ? 'none' : undefined,
               }}
-              title={isAdmin ? 'Admin accounts cannot purchase items' : isOutOfStock ? 'Item is out of stock' : 'Add to Basket'}
+              title={isAdmin ? 'Admin accounts cannot purchase items' : 'Add to Basket'}
             >
-              <ShoppingBag size={18} />
+              <ShoppingCart size={18} />
               <span className="add-text">
-                {isOutOfStock ? (
-                  'Out of Stock'
-                ) : isAdmin ? (
+                {isAdmin ? (
                   'Admin (Disabled)'
                 ) : (
                   <>
                     <span className="add-text-desktop">Add to Basket</span>
                     <span className="add-text-mobile">Add</span>
-                    <span className="add-price"> • ₹{(parseFloat(product.price) * quantity).toFixed(0)}</span>
+                    <span className="add-price"> • ₹{formatPrice(currentPrice * quantity)}</span>
                   </>
                 )}
               </span>
@@ -283,6 +292,18 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
             >
               <Share2 size={18} />
             </button>
+          </div>
+
+          {/* Delivery & Payment Badges */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.88rem', fontWeight: 700, color: 'var(--color-forest)' }}>
+              <CreditCard size={17} color="var(--color-gold)" />
+              <span>Accepted Payment Modes: {paymentModesText}</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Truck size={16} color="var(--color-gold)" /> Fast 24-48h Dispatch</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><ShieldCheck size={16} color="var(--color-gold)" /> Fair Trade Certified</span>
+            </div>
           </div>
         </div>
       </div>
@@ -391,6 +412,9 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
         }
 
         @media (max-width: 420px) {
+          .product-detail-container {
+            padding: 0.85rem 1rem 3rem !important;
+          }
           .product-action-row {
             gap: 0.35rem;
           }
@@ -422,4 +446,3 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
     </div>
   );
 }
-

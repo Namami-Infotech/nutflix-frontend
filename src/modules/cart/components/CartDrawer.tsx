@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { useCart } from '../cart.context';
-import { formatWeightAndUnit, getAuthToken } from '@/lib/api';
+import { formatWeightAndUnit, getAuthToken, getProductPrices, formatPrice } from '@/lib/api';
 import { useAuth } from '@/modules/auth';
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Heart } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingCart, ArrowRight, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export const CartDrawer: React.FC = () => {
@@ -33,52 +33,51 @@ export const CartDrawer: React.FC = () => {
     router.push('/checkout');
   };
 
-  const freeShippingDiff = freeShippingThreshold - subtotal;
   const progressPercent = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+  const remainingForFree = freeShippingThreshold - subtotal;
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        justifyContent: 'flex-end',
+      }}
+    >
       {/* Backdrop */}
       <div
         onClick={closeCart}
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: 'rgba(13, 23, 17, 0.6)',
+          backgroundColor: 'rgba(22, 35, 26, 0.6)',
           backdropFilter: 'blur(4px)',
-          transition: 'opacity 0.3s ease',
+          animation: 'fadeIn 0.3s ease-out',
         }}
       />
 
-      {/* Slide Drawer Panel */}
+      {/* Drawer */}
       <div
-        className="cart-drawer-panel"
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '460px',
+          maxWidth: '440px',
           height: '100%',
           backgroundColor: '#ffffff',
           boxShadow: 'var(--shadow-lg)',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 10,
-          animation: 'slideLeft 0.3s ease-out',
+          animation: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         <style>{`
-          @keyframes slideLeft {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-          }
-          @media (max-width: 480px) {
-            .cart-drawer-panel {
-              max-width: 100% !important;
-            }
-          }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         `}</style>
-
-        {/* Drawer Header */}
+        {/* Header */}
         <div
           style={{
             padding: '1.25rem 1.5rem',
@@ -90,43 +89,47 @@ export const CartDrawer: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <ShoppingBag size={22} color="var(--color-forest)" />
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--color-forest)' }}>
-              Your Kindness Basket
-            </h2>
+            <ShoppingCart size={20} color="var(--color-forest)" />
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', margin: 0 }}>
+              Your Basket ({items.reduce((acc, i) => acc + i.quantity, 0)})
+            </h3>
           </div>
           <button
             onClick={closeCart}
             style={{
               padding: '0.4rem',
               borderRadius: '50%',
-              backgroundColor: '#fff',
+              backgroundColor: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               border: '1px solid var(--color-border)',
-              cursor: 'pointer',
             }}
-            aria-label="Close cart drawer"
+            aria-label="Close cart"
           >
             <X size={18} color="var(--color-forest)" />
           </button>
         </div>
 
         {/* Free Shipping Progress */}
-        <div style={{ padding: '1rem 1.5rem', backgroundColor: '#f5efe6', borderBottom: '1px solid var(--color-border)' }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
-            {freeShippingDiff <= 0 ? (
-              <span style={{ color: '#276749' }}>🎉 You unlocked FREE Shipping!</span>
-            ) : (
-              <span>
-                Add <strong>₹{freeShippingDiff.toFixed(2)}</strong> more for FREE Shipping!
-              </span>
-            )}
+        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--color-border)', backgroundColor: '#ffffff' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+            <span>
+              {remainingForFree <= 0 ? (
+                <strong style={{ color: '#059669' }}>🎉 You unlocked FREE Express Delivery!</strong>
+              ) : (
+                <>Add <strong style={{ color: 'var(--color-gold-hover)' }}>₹{formatPrice(remainingForFree)}</strong> more for FREE Delivery</>
+              )}
+            </span>
+            <span>{Math.round(progressPercent)}%</span>
           </div>
-          <div style={{ height: '6px', width: '100%', backgroundColor: '#e2dad0', borderRadius: '10px', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--color-bg-light)', borderRadius: '3px', overflow: 'hidden' }}>
             <div
               style={{
-                height: '100%',
                 width: `${progressPercent}%`,
-                backgroundColor: 'var(--color-gold)',
+                height: '100%',
+                backgroundColor: remainingForFree <= 0 ? '#10b981' : 'var(--color-gold)',
+                borderRadius: '3px',
                 transition: 'width 0.4s ease',
               }}
             />
@@ -134,109 +137,153 @@ export const CartDrawer: React.FC = () => {
         </div>
 
         {/* Items List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.5rem' }}>
           {items.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+            <div
+              style={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                color: 'var(--color-text-muted)',
+                gap: '1rem',
+              }}
+            >
               <div
                 style={{
                   width: '70px',
                   height: '70px',
                   borderRadius: '50%',
-                  backgroundColor: 'var(--color-cream-light)',
-                  display: 'inline-flex',
+                  backgroundColor: 'var(--color-bg-light)',
+                  display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginBottom: '1rem',
                 }}
               >
-                <ShoppingBag size={32} color="var(--color-gold)" />
+                <ShoppingCart size={32} color="var(--color-gold)" />
               </div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--color-forest)' }}>
-                Your basket is empty
-              </h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
-                Discover ethically harvested Tanzanian treasures and fuel positive change today.
-              </p>
-              <button onClick={closeCart} className="btn-primary">
-                Explore Products
-              </button>
+              <div>
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.3rem' }}>
+                  Your Basket is Empty
+                </h4>
+                <p style={{ fontSize: '0.85rem' }}>
+                  Discover our nutrient-dense, sustainably harvested Tanzanian cashews.
+                </p>
+              </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {items.map((item) => (
-                <div
-                  key={item.product.id}
-                  style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    paddingBottom: '1.25rem',
-                    borderBottom: '1px solid #f0e8de',
-                  }}
-                >
-                  <img
-                    src={item.product.imageUrl}
-                    alt={item.product.name}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {items.map((item) => {
+                const { currentPrice, regularPrice, hasDiscount } = getProductPrices(item.product);
+                return (
+                  <div
+                    key={item.product.id}
                     style={{
-                      width: '75px',
-                      height: '75px',
-                      objectFit: 'cover',
+                      display: 'flex',
+                      gap: '1rem',
+                      padding: '0.85rem',
                       borderRadius: '12px',
                       backgroundColor: 'var(--color-bg-light)',
+                      border: '1px solid var(--color-border)',
+                      position: 'relative',
                     }}
-                  />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-forest)', lineHeight: '1.3' }}>
+                  >
+                    <img
+                      src={item.product.imageUrl}
+                      alt={item.product.name}
+                      style={{
+                        width: '70px',
+                        height: '70px',
+                        borderRadius: '8px',
+                        objectFit: 'cover',
+                        flexShrink: 0,
+                      }}
+                    />
+
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div style={{ paddingRight: '1.5rem' }}>
+                        <h4
+                          style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 800,
+                            color: 'var(--color-forest)',
+                            lineHeight: 1.3,
+                            marginBottom: '0.2rem',
+                          }}
+                        >
                           {item.product.name}
                         </h4>
-                        <button
-                          onClick={() => removeFromCart(item.product.id)}
-                          style={{ color: '#999', padding: '2px' }}
-                          title="Remove item"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                          {formatWeightAndUnit(item.product.weight, item.product.unit)}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                        Weight: {formatWeightAndUnit(item.product.weight, item.product.unit)}
-                      </div>
-                    </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                      <button
+                        onClick={() => removeFromCart(item.product.id)}
+                        style={{
+                          position: 'absolute',
+                          top: '0.75rem',
+                          right: '0.75rem',
+                          color: 'var(--color-text-muted)',
+                          padding: '4px',
+                        }}
+                        title="Remove item"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+
                       <div
                         style={{
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          border: '1px solid var(--color-border)',
-                          borderRadius: '20px',
-                          padding: '2px 8px',
-                          backgroundColor: '#fbf8f3',
+                          justifyContent: 'space-between',
+                          marginTop: '0.6rem',
                         }}
                       >
-                        <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                          style={{ padding: '4px' }}
+                        {/* Quantity Controls */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: 'var(--radius-pill)',
+                            backgroundColor: '#ffffff',
+                            padding: '2px',
+                          }}
                         >
-                          <Minus size={12} color="var(--color-forest)" />
-                        </button>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 700, padding: '0 8px' }}>
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          style={{ padding: '4px' }}
-                        >
-                          <Plus size={12} color="var(--color-forest)" />
-                        </button>
-                      </div>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--color-forest)' }}>
-                        ₹{(parseFloat(item.product.price) * item.quantity).toFixed(2)}
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            style={{ padding: '4px' }}
+                          >
+                            <Minus size={12} color="var(--color-forest)" />
+                          </button>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 700, padding: '0 8px' }}>
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            style={{ padding: '4px' }}
+                          >
+                            <Plus size={12} color="var(--color-forest)" />
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
+                          {hasDiscount && (
+                            <span style={{ fontSize: '0.75rem', color: '#dc2626', textDecoration: 'line-through', opacity: 0.85 }}>
+                              ₹{formatPrice(regularPrice * item.quantity)}
+                            </span>
+                          )}
+                          <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--color-forest)' }}>
+                            ₹{formatPrice(currentPrice * item.quantity)}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -280,7 +327,7 @@ export const CartDrawer: React.FC = () => {
               }}
             >
               <span>Subtotal</span>
-              <span>₹{subtotal.toFixed(2)}</span>
+              <span>₹{formatPrice(subtotal)}</span>
             </div>
 
             {isAdmin && (

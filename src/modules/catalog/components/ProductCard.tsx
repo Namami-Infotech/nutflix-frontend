@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Product, formatWeightAndUnit } from '@/lib/api';
+import { Product, formatWeightAndUnit, getProductPrices, formatPrice } from '@/lib/api';
 import { useCart } from '../../cart/cart.context';
 import { useAuth } from '@/modules/auth';
-import { Star, ShoppingBag, Eye } from 'lucide-react';
+import { Star, ShoppingCart, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props {
@@ -32,38 +32,14 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
     setImgSrc(product.imageUrl || FALLBACK_IMG);
   }, [product.imageUrl]);
 
-  const stockNum = typeof product.stock === 'number' ? product.stock : parseInt(String(product.stock || 0), 10);
-  const isOutOfStock = isNaN(stockNum) || stockNum <= 0;
   const productUrl = `/products/${product.slug || product.id}`;
+  const { regularPrice, currentPrice, hasDiscount, discountPercent } = getProductPrices(product);
 
   return (
-    <div className={`product-card ${isOutOfStock ? 'is-out-of-stock' : ''}`}>
+    <div className="product-card">
       {/* Product Image Container */}
       <div className="product-card-image-wrapper">
-        {isOutOfStock ? (
-          <span
-            style={{
-              position: 'absolute',
-              top: '12px',
-              left: '12px',
-              backgroundColor: '#dc2626',
-              color: '#ffffff',
-              fontSize: '0.72rem',
-              fontWeight: 800,
-              padding: '0.35rem 0.7rem',
-              borderRadius: '20px',
-              boxShadow: '0 4px 10px rgba(220,38,38,0.35)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              zIndex: 10,
-              letterSpacing: '0.3px',
-              textTransform: 'uppercase'
-            }}
-          >
-            Out of Stock
-          </span>
-        ) : cartQty > 0 ? (
+        {cartQty > 0 && (
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -90,10 +66,32 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             }}
             title="Click to view Cart"
           >
-            <ShoppingBag size={13} color="var(--color-gold)" />
+            <ShoppingCart size={13} color="var(--color-gold)" />
             <span>{cartQty} in Cart</span>
           </button>
-        ) : null}
+        )}
+
+        {/* Top-Right Discount % Badge */}
+        {hasDiscount && (
+          <span
+            style={{
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              backgroundColor: '#15803d',
+              color: '#ffffff',
+              fontSize: '0.7rem',
+              fontWeight: 900,
+              padding: '0.22rem 0.55rem',
+              borderRadius: '20px',
+              boxShadow: '0 3px 8px rgba(21,128,61,0.35)',
+              zIndex: 10,
+              letterSpacing: '0.3px'
+            }}
+          >
+            {discountPercent}% OFF
+          </span>
+        )}
 
         <Link
           href={productUrl}
@@ -105,7 +103,7 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             alt={product.name}
             onError={() => setImgSrc(FALLBACK_IMG)}
             className="product-card-image"
-            style={{ cursor: 'pointer', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }}
+            style={{ cursor: 'pointer' }}
           />
         </Link>
 
@@ -146,6 +144,25 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             <h3 className="product-title">{product.name}</h3>
           </Link>
 
+          {/* Unit / Pack Size Tag */}
+          <div style={{ marginBottom: '0.45rem' }}>
+            <span
+              style={{
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                color: '#475569',
+                backgroundColor: '#f1f5f9',
+                border: '1px solid #e2e8f0',
+                padding: '0.15rem 0.5rem',
+                borderRadius: '6px',
+                display: 'inline-block',
+                letterSpacing: '0.2px',
+              }}
+            >
+              {formatWeightAndUnit(product.weight, product.unit)}
+            </span>
+          </div>
+
           <Link href={productUrl} style={{ textDecoration: 'none', display: 'block' }}>
             <p className="product-desc" style={{ cursor: 'pointer' }}>{product.description}</p>
           </Link>
@@ -154,17 +171,21 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
 
         {/* Pricing & Add to Cart Action */}
         <div className="product-card-footer">
-          <div className="price-wrapper">
-            <span className="price-main">₹{parseFloat(product.price).toFixed(2)}</span>
-            <span className="price-weight">/ {formatWeightAndUnit(product.weight, product.unit)}</span>
+          <div className="price-wrapper" style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <span className="price-main">₹{formatPrice(currentPrice)}</span>
+            {hasDiscount && (
+              <span style={{ textDecoration: 'line-through', color: '#dc2626', fontSize: '0.82rem', fontWeight: 600, opacity: 0.85 }}>
+                ₹{formatPrice(regularPrice)}
+              </span>
+            )}
           </div>
 
           <button
-            onClick={() => !isOutOfStock && !isAdmin && addToCart(product)}
-            disabled={isOutOfStock || isAdmin}
-            className={`btn-primary add-to-cart-btn ${isOutOfStock || isAdmin ? 'disabled-out-of-stock' : ''}`}
+            onClick={() => !isAdmin && addToCart(product)}
+            disabled={isAdmin}
+            className={`btn-primary add-to-cart-btn ${isAdmin ? 'disabled-out-of-stock' : ''}`}
             style={
-              isOutOfStock || isAdmin
+              isAdmin
                 ? {
                   backgroundColor: '#e2e8f0',
                   color: '#94a3b8',
@@ -174,10 +195,10 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
                 }
                 : {}
             }
-            title={isOutOfStock ? 'Item is Out of Stock' : isAdmin ? 'Admin accounts cannot add to cart' : 'Add to Basket'}
+            title={isAdmin ? 'Admin accounts cannot add to cart' : 'Add to Basket'}
           >
-            <ShoppingBag size={14} />
-            <span>{isOutOfStock ? 'Sold Out' : isAdmin ? 'Admin (Disabled)' : 'Add'}</span>
+            <ShoppingCart size={14} />
+            <span>{isAdmin ? 'Admin (Disabled)' : 'Add'}</span>
           </button>
         </div>
       </div>

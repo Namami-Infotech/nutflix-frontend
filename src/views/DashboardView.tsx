@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Users, Package, ShoppingBag, CheckCircle2, XCircle, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { formatPrice } from '@/lib/api';
 
 interface DashboardViewProps {
   usersCount: number;
@@ -55,7 +56,7 @@ export default function DashboardView({
     },
     {
       title: 'Total Sales Revenue',
-      value: `₹${totalRevenue.toFixed(2)}`,
+      value: `₹${formatPrice(totalRevenue)}`,
       subtext: 'Active Revenue Stream',
       icon: TrendingUp,
       bg: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',

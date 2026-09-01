@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { ShoppingBag, Search, X, Heart, Leaf, User, Menu } from 'lucide-react';
+import { ShoppingCart, Search, X, Heart, Leaf, User, Menu } from 'lucide-react';
 import { useCart } from '@/modules/cart/cart.context';
 import { useAuth } from '@/modules/auth';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -444,7 +444,7 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
               onClick={() => {
                 if (!isLoggedIn) {
                   openLoginModal(() => {
-                    router.push('/profile');
+                    router.push('/');
                   });
                 } else {
                   router.push('/profile');
@@ -509,39 +509,47 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
             {/* Cart Trigger (Hidden for Admin) */}
             {!isAdmin && (
               <button
+                type="button"
                 onClick={openCart}
-                className="header-cart-btn"
+                className="header-action-btn header-cart-btn"
                 style={{
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.3rem',
-                  backgroundColor: 'var(--color-forest)',
-                  color: '#fff',
-                  padding: '0.45rem 0.75rem',
-                  borderRadius: 'var(--radius-pill)',
-                  fontWeight: 700,
-                  fontSize: '0.82rem',
+                  justifyContent: 'center',
+                  padding: '0.45rem',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--color-cream-light)',
+                  color: 'var(--color-forest)',
+                  border: 'none',
+                  cursor: 'pointer',
                   transition: 'var(--transition)',
                   flexShrink: 0,
                 }}
+                title={totalItems > 0 ? `Shopping Cart (${totalItems} items)` : 'Shopping Cart'}
+                aria-label="Shopping Cart"
               >
-                <ShoppingBag size={16} color="var(--color-gold)" />
-                <span className="cart-text">Basket</span>
+                <ShoppingCart size={18} color="var(--color-forest)" />
                 {totalItems > 0 && (
                   <span
                     style={{
-                      backgroundColor: 'var(--color-gold)',
-                      color: '#fff',
-                      fontSize: '0.7rem',
+                      position: 'absolute',
+                      top: '-4px',
+                      right: '-4px',
+                      backgroundColor: '#ef4444',
+                      color: '#ffffff',
+                      fontSize: '0.68rem',
                       fontWeight: 900,
-                      width: '18px',
+                      minWidth: '18px',
                       height: '18px',
-                      borderRadius: '50%',
+                      borderRadius: '999px',
+                      padding: '0 4px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      marginLeft: '2px',
+                      border: '2px solid #ffffff',
+                      boxShadow: '0 2px 6px rgba(239, 68, 68, 0.45)',
+                      lineHeight: 1,
                     }}
                   >
                     {totalItems}

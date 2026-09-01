@@ -1,163 +1,97 @@
 import React, { useState, useEffect } from 'react';
-import { Product, formatWeightAndUnit, fetchPaymentTypes, PaymentType } from '@/lib/api';
+import { Product, formatWeightAndUnit, getProductPrices, formatPrice } from '@/lib/api';
 import { useCart } from '../../cart/cart.context';
 import { useAuth } from '@/modules/auth';
-import { X, Star, ShoppingBag, Plus, Minus, Heart, ShieldCheck, Truck, CreditCard } from 'lucide-react';
+import { Star, ShoppingCart, X, ShieldCheck, Truck, Sparkles, Check, CreditCard, ChevronRight, Plus, Minus, Heart } from 'lucide-react';
 
 interface Props {
   product: Product | null;
+  isOpen?: boolean;
   onClose: () => void;
 }
 
-export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
+const FALLBACK_IMG = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=800&q=80';
+
+export const ProductDetailModal: React.FC<Props> = ({ product, isOpen = true, onClose }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
   const [quantity, setQuantity] = useState(1);
-  const [activePayments, setActivePayments] = useState<PaymentType[]>([]);
+  const [imgSrc, setImgSrc] = useState(product?.imageUrl || FALLBACK_IMG);
+  const [paymentModesText, setPaymentModesText] = useState('Online / UPI, Cash on Delivery');
 
   useEffect(() => {
-    async function loadPayments() {
-      const types = await fetchPaymentTypes();
-      setActivePayments(types.filter((t) => t.status === 'active'));
+    if (product) {
+      setImgSrc(product.imageUrl || FALLBACK_IMG);
+      setQuantity(1);
     }
-    loadPayments();
+  }, [product]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('nutflix_active_payment_modes');
+        if (stored) {
+          setPaymentModesText(stored);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
   }, []);
 
-  if (!product) return null;
+  if (!isOpen || !product) return null;
 
   const stockNum = typeof product.stock === 'number' ? product.stock : parseInt(String(product.stock || 0), 10);
   const isOutOfStock = isNaN(stockNum) || stockNum <= 0;
+  const { regularPrice, currentPrice, hasDiscount, discountPercent, savings } = getProductPrices(product);
 
   const handleAddToCart = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || isAdmin) return;
     addToCart(product, quantity);
     onClose();
   };
 
-  const paymentModesText = activePayments.length > 0
-    ? activePayments.map((p) => (p.code === 'cash' ? 'Cash on Delivery' : 'UPI Payment')).join(' • ')
-    : 'Cash on Delivery • UPI Payment';
-
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: 'rgba(13, 23, 17, 0.7)',
-          backdropFilter: 'blur(5px)',
-        }}
-      />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(22, 35, 26, 0.75)', backdropFilter: 'blur(6px)', animation: 'fadeIn 0.2s ease-out' }} />
 
-      {/* Modal Card */}
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: '850px',
-          maxHeight: '90vh',
-          backgroundColor: '#ffffff',
-          borderRadius: '24px',
-          overflowY: 'auto',
-          boxShadow: 'var(--shadow-lg)',
-          zIndex: 10,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
-          animation: 'fadeIn 0.3s ease-out',
-        }}
-      >
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '1rem',
-            zIndex: 12,
-            backgroundColor: '#ffffff',
-            border: '1px solid var(--color-border)',
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: 'var(--shadow-sm)',
-            cursor: 'pointer',
-          }}
-          aria-label="Close detail modal"
-        >
-          <X size={20} color="var(--color-forest)" />
+      <div style={{ position: 'relative', width: '100%', maxWidth: '820px', backgroundColor: '#ffffff', borderRadius: 'var(--radius-card, 24px)', overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.3)', zIndex: 10, animation: 'scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: '1rem', right: '1rem', width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', zIndex: 20, cursor: 'pointer', border: 'none', transition: 'var(--transition)' }} title="Close Modal">
+          <X size={20} />
         </button>
 
-        {/* Left Product Image */}
-        <div style={{ position: 'relative', height: '100%', minHeight: '260px', backgroundColor: 'var(--color-bg-light)' }}>
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        </div>
-
-        {/* Right Details */}
-        <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            {/* Rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
-              <div style={{ display: 'flex', gap: '2px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={15}
-                    fill={i < Math.round(Number(product.rating || 5)) ? 'var(--color-gold)' : '#e2e8f0'}
-                    color={i < Math.round(Number(product.rating || 5)) ? 'var(--color-gold)' : '#cbd5e1'}
-                  />
-                ))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', overflowY: 'auto' }}>
+          <div style={{ position: 'relative', backgroundColor: 'var(--color-bg-light, #f9f6f0)', minHeight: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+            <img src={imgSrc} alt={product.name} onError={() => setImgSrc(FALLBACK_IMG)} style={{ width: '100%', maxHeight: '360px', objectFit: 'contain', borderRadius: '16px', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }} />
+            {hasDiscount && !isOutOfStock && (
+              <div style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#15803d', color: '#ffffff', fontSize: '0.8rem', fontWeight: 900, padding: '0.3rem 0.75rem', borderRadius: '20px', boxShadow: '0 4px 12px rgba(21,128,61,0.35)' }}>
+                {discountPercent}% OFF
               </div>
-              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-forest)' }}>
-                {product.rating}
-              </span>
-              <a
-                href={`/products/${product.slug}`}
-                onClick={onClose}
-                style={{ fontSize: '0.8rem', color: 'var(--color-gold-dark, #b45309)', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer' }}
-              >
-                ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'}) • See all
-              </a>
-            </div>
+            )}
+          </div>
 
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', lineHeight: '1.25', marginBottom: '0.6rem' }}>
-              {product.name}
-            </h2>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-forest)' }}>
-                ₹{parseFloat(product.price).toFixed(2)}
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)', marginLeft: '6px' }}>
-                  ({formatWeightAndUnit(product.weight, product.unit)})
-                </span>
+          <div style={{ padding: '2rem 1.8rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '1.2rem' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={15} fill="var(--color-gold)" color="var(--color-gold)" />
+                  ))}
+                </div>
+                <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--color-forest)' }}>{product.rating}</span>
+                <a href={`/products/${product.slug}`} onClick={onClose} style={{ fontSize: '0.8rem', color: 'var(--color-gold-dark, #b45309)', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer' }}>
+                  ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'}) • See all
+                </a>
               </div>
 
-              {/* Stock Status Badge */}
-              <div style={{ fontSize: '0.8rem', fontWeight: 800 }}>
-                {isOutOfStock ? (
-                  <span style={{ color: '#dc2626', backgroundColor: '#fee2e2', padding: '0.25rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#dc2626' }}></span>
-                    Out of Stock
-                  </span>
-                ) : stockNum <= 5 ? (
-                  <span style={{ color: '#ea580c', backgroundColor: '#ffedd5', padding: '0.25rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ea580c' }}></span>
-                    Only {stockNum} left!
-                  </span>
-                ) : (
-                  <span style={{ color: '#166534', backgroundColor: '#dcfce7', padding: '0.25rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22c55e' }}></span>
-                    In Stock: {stockNum} units
-                  </span>
-                )}
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', lineHeight: '1.25', marginBottom: '0.6rem' }}>{product.name}</h2>
+
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
+                <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-forest)' }}>₹{formatPrice(currentPrice)}</span>
+                {hasDiscount && <span style={{ fontSize: '1.05rem', fontWeight: 600, color: '#dc2626', textDecoration: 'line-through', opacity: 0.85 }}>₹{formatPrice(regularPrice)}</span>}
+                {hasDiscount && <span style={{ backgroundColor: '#dcfce7', color: '#15803d', padding: '2px 7px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 900 }}>Save ₹{formatPrice(savings)}</span>}
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>({formatWeightAndUnit(product.weight, product.unit)})</span>
               </div>
             </div>
 
@@ -197,38 +131,38 @@ export const ProductDetailModal: React.FC<Props> = ({ product, onClose }) => {
                   borderRadius: 'var(--radius-pill)',
                   padding: '0.4rem 0.8rem',
                   backgroundColor: 'var(--color-cream-light)',
-                  opacity: isOutOfStock || isAdmin ? 0.6 : 1,
+                  opacity: isAdmin ? 0.6 : 1,
                 }}
               >
-                <button disabled={isOutOfStock || isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
+                <button disabled={isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
                   <Minus size={16} color="var(--color-forest)" />
                 </button>
                 <span style={{ fontSize: '1rem', fontWeight: 800, padding: '0 10px', minWidth: '28px', textAlign: 'center' }}>
-                  {isOutOfStock ? 0 : quantity}
+                  {quantity}
                 </span>
-                <button disabled={isOutOfStock || isAdmin || quantity >= stockNum} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
+                <button disabled={isAdmin} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
                   <Plus size={16} color="var(--color-forest)" />
                 </button>
               </div>
 
               <button
                 onClick={handleAddToCart}
-                disabled={isOutOfStock || isAdmin}
+                disabled={isAdmin}
                 className="btn-primary"
                 style={{
                   flex: '1 1 180px',
                   height: '46px',
                   fontSize: '0.9rem',
-                  backgroundColor: isOutOfStock || isAdmin ? '#e2e8f0' : undefined,
-                  color: isOutOfStock || isAdmin ? '#94a3b8' : undefined,
-                  cursor: isOutOfStock || isAdmin ? 'not-allowed' : 'pointer',
-                  border: isOutOfStock || isAdmin ? '1px solid #cbd5e1' : undefined,
-                  boxShadow: isOutOfStock || isAdmin ? 'none' : undefined,
+                  backgroundColor: isAdmin ? '#e2e8f0' : undefined,
+                  color: isAdmin ? '#94a3b8' : undefined,
+                  cursor: isAdmin ? 'not-allowed' : 'pointer',
+                  border: isAdmin ? '1px solid #cbd5e1' : undefined,
+                  boxShadow: isAdmin ? 'none' : undefined,
                 }}
-                title={isAdmin ? 'Admin accounts cannot purchase items' : isOutOfStock ? 'Item is out of stock' : 'Add to Basket'}
+                title={isAdmin ? 'Admin accounts cannot purchase items' : 'Add to Basket'}
               >
-                <ShoppingBag size={18} />
-                <span>{isOutOfStock ? 'Out of Stock' : isAdmin ? 'Admin (Disabled)' : `Add to Basket • ₹${(parseFloat(product.price) * quantity).toFixed(2)}`}</span>
+                <ShoppingCart size={18} />
+                <span>{isAdmin ? 'Admin (Disabled)' : `Add to Basket • ₹${formatPrice(currentPrice * quantity)}`}</span>
               </button>
             </div>
 

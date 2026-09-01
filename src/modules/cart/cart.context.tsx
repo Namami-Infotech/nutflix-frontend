@@ -120,7 +120,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
-  const subtotal = items.reduce((acc, item) => acc + parseFloat(item.product.price) * item.quantity, 0);
+  const subtotal = items.reduce((acc, item) => {
+    const effPrice = (item.product.sellingPrice && parseFloat(String(item.product.sellingPrice)) > 0)
+      ? parseFloat(String(item.product.sellingPrice))
+      : (parseFloat(item.product.price) || 0);
+    return acc + effPrice * item.quantity;
+  }, 0);
 
   return (
     <CartContext.Provider

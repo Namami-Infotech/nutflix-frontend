@@ -3,7 +3,7 @@ import { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, Payme
 
 export type { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -39,8 +39,16 @@ export function getUserFromCookie(): any | null {
     try {
       return JSON.parse(cookieUser);
     } catch (e) {
-      return null;
+      // ignore
     }
+  }
+  try {
+    const localUser = localStorage.getItem('nutflix_user') || localStorage.getItem('user');
+    if (localUser) {
+      return JSON.parse(localUser);
+    }
+  } catch (e) {
+    // ignore
   }
   return null;
 }
@@ -50,6 +58,10 @@ export function setUserCookie(user: any, days = 7) {
   const json = JSON.stringify(user);
   setCookie('nutflix_user', json, days);
   setCookie('user', json, days);
+  try {
+    localStorage.setItem('nutflix_user', json);
+    localStorage.setItem('user', json);
+  } catch (e) {}
 }
 
 export async function logoutUser() {
@@ -73,19 +85,33 @@ export async function logoutUser() {
     deleteCookie('nutflix_refreshToken');
     deleteCookie('user');
     deleteCookie('nutflix_user');
+    window.dispatchEvent(new Event('authChange'));
+    window.dispatchEvent(new Event('storage'));
   }
 }
 
-// Get Auth Token exclusively from Cookies
+// Get Auth Token from Cookies or LocalStorage
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return getCookie('accessToken') || getCookie('nutflix_accessToken');
+  const token = getCookie('accessToken') || getCookie('nutflix_accessToken');
+  if (token) return token;
+  try {
+    return localStorage.getItem('accessToken') || localStorage.getItem('nutflix_accessToken') || null;
+  } catch (e) {
+    return null;
+  }
 }
 
-// Get Refresh Token exclusively from Cookies
+// Get Refresh Token from Cookies or LocalStorage
 export function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return getCookie('refreshToken') || getCookie('nutflix_refreshToken');
+  const token = getCookie('refreshToken') || getCookie('nutflix_refreshToken');
+  if (token) return token;
+  try {
+    return localStorage.getItem('refreshToken') || localStorage.getItem('nutflix_refreshToken') || null;
+  } catch (e) {
+    return null;
+  }
 }
 
 // Automatically attach JWT Token from Cookies or LocalStorage to every API request
@@ -425,7 +451,43 @@ export async function loginUser(credentials: { email: string; password: string }
   }
 }
 
-export async function registerUser(userData: { name: string; email: string; password: string }) {
+export async function sendOtpApi(data: { phone: string; purpose: 'signup' | 'login'; name?: string; email?: string }) {
+  try {
+    const res = await api.post('/users/send-otp', data);
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || {
+      success: false,
+      message: error?.message || 'Failed to send OTP. Please try again.',
+    };
+  }
+}
+
+export async function verifyOtpSignupApi(data: { name: string; email: string; phone: string; otp: string; password?: string }) {
+  try {
+    const res = await api.post('/users/verify-otp-signup', data);
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || {
+      success: false,
+      message: error?.message || 'Failed to verify OTP & create account.',
+    };
+  }
+}
+
+export async function verifyOtpLoginApi(data: { phone: string; otp: string }) {
+  try {
+    const res = await api.post('/users/verify-otp-login', data);
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || {
+      success: false,
+      message: error?.message || 'Failed to verify OTP & sign in.',
+    };
+  }
+}
+
+export async function registerUser(userData: { name: string; email: string; password: string; phone?: string }) {
   try {
     const res = await api.post('/users/register', userData);
     return res.data;
@@ -867,3 +929,56 @@ export function formatWeightAndUnit(weight?: string | number, unit?: string): st
 
   return weightStr || '250g';
 }
+
+export function getProductPrices(product?: { price?: string | number; sellingPrice?: string | number | null } | null) {
+  if (!product) {
+    return {
+      regularPrice: 0,
+      salePrice: null,
+      currentPrice: 0,
+      hasDiscount: false,
+      discountPercent: 0,
+      savings: 0,
+    };
+  }
+
+  const regularPrice = typeof product.price === 'number' ? product.price : parseFloat(String(product.price || '0')) || 0;
+  let salePriceNum: number | null = null;
+
+  if (product.sellingPrice !== undefined && product.sellingPrice !== null && product.sellingPrice !== '') {
+    const parsed = typeof product.sellingPrice === 'number' ? product.sellingPrice : parseFloat(String(product.sellingPrice));
+    if (!isNaN(parsed) && parsed > 0) {
+      salePriceNum = parsed;
+    }
+  }
+
+  const hasDiscount = salePriceNum !== null && salePriceNum < regularPrice;
+  const currentPrice = hasDiscount ? (salePriceNum as number) : regularPrice;
+  const discountPercent = hasDiscount && regularPrice > 0 ? Math.round(((regularPrice - (salePriceNum as number)) / regularPrice) * 100) : 0;
+  const savings = hasDiscount ? (regularPrice - (salePriceNum as number)) : 0;
+
+  return {
+    regularPrice,
+    salePrice: salePriceNum,
+    currentPrice,
+    hasDiscount,
+    discountPercent,
+    savings,
+  };
+}
+
+export function formatPrice(amount: number | string | null | undefined): string {
+  if (amount === null || amount === undefined || amount === '') return '0';
+  const numericValue = typeof amount === 'number' ? amount : parseFloat(String(amount).replace(/[^0-9.-]+/g, ''));
+  if (isNaN(numericValue)) return '0';
+  if (numericValue % 1 === 0) {
+    return numericValue.toString();
+  }
+  return numericValue.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+}
+
+export function formatCurrency(amount: number | string | null | undefined, currencySymbol: string = '₹'): string {
+  return `${currencySymbol}${formatPrice(amount)}`;
+}
+
+
