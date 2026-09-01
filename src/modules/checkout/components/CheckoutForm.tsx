@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/modules/cart';
-import { submitOrder, fetchPaymentTypes, PaymentType, getAuthToken, createRazorpayOrder, verifyRazorpayPayment, getRazorpayKey, getProductPrices, formatPrice } from '@/lib/api';
+import { submitOrder, fetchPaymentTypes, PaymentType, getAuthToken, getUserFromCookie, createRazorpayOrder, verifyRazorpayPayment, getRazorpayKey, getProductPrices, formatPrice } from '@/lib/api';
 import { useAuth } from '@/modules/auth';
 import { ShoppingCart, ShieldCheck, CheckCircle2, ArrowRight, Truck, CreditCard, Banknote, User, Lock, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
@@ -31,6 +31,7 @@ export const CheckoutForm: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
@@ -45,9 +46,12 @@ export const CheckoutForm: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      if (user.name && !customerName) setCustomerName(user.name);
-      if (user.email && !customerEmail) setCustomerEmail(user.email);
+    const currentUser = user || getUserFromCookie();
+    if (currentUser) {
+      if (currentUser.name) setCustomerName((prev) => prev || currentUser.name || '');
+      if (currentUser.email) setCustomerEmail((prev) => prev || currentUser.email || '');
+      if (currentUser.phone) setCustomerPhone((prev) => prev || currentUser.phone || '');
+      if (currentUser.address) setShippingAddress((prev) => prev || currentUser.address || '');
     }
   }, [user]);
 
@@ -92,6 +96,7 @@ export const CheckoutForm: React.FC = () => {
     const orderPayload = {
       customerName: customerName.trim(),
       customerEmail: customerEmail.trim().toLowerCase(),
+      customerPhone: customerPhone.trim(),
       shippingAddress: fullAddress,
       paymentType: selectedPayment,
       totalAmount,
@@ -145,6 +150,7 @@ export const CheckoutForm: React.FC = () => {
         notes: {
           customerName: orderPayload.customerName,
           customerEmail: orderPayload.customerEmail,
+          customerPhone: customerPhone.trim() || user?.phone || '',
           address: fullAddress,
         },
       });
@@ -158,7 +164,7 @@ export const CheckoutForm: React.FC = () => {
       const rzpOrderData = orderRes.data || orderRes;
       const keyId = rzpOrderData.keyId || (await getRazorpayKey()) || 'rzp_test_RqJtOyGfDiW0vw';
 
-      // 2. Configure Razorpay Standard Checkout options
+      // 2. Configure Razorpay Standard Checkout options with prefilled details
       const options = {
         key: keyId,
         amount: rzpOrderData.amount, // in paise
@@ -167,8 +173,9 @@ export const CheckoutForm: React.FC = () => {
         description: `Order Checkout (₹${formatPrice(totalAmount)})`,
         order_id: rzpOrderData.id,
         prefill: {
-          name: customerName,
-          email: customerEmail,
+          name: customerName.trim() || user?.name || '',
+          email: customerEmail.trim() || user?.email || '',
+          contact: customerPhone.trim() || user?.phone || '',
         },
         theme: {
           color: '#1b4332',
@@ -489,18 +496,34 @@ export const CheckoutForm: React.FC = () => {
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
-                Email Address *
-              </label>
-              <input
-                type="email"
-                required
-                placeholder="jane@example.com"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
-              />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="jane@example.com"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
+                  Mobile Number *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="9876543210"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
+                />
+              </div>
             </div>
 
             <div>
