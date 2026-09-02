@@ -3,6 +3,7 @@ import { Product, formatWeightAndUnit, getProductPrices, formatPrice } from '@/l
 import { useCart } from '../../cart/cart.context';
 import { useAuth } from '@/modules/auth';
 import { Star, ShoppingCart, X, ShieldCheck, Truck, Sparkles, Check, CreditCard, ChevronRight, Plus, Minus, Heart } from 'lucide-react';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 interface Props {
   product: Product | null;
@@ -13,19 +14,18 @@ interface Props {
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=800&q=80';
 
 export const ProductDetailModal: React.FC<Props> = ({ product, isOpen = true, onClose }) => {
-  const { addToCart } = useCart();
+  const [mounted, setMounted] = useState(false);
+  const { items, addToCart, updateQuantity, openCart } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
-  const [quantity, setQuantity] = useState(1);
-  const [imgSrc, setImgSrc] = useState(product?.imageUrl || FALLBACK_IMG);
   const [paymentModesText, setPaymentModesText] = useState('Online / UPI, Cash on Delivery');
 
   useEffect(() => {
-    if (product) {
-      setImgSrc(product.imageUrl || FALLBACK_IMG);
-      setQuantity(1);
-    }
-  }, [product]);
+    setMounted(true);
+  }, []);
+
+  const cartItem = mounted && product && Array.isArray(items) ? items.find((i) => String(i.product.id) === String(product.id)) : null;
+  const cartQty = cartItem ? cartItem.quantity : 0;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -48,8 +48,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, isOpen = true, on
 
   const handleAddToCart = () => {
     if (isOutOfStock || isAdmin) return;
-    addToCart(product, quantity);
-    onClose();
+    addToCart(product, 1);
   };
 
   return (
@@ -63,9 +62,16 @@ export const ProductDetailModal: React.FC<Props> = ({ product, isOpen = true, on
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', overflowY: 'auto' }}>
           <div style={{ position: 'relative', backgroundColor: 'var(--color-bg-light, #f9f6f0)', minHeight: '340px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-            <img src={imgSrc} alt={product.name} onError={() => setImgSrc(FALLBACK_IMG)} style={{ width: '100%', maxHeight: '360px', objectFit: 'contain', borderRadius: '16px', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }} />
+            <OptimizedImage
+              src={product.imageUrl}
+              fallbackSrc={FALLBACK_IMG}
+              alt={product.name}
+              priority={true}
+              objectFit="contain"
+              style={{ maxHeight: '360px', borderRadius: '16px', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }}
+            />
             {hasDiscount && !isOutOfStock && (
-              <div style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#15803d', color: '#ffffff', fontSize: '0.8rem', fontWeight: 900, padding: '0.3rem 0.75rem', borderRadius: '20px', boxShadow: '0 4px 12px rgba(21,128,61,0.35)' }}>
+              <div style={{ position: 'absolute', top: '1rem', left: '1rem', backgroundColor: '#15803d', color: '#ffffff', fontSize: '0.8rem', fontWeight: 900, padding: '0.3rem 0.75rem', borderRadius: '20px', boxShadow: '0 4px 12px rgba(21,128,61,0.35)', zIndex: 5 }}>
                 {discountPercent}% OFF
               </div>
             )}
@@ -123,47 +129,84 @@ export const ProductDetailModal: React.FC<Props> = ({ product, isOpen = true, on
           <div>
             {/* Quantity Selector & Add button */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  border: '1.5px solid var(--color-border)',
-                  borderRadius: 'var(--radius-pill)',
-                  padding: '0.4rem 0.8rem',
-                  backgroundColor: 'var(--color-cream-light)',
-                  opacity: isAdmin ? 0.6 : 1,
-                }}
-              >
-                <button disabled={isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ padding: '4px' }}>
-                  <Minus size={16} color="var(--color-forest)" />
-                </button>
-                <span style={{ fontSize: '1rem', fontWeight: 800, padding: '0 10px', minWidth: '28px', textAlign: 'center' }}>
-                  {quantity}
-                </span>
-                <button disabled={isAdmin} onClick={() => setQuantity(quantity + 1)} style={{ padding: '4px' }}>
-                  <Plus size={16} color="var(--color-forest)" />
-                </button>
-              </div>
+              {cartQty > 0 && !isAdmin ? (
+                <>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      border: 'none',
+                      borderRadius: 'var(--radius-pill)',
+                      padding: '0.4rem 0.8rem',
+                      backgroundColor: 'var(--color-forest)',
+                      color: '#ffffff',
+                    }}
+                  >
+                    <button
+                      onClick={() => updateQuantity(product.id, cartQty - 1)}
+                      style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus size={16} color="#ffffff" />
+                    </button>
+                    <span style={{ fontSize: '1rem', fontWeight: 900, padding: '0 10px', minWidth: '28px', textAlign: 'center', color: 'var(--color-gold)' }}>
+                      {cartQty}
+                    </span>
+                    <button
+                      onClick={() => updateQuantity(product.id, cartQty + 1)}
+                      style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      aria-label="Increase quantity"
+                    >
+                      <Plus size={16} color="#ffffff" />
+                    </button>
+                  </div>
 
-              <button
-                onClick={handleAddToCart}
-                disabled={isAdmin}
-                className="btn-primary"
-                style={{
-                  flex: '1 1 180px',
-                  height: '46px',
-                  fontSize: '0.9rem',
-                  backgroundColor: isAdmin ? '#e2e8f0' : undefined,
-                  color: isAdmin ? '#94a3b8' : undefined,
-                  cursor: isAdmin ? 'not-allowed' : 'pointer',
-                  border: isAdmin ? '1px solid #cbd5e1' : undefined,
-                  boxShadow: isAdmin ? 'none' : undefined,
-                }}
-                title={isAdmin ? 'Admin accounts cannot purchase items' : 'Add to Basket'}
-              >
-                <ShoppingCart size={18} />
-                <span>{isAdmin ? 'Admin (Disabled)' : `Add to Basket • ₹${formatPrice(currentPrice * quantity)}`}</span>
-              </button>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      openCart();
+                    }}
+                    className="btn-primary"
+                    style={{
+                      flex: '1 1 180px',
+                      height: '46px',
+                      fontSize: '0.9rem',
+                      backgroundColor: 'var(--color-gold-dark, #b45309)',
+                      color: '#ffffff',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      boxShadow: '0 4px 12px rgba(180, 83, 9, 0.25)',
+                    }}
+                  >
+                    <ShoppingCart size={17} />
+                    <span>View in Cart ({cartQty}) • ₹{formatPrice(currentPrice * cartQty)}</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isAdmin}
+                  className="btn-primary"
+                  style={{
+                    flex: '1 1 180px',
+                    height: '46px',
+                    fontSize: '0.9rem',
+                    backgroundColor: isAdmin ? '#e2e8f0' : undefined,
+                    color: isAdmin ? '#94a3b8' : undefined,
+                    cursor: isAdmin ? 'not-allowed' : 'pointer',
+                    border: isAdmin ? '1px solid #cbd5e1' : undefined,
+                    boxShadow: isAdmin ? 'none' : undefined,
+                  }}
+                  title={isAdmin ? 'Admin accounts cannot purchase items' : 'Add to Basket'}
+                >
+                  <ShoppingCart size={18} />
+                  <span>{isAdmin ? 'Admin (Disabled)' : `Add to Basket • ₹${formatPrice(currentPrice)}`}</span>
+                </button>
+              )}
             </div>
 
             {/* Delivery Payment Modes & Badges */}

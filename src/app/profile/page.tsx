@@ -23,9 +23,34 @@ import {
   Star,
   X,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Plus,
+  Pencil,
+  Check,
+  Loader2,
 } from 'lucide-react';
-import { fetchUserOrders, fetchMyOrders, updateOrderStatus, fetchCartApi, updateCartQuantityApi, removeFromCartApi, logoutUser, getUserFromCookie, setUserCookie, getAuthToken, submitReview, formatPrice } from '@/lib/api';
+import {
+  fetchUserOrders,
+  fetchMyOrders,
+  updateOrderStatus,
+  fetchCartApi,
+  updateCartQuantityApi,
+  removeFromCartApi,
+  logoutUser,
+  getUserFromCookie,
+  setUserCookie,
+  getAuthToken,
+  submitReview,
+  formatPrice,
+  deleteUser,
+  Address,
+  fetchMyAddresses,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+} from '@/lib/api';
+import { AddressModal } from '@/modules/checkout/components/AddressModal';
 import { useCart } from '@/modules/cart/cart.context';
 import { OrderTrackerModal } from '@/modules/orders/components/OrderTrackerModal';
 import { LoginModal } from '@/modules/layout/components/LoginModal';
@@ -41,8 +66,11 @@ export default function UserProfilePage() {
     gstNumber: ''
   });
 
+  const [mounted, setMounted] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [loginModalOpen, setLoginModalOpen] = useState<boolean>(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState<boolean>(false);
 
   const [activeTab, setActiveTab] = useState<'orders' | 'cart' | 'settings'>('orders');
   const [orders, setOrders] = useState<any[]>([]);
@@ -62,6 +90,62 @@ export default function UserProfilePage() {
   const [editPhone, setEditPhone] = useState('');
   const [editAddress, setEditAddress] = useState('');
   const [editGst, setEditGst] = useState('');
+
+  // Saved Addresses State & Modal
+  const [userAddresses, setUserAddresses] = useState<Address[]>([]);
+  const [loadingUserAddresses, setLoadingUserAddresses] = useState<boolean>(false);
+  const [isProfileAddressModalOpen, setIsProfileAddressModalOpen] = useState<boolean>(false);
+  const [profileAddressToEdit, setProfileAddressToEdit] = useState<Address | null>(null);
+
+  const loadProfileAddresses = async () => {
+    setLoadingUserAddresses(true);
+    try {
+      const list = await fetchMyAddresses();
+      setUserAddresses((list || []).filter((a) => !a.isDeleted));
+    } catch (e) {
+      // ignore
+    } finally {
+      setLoadingUserAddresses(false);
+    }
+  };
+
+  const handleOpenProfileAddAddress = () => {
+    if (userAddresses.length >= 4) {
+      showToast('Maximum limit reached: You can save up to 4 delivery addresses only. Please edit or delete an existing address.');
+      return;
+    }
+    setProfileAddressToEdit(null);
+    setIsProfileAddressModalOpen(true);
+  };
+
+  const handleStartProfileEdit = (addr: Address) => {
+    setProfileAddressToEdit(addr);
+    setIsProfileAddressModalOpen(true);
+  };
+
+  const handleDeleteProfileAddress = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this address?')) return;
+
+    try {
+      const ok = await deleteAddress(id);
+      if (ok) {
+        showToast('Address deleted successfully.');
+        await loadProfileAddresses();
+      }
+    } catch (err: any) {
+      showToast('Failed to delete address');
+    }
+  };
+
+  const handleSetDefaultProfileAddress = async (id: number) => {
+    try {
+      await setDefaultAddress(id);
+      showToast('Default delivery address updated.');
+      await loadProfileAddresses();
+    } catch (err: any) {
+      showToast('Failed to set default address');
+    }
+  };
 
   // Collapsible Orders State
   const [expandedOrders, setExpandedOrders] = useState<Record<number, boolean>>({});
@@ -162,6 +246,7 @@ export default function UserProfilePage() {
   };
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const tabParam = urlParams.get('tab');
@@ -170,9 +255,11 @@ export default function UserProfilePage() {
       }
 
       syncAuthData();
+      loadProfileAddresses();
 
       const handleAuthUpdate = () => {
         syncAuthData();
+        loadProfileAddresses();
       };
       window.addEventListener('authChange', handleAuthUpdate);
       window.addEventListener('storage', handleAuthUpdate);
@@ -275,6 +362,36 @@ export default function UserProfilePage() {
     window.location.href = '/';
   };
 
+  const handleDeleteAccount = async () => {
+    if (!userData?.id) {
+      showToast('Unable to identify user account. Please sign in again.');
+      return;
+    }
+    setIsDeletingAccount(true);
+    try {
+      const res = await deleteUser(Number(userData.id));
+      if (res && (res.success || res.status === 'inactive' || res.statusCode === 200)) {
+        showToast('Your account has been deleted.');
+        setDeleteModalOpen(false);
+        await logoutUser();
+        setIsAuthenticated(false);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('authChange'));
+          window.dispatchEvent(new Event('storage'));
+        }
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 800);
+      } else {
+        showToast(res?.message || 'Failed to delete account. Please try again.');
+      }
+    } catch (err: any) {
+      showToast(err?.response?.data?.message || 'Error deleting account.');
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#fcf8f2', color: 'var(--color-forest)', fontFamily: 'var(--font-sans)', paddingBottom: '4rem' }}>
       {/* Dynamic Profile Responsive Styles */}
@@ -353,6 +470,31 @@ export default function UserProfilePage() {
           align-items: center;
           gap: 0.5rem;
           flex-wrap: wrap;
+        }
+        .profile-actions-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          flex-wrap: wrap;
+        }
+        .profile-delete-btn {
+          background-color: #fff;
+          color: #dc2626;
+          border: 1px solid #fca5a5;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          font-weight: 800;
+          font-size: 0.85rem;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          transition: all 0.2s ease;
+        }
+        .profile-delete-btn:hover {
+          background-color: #fef2f2;
+          border-color: #ef4444;
+          color: #b91c1c;
         }
         .profile-logout-btn {
           background-color: #fef2f2;
@@ -494,6 +636,16 @@ export default function UserProfilePage() {
           .profile-user-meta {
             font-size: 0.78rem !important;
           }
+          .profile-actions-wrapper {
+            width: 100% !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+          }
+          .profile-delete-btn {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 0.6rem !important;
+          }
           .profile-logout-btn {
             width: 100% !important;
             justify-content: center !important;
@@ -594,7 +746,11 @@ export default function UserProfilePage() {
         </div>
       </div>
 
-      {!isAuthenticated ? (
+      {!mounted ? (
+        <div className="profile-main-wrapper" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+          <div className="spinner" style={{ margin: '0 auto' }} />
+        </div>
+      ) : !isAuthenticated ? (
         <div className="profile-main-wrapper" style={{ textAlign: 'center', maxWidth: '560px' }}>
           <div style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '2.5rem 1.5rem', border: '1px solid #e2d5c3', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', marginTop: '2rem' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#f5efe6', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', color: 'var(--color-forest)' }}>
@@ -636,12 +792,10 @@ export default function UserProfilePage() {
               const user = getUserFromCookie();
               if (user) {
                 setUserData(user);
-                setEditPhone(user.phone || '');
-                setEditAddress(user.address || '');
-                setEditGst(user.gstNumber || '');
-                loadUserOrders(user.email || '');
               }
-              loadCartFromDbApi();
+              if (typeof window !== 'undefined') {
+                window.location.href = '/';
+              }
             }}
           />
         </div>
@@ -664,12 +818,21 @@ export default function UserProfilePage() {
               </div>
             </div>
 
-            <button
-              onClick={handleLogout}
-              className="profile-logout-btn"
-            >
-              <LogOut size={15} /> Sign Out
-            </button>
+            <div className="profile-actions-wrapper">
+              <button
+                onClick={() => setDeleteModalOpen(true)}
+                className="profile-delete-btn"
+                title="Delete your account"
+              >
+                <Trash2 size={15} /> Delete Account
+              </button>
+              <button
+                onClick={handleLogout}
+                className="profile-logout-btn"
+              >
+                <LogOut size={15} /> Sign Out
+              </button>
+            </div>
           </div>
 
           {/* Tab Selection */}
@@ -937,28 +1100,30 @@ export default function UserProfilePage() {
                                   </div>
 
                                   <div className="order-action-buttons">
-                                    <button
-                                      onClick={() => {
-                                        setTrackingOrder(ord);
-                                        setIsTrackerOpen(true);
-                                      }}
-                                      style={{
-                                        padding: '0.45rem 0.85rem',
-                                        borderRadius: '8px',
-                                        border: 'none',
-                                        backgroundColor: 'var(--color-forest)',
-                                        color: '#ffffff',
-                                        fontWeight: 800,
-                                        fontSize: '0.78rem',
-                                        cursor: 'pointer',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '0.35rem',
-                                        boxShadow: '0 2px 6px rgba(22,35,26,0.15)'
-                                      }}
-                                    >
-                                      <Truck size={14} color="var(--color-gold)" /> Track Order Status
-                                    </button>
+                                    {ord.status !== 'cancelled' && ord.status !== 'inactive' && ord.status !== 'delivered' && ord.status !== 'returned' && (
+                                      <button
+                                        onClick={() => {
+                                          setTrackingOrder(ord);
+                                          setIsTrackerOpen(true);
+                                        }}
+                                        style={{
+                                          padding: '0.45rem 0.85rem',
+                                          borderRadius: '8px',
+                                          border: 'none',
+                                          backgroundColor: 'var(--color-forest)',
+                                          color: '#ffffff',
+                                          fontWeight: 800,
+                                          fontSize: '0.78rem',
+                                          cursor: 'pointer',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '0.35rem',
+                                          boxShadow: '0 2px 6px rgba(22,35,26,0.15)'
+                                        }}
+                                      >
+                                        <Truck size={14} color="var(--color-gold)" /> Track Order Status
+                                      </button>
+                                    )}
 
                                     {ord.status !== 'cancelled' && ord.status !== 'returned' && ord.status !== 'delivered' && (
                                       <button
@@ -1020,25 +1185,6 @@ export default function UserProfilePage() {
                 <h2 style={{ fontSize: '1.15rem', fontWeight: 900, margin: 0, color: 'var(--color-forest)' }}>
                   🛒 My Basket ({dbCartItems ? dbCartItems.length : cartItems.length} items)
                 </h2>
-                {((dbCartItems && dbCartItems.length > 0) || cartItems.length > 0) && (
-                  <Link
-                    href="/checkout"
-                    style={{
-                      backgroundColor: 'var(--color-forest)',
-                      color: '#fff',
-                      padding: '0.55rem 1.15rem',
-                      borderRadius: '8px',
-                      textDecoration: 'none',
-                      fontWeight: 800,
-                      fontSize: '0.85rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem'
-                    }}
-                  >
-                    Proceed to Checkout <ArrowRight size={15} />
-                  </Link>
-                )}
               </div>
 
               {loadingDbCart ? (
@@ -1207,6 +1353,183 @@ export default function UserProfilePage() {
                   Save Profile Changes
                 </button>
               </form>
+
+              {/* SAVED DELIVERY ADDRESSES SECTION */}
+              <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2d5c3' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--color-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <MapPin size={18} color="var(--color-gold)" /> Saved Delivery Addresses ({userAddresses.length}/4)
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.2rem 0 0 0' }}>
+                      Manage your delivery addresses (Maximum 4 allowed).
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenProfileAddAddress}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontSize: '0.85rem',
+                      fontWeight: 800,
+                      color: 'var(--color-forest)',
+                      backgroundColor: 'rgba(200, 157, 102, 0.15)',
+                      border: '1px solid var(--color-gold)',
+                      borderRadius: '20px',
+                      padding: '0.45rem 0.95rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Plus size={15} /> Add New Address {userAddresses.length > 0 ? `(${userAddresses.length}/4)` : ''}
+                  </button>
+                </div>
+
+                {/* SAVED ADDRESS CARDS IN PROFILE */}
+                {userAddresses.length === 0 ? (
+                  <div style={{ padding: '2rem 1.5rem', textAlign: 'center', backgroundColor: '#f9f9f9', borderRadius: '12px', border: '1px dashed #ccc' }}>
+                    <MapPin size={28} color="#999" style={{ marginBottom: '0.4rem' }} />
+                    <div style={{ fontSize: '0.9rem', color: '#666', fontWeight: 600 }}>No saved addresses yet</div>
+                    <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.2rem', marginBottom: '1rem' }}>Add an address to speed up your checkout process.</div>
+                    <button
+                      type="button"
+                      onClick={handleOpenProfileAddAddress}
+                      style={{
+                        backgroundColor: 'var(--color-forest)',
+                        color: '#fff',
+                        padding: '0.6rem 1.25rem',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Plus size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Add Address
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    {userAddresses.map((addr) => {
+                      return (
+                        <div
+                          key={addr.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            padding: '1rem 1.25rem',
+                            borderRadius: '12px',
+                            border: addr.isDefault ? '2px solid var(--color-forest)' : '1px solid #e2e8f0',
+                            backgroundColor: addr.isDefault ? '#f8faf8' : '#ffffff',
+                            maxWidth: '650px',
+                          }}
+                        >
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+                              <strong style={{ fontSize: '0.95rem', color: 'var(--color-forest)' }}>{addr.fullName}</strong>
+                              {addr.isDefault ? (
+                                <span style={{ fontSize: '0.68rem', backgroundColor: '#e2ece4', color: 'var(--color-forest)', padding: '0.15rem 0.5rem', borderRadius: '6px', fontWeight: 800 }}>
+                                  DEFAULT ADDRESS
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetDefaultProfileAddress(addr.id)}
+                                  style={{
+                                    fontSize: '0.72rem',
+                                    color: 'var(--color-gold)',
+                                    backgroundColor: 'transparent',
+                                    border: '1px dashed var(--color-gold)',
+                                    padding: '0.1rem 0.5rem',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  Set as default
+                                </button>
+                              )}
+                              <span style={{ fontSize: '0.8rem', color: '#666', backgroundColor: '#f3f4f6', padding: '0.1rem 0.45rem', borderRadius: '6px' }}>
+                                📞 {addr.phone}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '0.88rem', color: '#444', lineHeight: '1.4' }}>
+                              {addr.streetAddress}, {addr.city} {addr.state ? `, ${addr.state}` : ''} - <strong>{addr.postalCode}</strong>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.75rem' }}>
+                            <button
+                              type="button"
+                              title="Edit Address"
+                              onClick={() => handleStartProfileEdit(addr)}
+                              style={{
+                                background: '#f8fafc',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '8px',
+                                padding: '0.45rem',
+                                cursor: 'pointer',
+                                color: 'var(--color-forest)',
+                              }}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Delete Address (Soft Delete)"
+                              onClick={() => handleDeleteProfileAddress(addr.id)}
+                              style={{
+                                background: '#fff1f2',
+                                border: '1px solid #fecdd3',
+                                borderRadius: '8px',
+                                padding: '0.45rem',
+                                cursor: 'pointer',
+                                color: '#e11d48',
+                              }}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+                <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e5e7eb' }}>
+                  <h4 style={{ color: '#dc2626', fontSize: '0.95rem', fontWeight: 900, marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Trash2 size={16} /> Danger Zone: Delete Account
+                  </h4>
+                  <p style={{ color: '#6b7280', fontSize: '0.82rem', marginBottom: '0.85rem', lineHeight: 1.5 }}>
+                    Once you delete your account, your account status will be set to inactive and you will not be able to log in again without contacting support.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteModalOpen(true)}
+                    style={{
+                      backgroundColor: '#fff',
+                      color: '#dc2626',
+                      border: '1px solid #f87171',
+                      padding: '0.65rem 1.25rem',
+                      borderRadius: '8px',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fef2f2')}
+                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fff')}
+                  >
+                    <Trash2 size={15} /> Delete My Account
+                  </button>
+                </div>
             </div>
           )}
         </div>
@@ -1218,6 +1541,60 @@ export default function UserProfilePage() {
         isOpen={isTrackerOpen}
         onClose={() => setIsTrackerOpen(false)}
       />
+
+      {/* Delete Account Confirmation Modal */}
+      {deleteModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '1.75rem', boxShadow: '0 20px 40px rgba(0,0,0,0.25)', position: 'relative' }}>
+            <button
+              onClick={() => setDeleteModalOpen(false)}
+              disabled={isDeletingAccount}
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}
+            >
+              <X size={20} />
+            </button>
+
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+              <Trash2 size={24} />
+            </div>
+
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--color-forest)', margin: '0 0 0.5rem' }}>
+              Delete Account
+            </h3>
+
+            <p style={{ fontSize: '0.88rem', color: '#4b5563', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+              Are you sure you want to delete your account <strong>{userData.name || userData.email || ''}</strong>?
+              <br /><br />
+              This action will mark your account as <strong>inactive</strong>. You will be logged out and cannot sign in again unless reactivated by support.
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setDeleteModalOpen(false)}
+                disabled={isDeletingAccount}
+                style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: '#fff', color: '#374151', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={isDeletingAccount}
+                style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: 'none', backgroundColor: '#dc2626', color: '#fff', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', opacity: isDeletingAccount ? 0.7 : 1 }}
+              >
+                {isDeletingAccount ? (
+                  <>Deleting...</>
+                ) : (
+                  <>
+                    <Trash2 size={15} /> Yes, Delete Account
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Review Modal for Delivered Orders */}
       {reviewModalOrder && (
@@ -1282,23 +1659,13 @@ export default function UserProfilePage() {
                       </div>
                     </div>
 
-                    <div style={{ marginBottom: '0.75rem' }}>
-                      <input
-                        type="text"
-                        placeholder="Headline (e.g. Tastes fresh & premium!)"
-                        value={rData.title || ''}
-                        onChange={(e) => updateItemReviewField(pId, 'title', e.target.value)}
-                        style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem', boxSizing: 'border-box' }}
-                      />
-                    </div>
-
                     <div>
                       <textarea
-                        rows={3}
-                        placeholder="Write your review for this product..."
+                        rows={4}
+                        placeholder="Write your review description for this product..."
                         value={rData.comment || ''}
                         onChange={(e) => updateItemReviewField(pId, 'comment', e.target.value)}
-                        style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem', boxSizing: 'border-box' }}
+                        style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '0.88rem', boxSizing: 'border-box' }}
                       />
                     </div>
                   </div>
@@ -1325,6 +1692,19 @@ export default function UserProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Profile Address Modal Popup */}
+      <AddressModal
+        isOpen={isProfileAddressModalOpen}
+        onClose={() => setIsProfileAddressModalOpen(false)}
+        addressToEdit={profileAddressToEdit}
+        defaultName={userData.name || ''}
+        defaultPhone={userData.phone || ''}
+        onSaveSuccess={async () => {
+          await loadProfileAddresses();
+          showToast('Address saved successfully!');
+        }}
+      />
     </div>
   );
 }

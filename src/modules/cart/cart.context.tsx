@@ -73,7 +73,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prev, { product, quantity }];
     });
-    setIsOpen(true);
     // Sync to backend DB
     addToCartApi(product.id, quantity);
   };

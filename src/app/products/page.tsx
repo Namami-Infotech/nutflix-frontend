@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { fetchCategories, fetchProducts, Category, Product } from '@/lib/api';
+import { fetchCategories, fetchProducts, Category, Product, getCachedData } from '@/lib/api';
 import { ProductGrid, CategoryFilter, ProductSort, SortOption, ProductDetailModal } from '@/modules/catalog';
 import { Search, Sparkles, X, Loader2 } from 'lucide-react';
 
@@ -34,17 +34,21 @@ function CatalogContent() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     async function loadCatalog() {
-      setLoading(true);
       const [cats, prods] = await Promise.all([
         fetchCategories(),
         fetchProducts(),
       ]);
+      if (!isMounted) return;
       setCategories(cats);
       setProducts(prods);
       setLoading(false);
     }
     loadCatalog();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Reset pagination when category, search, or sort changes

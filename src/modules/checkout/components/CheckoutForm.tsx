@@ -2,10 +2,47 @@
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/modules/cart';
-import { submitOrder, fetchPaymentTypes, PaymentType, getAuthToken, getUserFromCookie, createRazorpayOrder, verifyRazorpayPayment, getRazorpayKey, getProductPrices, formatPrice } from '@/lib/api';
+import {
+  submitOrder,
+  fetchPaymentTypes,
+  PaymentType,
+  Address,
+  fetchMyAddresses,
+  createAddress,
+  updateAddress,
+  deleteAddress,
+  getAuthToken,
+  getUserFromCookie,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+  getRazorpayKey,
+  getProductPrices,
+  formatPrice,
+} from '@/lib/api';
 import { useAuth } from '@/modules/auth';
-import { ShoppingCart, ShieldCheck, CheckCircle2, ArrowRight, Truck, CreditCard, Banknote, User, Lock, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import {
+  ShoppingCart,
+  ShieldCheck,
+  CheckCircle2,
+  ArrowRight,
+  Truck,
+  CreditCard,
+  Banknote,
+  User,
+  Lock,
+  AlertCircle,
+  Loader2,
+  Sparkles,
+  MapPin,
+  Plus,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
+
+import { AddressModal } from './AddressModal';
 
 // Dynamically load Razorpay standard Checkout script
 const loadRazorpayScript = (): Promise<boolean> => {
@@ -41,19 +78,113 @@ export const CheckoutForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [orderComplete, setOrderComplete] = useState<any | null>(null);
 
+  // Address Selection & Dialog Modal States
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [loadingAddresses, setLoadingAddresses] = useState<boolean>(false);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState<boolean>(false);
+  const [addressToEdit, setAddressToEdit] = useState<Address | null>(null);
+
+  // Toast Notification State
+  const [toast, setToast] = useState<{ message: string; type?: 'error' | 'success' | 'info' } | null>(null);
+
+  const showToast = (message: string, type: 'error' | 'success' | 'info' = 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4500);
+  };
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const handleSelectAddress = (addr: Address) => {
+    setSelectedAddressId(addr.id);
+    if (addr.fullName) setCustomerName(addr.fullName);
+    if (addr.phone) setCustomerPhone(addr.phone);
+    if (addr.streetAddress) setShippingAddress(addr.streetAddress);
+    if (addr.city) setCity(addr.city);
+    if (addr.postalCode) setPostalCode(addr.postalCode);
+  };
+
+  const loadAddresses = async () => {
+    setLoadingAddresses(true);
+    try {
+      const list = await fetchMyAddresses();
+      const activeList = (list || []).filter((a) => !a.isDeleted);
+      setSavedAddresses(activeList);
+
+      if (activeList.length > 0) {
+        // By default, pre-select the default address or first address
+        const chosen = activeList.find((a) => a.isDefault) || activeList[0];
+        handleSelectAddress(chosen);
+      } else {
+        const currentUser = user || getUserFromCookie();
+        if (currentUser) {
+          if (currentUser.name) setCustomerName((prev) => prev || currentUser.name || '');
+          if (currentUser.email) setCustomerEmail((prev) => prev || currentUser.email || '');
+          if (currentUser.phone) setCustomerPhone((prev) => prev || currentUser.phone || '');
+          if (currentUser.address) setShippingAddress((prev) => prev || currentUser.address || '');
+        }
+      }
+    } catch (err) {
+      console.error('Error loading addresses:', err);
+    } finally {
+      setLoadingAddresses(false);
+    }
+  };
+
   useEffect(() => {
     const currentUser = user || getUserFromCookie();
-    if (currentUser) {
-      if (currentUser.name) setCustomerName((prev) => prev || currentUser.name || '');
-      if (currentUser.email) setCustomerEmail((prev) => prev || currentUser.email || '');
-      if (currentUser.phone) setCustomerPhone((prev) => prev || currentUser.phone || '');
-      if (currentUser.address) setShippingAddress((prev) => prev || currentUser.address || '');
+    if (currentUser?.email) {
+      setCustomerEmail((prev) => prev || currentUser.email || '');
     }
+    loadAddresses();
   }, [user]);
+
+  const handleOpenAddModal = () => {
+    if (savedAddresses.length >= 4) {
+      showToast('Maximum limit reached: You can save up to 4 delivery addresses only. Please edit or delete an existing address.', 'error');
+      return;
+    }
+    setAddressToEdit(null);
+    setIsAddressModalOpen(true);
+  };
+
+  const handleOpenEditModal = (addr: Address, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setAddressToEdit(addr);
+    setIsAddressModalOpen(true);
+  };
+
+  const handleDeleteAddress = async (id: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this address?')) return;
+
+    try {
+      const success = await deleteAddress(id);
+      if (success) {
+        showToast('Address deleted successfully.', 'success');
+        const updatedList = await fetchMyAddresses();
+        const activeList = (updatedList || []).filter((a) => !a.isDeleted);
+        setSavedAddresses(activeList);
+
+        // If the deleted address was currently selected, select the first remaining active address
+        if (selectedAddressId === id) {
+          if (activeList.length > 0) {
+            const nextAddr = activeList.find((a) => a.isDefault) || activeList[0];
+            handleSelectAddress(nextAddr);
+          } else {
+            setSelectedAddressId(null);
+            setShippingAddress('');
+            setCity('');
+            setPostalCode('');
+          }
+        }
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to delete address.', 'error');
+    }
+  };
 
   useEffect(() => {
     // Preload Razorpay SDK script in the background
@@ -449,56 +580,144 @@ export const CheckoutForm: React.FC = () => {
   }
 
   return (
-    <div className="container" style={{ padding: '3.5rem 1rem' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '1.8rem' }}>
-        Secure Checkout
-      </h1>
+    <div className="checkout-page-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1rem' }}>
+      <style>{`
+        .checkout-page-container {
+          box-sizing: border-box;
+        }
+        .checkout-grid-layout {
+          display: grid;
+          grid-template-columns: 1.55fr 1fr;
+          gap: 2rem;
+          align-items: flex-start;
+        }
+        .checkout-card {
+          background-color: #ffffff;
+          padding: 1.75rem;
+          border-radius: 20px;
+          border: 1px solid var(--color-border);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+          box-sizing: border-box;
+        }
+        .address-card-item {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          padding: 1rem 1.15rem;
+          border-radius: 14px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-sizing: border-box;
+        }
+        .address-card-item:hover {
+          border-color: var(--color-gold) !important;
+          transform: translateY(-1px);
+        }
+        .address-action-btn {
+          border-radius: 8px;
+          padding: 0.45rem;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s ease;
+        }
+        .address-action-btn:hover {
+          transform: scale(1.08);
+        }
+        @media (max-width: 900px) {
+          .checkout-grid-layout {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+          .checkout-summary-card {
+            position: static !important;
+          }
+        }
+        @media (max-width: 600px) {
+          .checkout-page-container {
+            padding: 1.25rem 0.5rem;
+          }
+          .checkout-card {
+            padding: 1.2rem 1rem;
+            border-radius: 16px;
+          }
+          .checkout-summary-card {
+            padding: 1.2rem 1rem !important;
+            border-radius: 16px !important;
+          }
+          .address-card-item {
+            padding: 0.85rem 0.9rem;
+            gap: 0.5rem;
+          }
+        }
+      `}</style>
+
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h1 style={{ fontSize: '1.85rem', fontWeight: 900, color: 'var(--color-forest)', margin: 0 }}>
+          Secure Checkout
+        </h1>
+        <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', margin: '0.3rem 0 0 0' }}>
+          Review your delivery details and choose a payment method.
+        </p>
+      </div>
 
       {errorMessage && (
         <div
           style={{
             backgroundColor: '#fef2f2',
             border: '1.5px solid #ef4444',
-            padding: '1rem 1.25rem',
-            borderRadius: '14px',
+            padding: '0.9rem 1.15rem',
+            borderRadius: '12px',
             color: '#b91c1c',
-            fontSize: '0.9rem',
+            fontSize: '0.88rem',
             display: 'flex',
             alignItems: 'center',
             gap: '0.75rem',
             marginBottom: '1.5rem',
           }}
         >
-          <AlertCircle size={22} style={{ flexShrink: 0 }} />
+          <AlertCircle size={20} style={{ flexShrink: 0 }} />
           <div>{errorMessage}</div>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '2.5rem', alignItems: 'flex-start' }}>
+      <div className="checkout-grid-layout">
         {/* Form Left */}
-        <form onSubmit={handleSubmit} style={{ backgroundColor: '#ffffff', padding: '1.75rem', borderRadius: '24px', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '1.25rem' }}>
-            1. Contact & Shipping Details
-          </h3>
+        <form onSubmit={handleSubmit} className="checkout-card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <MapPin size={20} color="var(--color-gold)" />
+              <span>1. Delivery Address & Contact</span>
+            </h3>
+            <button
+              type="button"
+              onClick={handleOpenAddModal}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                color: 'var(--color-forest)',
+                backgroundColor: 'rgba(200, 157, 102, 0.15)',
+                border: '1px solid var(--color-gold)',
+                borderRadius: '20px',
+                padding: '0.4rem 0.85rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Plus size={15} />
+              <span>Add New Address {savedAddresses.length > 0 ? `(${savedAddresses.length}/4)` : ''}</span>
+            </button>
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
-                Full Name *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Jane Doe"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+            {/* Contact Information */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
                   Email Address *
                 </label>
                 <input
@@ -507,12 +726,12 @@ export const CheckoutForm: React.FC = () => {
                   placeholder="jane@example.com"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 0.95rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.92rem' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
                   Mobile Number *
                 </label>
                 <input
@@ -521,53 +740,142 @@ export const CheckoutForm: React.FC = () => {
                   placeholder="9876543210"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 0.95rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.92rem' }}
                 />
               </div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
-                Street Address *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="123 Kindness Way"
-                value={shippingAddress}
-                onChange={(e) => setShippingAddress(e.target.value)}
-                style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
-              />
-            </div>
+            {/* SAVED ADDRESSES DIRECT LIST */}
+            {savedAddresses.length > 0 ? (
+              <div style={{ marginTop: '0.35rem' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#555', marginBottom: '0.65rem' }}>
+                  Select Delivery Address ({savedAddresses.length}/4 saved):
+                </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ flex: '1 1 140px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
-                  City *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="London / Mumbai"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {savedAddresses.map((addr) => {
+                    const isSelected = selectedAddressId === addr.id;
+
+                    return (
+                      <div
+                        key={addr.id}
+                        onClick={() => handleSelectAddress(addr)}
+                        className="address-card-item"
+                        style={{
+                          border: isSelected ? '2px solid var(--color-forest)' : '1px solid #e2e8f0',
+                          backgroundColor: isSelected ? '#f7faf7' : '#ffffff',
+                          boxShadow: isSelected ? '0 2px 10px rgba(30, 77, 43, 0.08)' : '0 1px 3px rgba(0,0,0,0.02)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+                          {/* Radio Selector */}
+                          <div
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              borderRadius: '50%',
+                              border: isSelected ? '5px solid var(--color-forest)' : '2px solid #cbd5e1',
+                              backgroundColor: '#fff',
+                              flexShrink: 0,
+                              marginTop: '3px',
+                              transition: 'all 0.15s ease',
+                            }}
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                              <span style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem' }}>
+                                {addr.fullName || customerName}
+                              </span>
+                              {addr.isDefault && (
+                                <span style={{ fontSize: '0.65rem', backgroundColor: '#e2ece4', color: 'var(--color-forest)', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 800 }}>
+                                  DEFAULT
+                                </span>
+                              )}
+                              <span style={{ fontSize: '0.78rem', color: '#555', backgroundColor: '#f3f4f6', padding: '0.1rem 0.4rem', borderRadius: '6px', fontWeight: 600 }}>
+                                📞 {addr.phone}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '0.85rem', color: '#444', lineHeight: '1.45', wordBreak: 'break-word' }}>
+                              {addr.streetAddress}, {addr.city} {addr.state ? `, ${addr.state}` : ''} - <strong>{addr.postalCode}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginLeft: '0.5rem', flexShrink: 0 }}>
+                          <button
+                            type="button"
+                            title="Edit Address"
+                            onClick={(e) => handleOpenEditModal(addr, e)}
+                            className="address-action-btn"
+                            style={{
+                              background: '#f8fafc',
+                              border: '1px solid #e2e8f0',
+                              color: 'var(--color-forest)',
+                            }}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Delete Address (Soft Delete)"
+                            onClick={(e) => handleDeleteAddress(addr.id, e)}
+                            className="address-action-btn"
+                            style={{
+                              background: '#fff1f2',
+                              border: '1px solid #fecdd3',
+                              color: '#e11d48',
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div style={{ flex: '1 1 140px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
-                  Postal Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="400001"
-                  value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.95rem' }}
-                />
+            ) : (
+              <div
+                style={{
+                  padding: '1.75rem 1.25rem',
+                  borderRadius: '16px',
+                  border: '1.5px dashed var(--color-gold)',
+                  backgroundColor: '#fffdf9',
+                  textAlign: 'center',
+                  marginTop: '0.35rem',
+                }}
+              >
+                <MapPin size={28} color="var(--color-gold)" style={{ marginBottom: '0.4rem' }} />
+                <h4 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--color-forest)', margin: '0 0 0.3rem 0' }}>
+                  No Delivery Address Saved Yet
+                </h4>
+                <p style={{ fontSize: '0.82rem', color: '#666', margin: '0 0 1rem 0' }}>
+                  Please add your delivery address to proceed with your order.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleOpenAddModal}
+                  style={{
+                    backgroundColor: 'var(--color-forest)',
+                    color: '#fff',
+                    padding: '0.65rem 1.35rem',
+                    borderRadius: '10px',
+                    border: 'none',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    boxShadow: '0 4px 12px rgba(30,77,43,0.18)',
+                  }}
+                >
+                  <Plus size={16} />
+                  <span>Add Delivery Address</span>
+                </button>
               </div>
-            </div>
+            )}
           </div>
 
           <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', marginTop: '1.8rem', marginBottom: '1rem' }}>
@@ -708,7 +1016,7 @@ export const CheckoutForm: React.FC = () => {
         </form>
 
         {/* Summary Right */}
-        <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.75rem', borderRadius: '24px', border: '1px solid var(--color-border)' }}>
+        <div className="checkout-summary-card" style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.75rem', borderRadius: '20px', border: '1px solid var(--color-border)', position: 'sticky', top: '2rem' }}>
           <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '1.2rem' }}>
             Order Summary ({items.length} {items.length === 1 ? 'item' : 'items'})
           </h3>
@@ -756,6 +1064,65 @@ export const CheckoutForm: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Address Dialog / Modal Popup */}
+      <AddressModal
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
+        addressToEdit={addressToEdit}
+        defaultName={customerName || user?.name || ''}
+        defaultPhone={customerPhone || user?.phone || ''}
+        onSaveSuccess={async (savedAddr) => {
+          await loadAddresses();
+          handleSelectAddress(savedAddr);
+          showToast('Delivery address saved successfully!', 'success');
+        }}
+      />
+
+      {/* Modern Floating Toast Notification */}
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 999999,
+            backgroundColor: toast.type === 'success' ? '#1b4332' : toast.type === 'info' ? '#1e3a8a' : '#2b1010',
+            color: '#ffffff',
+            padding: '0.85rem 1.35rem',
+            borderRadius: '14px',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            border: `1.5px solid ${toast.type === 'success' ? '#40916c' : toast.type === 'info' ? '#3b82f6' : '#ef4444'}`,
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            maxWidth: '92vw',
+            animation: 'slideDownFade 0.25s ease-out',
+          }}
+        >
+          <AlertCircle size={20} color={toast.type === 'success' ? '#52b788' : toast.type === 'info' ? '#60a5fa' : '#f87171'} style={{ flexShrink: 0 }} />
+          <span>{toast.message}</span>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'rgba(255,255,255,0.7)',
+              cursor: 'pointer',
+              padding: '2px',
+              marginLeft: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

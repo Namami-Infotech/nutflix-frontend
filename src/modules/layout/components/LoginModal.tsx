@@ -35,6 +35,7 @@ interface LoginModalProps {
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSuccess, promptMessage }) => {
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState<any>(null);
@@ -63,7 +64,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Check login state on mount
+  // Client mounted guard
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Check login state on mount & when modal opens
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedAccessToken = getAuthToken();
@@ -81,9 +87,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
         } catch {
           // ignore
         }
+      } else {
+        setIsLoggedIn(false);
+        setUserData(null);
       }
     }
-  }, []);
+  }, [isOpen]);
 
   // Live countdown timer for OTP (5 minutes) and Resend cooldown
   useEffect(() => {
@@ -99,7 +108,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
     };
   }, [otpCountdown, resendCooldown]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   // Format seconds to MM:SS
   const formatTime = (seconds: number) => {
@@ -160,14 +169,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
       if (response.success) {
         setOtpSent(true);
         setOtpInput('');
-        setOtpCountdown(300); // 5 minutes countdown (300 seconds)
-        setResendCooldown(30); // 30s resend cooldown
+        const remainingTime = response.data?.expiresInSeconds || 300;
+        setOtpCountdown(remainingTime);
+        setResendCooldown(60); // 60s resend cooldown
         setSuccessMsg(response.message || `OTP sent to +91 ${cleanedPhone}.`);
       } else {
         setErrorMsg(response.message || 'Failed to send OTP. Please check your number.');
       }
     } catch (err: any) {
-      setErrorMsg('Error sending OTP. Please try again.');
+      setErrorMsg(err?.response?.data?.message || err?.message || 'Error sending OTP. Please try again.');
     } finally {
       setSendingOtp(false);
     }
@@ -245,8 +255,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
         } else {
           setErrorMsg(response.message || 'Verification failed. Please try again.');
         }
-      } catch (err) {
-        setErrorMsg('An error occurred during account creation.');
+      } catch (err: any) {
+        setErrorMsg(err?.response?.data?.message || err?.message || 'An error occurred during account creation.');
       } finally {
         setLoading(false);
       }
@@ -307,8 +317,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
         } else {
           setErrorMsg(response.message || 'Invalid or expired OTP.');
         }
-      } catch (err) {
-        setErrorMsg('An error occurred during sign in.');
+      } catch (err: any) {
+        setErrorMsg(err?.response?.data?.message || err?.message || 'An error occurred during sign in.');
       } finally {
         setLoading(false);
       }
@@ -778,21 +788,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                         <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-forest)' }}>
                           Enter 6-Digit OTP *
                         </label>
-                        {otpCountdown > 0 && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontSize: '0.78rem',
-                              fontWeight: 700,
-                              color: '#b45309',
-                            }}
-                          >
-                            <Clock size={13} />
-                            <span>{formatTime(otpCountdown)}</span>
-                          </div>
-                        )}
                       </div>
 
                       <div style={{ position: 'relative', marginBottom: '0.6rem' }}>
@@ -979,21 +974,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                         <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-forest)' }}>
                           Enter Login OTP *
                         </label>
-                        {otpCountdown > 0 && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontSize: '0.78rem',
-                              fontWeight: 700,
-                              color: '#b45309',
-                            }}
-                          >
-                            <Clock size={13} />
-                            <span>{formatTime(otpCountdown)}</span>
-                          </div>
-                        )}
                       </div>
 
                       <div style={{ position: 'relative', marginBottom: '0.6rem' }}>

@@ -113,3 +113,19 @@ export interface User {
   createdAt?: string;
 }
 
+export interface Address {
+  id: number;
+  userId: number;
+  fullName: string;
+  phone: string;
+  streetAddress: string;
+  city: string;
+  state?: string;
+  postalCode: string;
+  country?: string;
+  isDefault?: boolean;
+  isDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+

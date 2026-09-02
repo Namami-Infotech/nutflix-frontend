@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Pause, Play, Pencil } from 'lucide-react';
 import { MasterBanner } from '@/types';
 import { EditBannerModal } from './EditBannerModal';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 interface HeroBannerProps {
   banners?: MasterBanner[];
@@ -118,12 +119,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         }}
       >
         {activeBanners.map((banner, index) => {
+          const isFirstOrActive = index === 0 || index === currentIndex;
           const imgElement = (
-            <img
+            <OptimizedImage
               src={banner.imageUrl}
               alt={banner.title || `Hero Banner ${index + 1}`}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              decoding="async"
+              priority={isFirstOrActive}
               draggable={false}
               className="hero-banner-img"
               style={{

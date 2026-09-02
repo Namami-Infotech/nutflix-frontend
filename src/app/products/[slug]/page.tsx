@@ -2,13 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { fetchProductBySlug, fetchReviews, fetchPaymentTypes, formatWeightAndUnit, getProductPrices, formatPrice, PaymentType } from '@/lib/api';
+import { fetchProductBySlug, fetchReviews, fetchPaymentTypes, formatWeightAndUnit, getProductPrices, formatPrice, PaymentType, getCachedData } from '@/lib/api';
 import { Product, Review } from '@/types';
 import { useCart } from '@/modules/cart';
 import { useAuth } from '@/modules/auth';
 import { Star, ShoppingCart, Heart, ArrowLeft, Plus, Minus, CreditCard, ShieldCheck, Truck, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { ProductReviews } from '@/modules/catalog';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +19,7 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
   const [mounted, setMounted] = useState(false);
   const routeParams = useParams();
   const slug = (params?.slug || routeParams?.slug || '') as string;
-  const { items: cartItems, addToCart, openCart } = useCart();
+  const { items: cartItems, addToCart, updateQuantity, openCart } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
   const [product, setProduct] = useState<Product | null>(null);
@@ -40,32 +42,37 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
   };
 
   useEffect(() => {
+    let isMounted = true;
     async function loadData() {
       if (slug) {
         const prod = await fetchProductBySlug(slug);
+        if (!isMounted) return;
         if (prod) {
-          const revs = await fetchReviews(prod.id);
-          setReviews(revs);
-          if (revs && revs.length > 0) {
-            const sum = revs.reduce((acc, r) => acc + (Number(r.rating) || 5), 0);
-            const dynamicAvg = (sum / revs.length).toFixed(1);
-            setProduct({
-              ...prod,
-              rating: dynamicAvg,
-              reviewCount: revs.length,
-            });
-          } else {
-            setProduct(prod);
-          }
+          setProduct(prod);
+          setLoading(false);
+          fetchReviews(prod.id).then((revs) => {
+            if (!isMounted) return;
+            setReviews(revs);
+            if (revs && revs.length > 0) {
+              const sum = revs.reduce((acc, r) => acc + (Number(r.rating) || 5), 0);
+              const dynamicAvg = (sum / revs.length).toFixed(1);
+              setProduct((prev) => prev ? { ...prev, rating: dynamicAvg, reviewCount: revs.length } : prev);
+            }
+          });
         } else {
           setProduct(null);
+          setLoading(false);
         }
       }
-      const pTypes = await fetchPaymentTypes();
-      setActivePayments(pTypes.filter((t) => t.status === 'active'));
-      setLoading(false);
+      fetchPaymentTypes().then((pTypes) => {
+        if (!isMounted) return;
+        setActivePayments(pTypes.filter((t) => t.status === 'active'));
+      });
     }
     loadData();
+    return () => {
+      isMounted = false;
+    };
   }, [slug]);
 
   const handleReviewSubmitted = (newRating: string | number, newCount: number, newReview: Review) => {
@@ -91,10 +98,18 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
     }
   };
 
-  if (!mounted || loading) {
+  if (!mounted || (loading && !product)) {
     return (
-      <div className="container" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
-        Loading product details...
+      <div className="container" style={{ padding: '3rem 1.5rem 5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem' }}>
+          <Skeleton height="400px" borderRadius="24px" />
+          <div>
+            <Skeleton height="36px" width="70%" style={{ marginBottom: '1rem' }} />
+            <Skeleton height="24px" width="40%" style={{ marginBottom: '1rem' }} />
+            <Skeleton height="100px" width="100%" style={{ marginBottom: '1rem' }} />
+            <Skeleton height="48px" width="60%" borderRadius="24px" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -104,7 +119,7 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
       <div className="container" style={{ padding: '5rem 1.5rem', textAlign: 'center' }}>
         <h2>Product not found</h2>
         <button onClick={handleBack} className="btn-primary" style={{ marginTop: '1rem', cursor: 'pointer' }}>
-          Back
+          Back to Products
         </button>
       </div>
     );
@@ -153,10 +168,15 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '4rem', alignItems: 'flex-start' }}>
         {/* Product Gallery Left */}
         <div>
-          <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)', position: 'relative' }}>
-            <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '440px', objectFit: 'cover', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }} />
+          <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)', position: 'relative', height: '440px' }}>
+            <OptimizedImage
+              src={product.imageUrl}
+              alt={product.name}
+              priority={true}
+              style={{ width: '100%', height: '440px', objectFit: 'cover', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }}
+            />
             {hasDiscount && !isOutOfStock && (
-              <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', backgroundColor: '#15803d', color: '#ffffff', fontSize: '0.85rem', fontWeight: 900, padding: '0.35rem 0.85rem', borderRadius: '20px', boxShadow: '0 4px 12px rgba(21,128,61,0.35)' }}>
+              <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', backgroundColor: '#15803d', color: '#ffffff', fontSize: '0.85rem', fontWeight: 900, padding: '0.35rem 0.85rem', borderRadius: '20px', boxShadow: '0 4px 12px rgba(21,128,61,0.35)', zIndex: 5 }}>
                 {discountPercent}% OFF
               </div>
             )}
@@ -237,47 +257,92 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
 
           {/* Action Row */}
           <div className="product-action-row">
-            <div
-              className="product-qty-selector"
-              style={{
-                opacity: isAdmin ? 0.6 : 1,
-              }}
-            >
-              <button disabled={isAdmin} onClick={() => setQuantity(Math.max(1, quantity - 1))} className="qty-btn" aria-label="Decrease quantity">
-                <Minus size={16} color="var(--color-forest)" />
-              </button>
-              <span className="qty-value">{quantity}</span>
-              <button disabled={isAdmin} onClick={() => setQuantity(quantity + 1)} className="qty-btn" aria-label="Increase quantity">
-                <Plus size={16} color="var(--color-forest)" />
-              </button>
-            </div>
+            {cartQty > 0 && !isAdmin ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', flex: 1 }}>
+                <div
+                  className="product-qty-selector"
+                  style={{
+                    backgroundColor: 'var(--color-forest)',
+                    border: 'none',
+                    color: '#fff',
+                    padding: '0.45rem 0.75rem',
+                    borderRadius: 'var(--radius-pill)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <button
+                    onClick={() => updateQuantity(product.id, cartQty - 1)}
+                    className="qty-btn"
+                    style={{ color: '#fff', cursor: 'pointer', background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus size={16} color="#fff" />
+                  </button>
+                  <span className="qty-value" style={{ color: 'var(--color-gold)', fontWeight: 900, minWidth: '30px', textAlign: 'center', fontSize: '1rem' }}>
+                    {cartQty}
+                  </span>
+                  <button
+                    onClick={() => updateQuantity(product.id, cartQty + 1)}
+                    className="qty-btn"
+                    style={{ color: '#fff', cursor: 'pointer', background: 'none', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    aria-label="Increase quantity"
+                  >
+                    <Plus size={16} color="#fff" />
+                  </button>
+                </div>
 
-            <button
-              onClick={() => !isAdmin && addToCart(product, quantity)}
-              disabled={isAdmin}
-              className="btn-primary product-add-btn"
-              style={{
-                backgroundColor: isAdmin ? '#e2e8f0' : undefined,
-                color: isAdmin ? '#94a3b8' : undefined,
-                cursor: isAdmin ? 'not-allowed' : 'pointer',
-                border: isAdmin ? '1px solid #cbd5e1' : undefined,
-                boxShadow: isAdmin ? 'none' : undefined,
-              }}
-              title={isAdmin ? 'Admin accounts cannot purchase items' : 'Add to Basket'}
-            >
-              <ShoppingCart size={18} />
-              <span className="add-text">
-                {isAdmin ? (
-                  'Admin (Disabled)'
-                ) : (
-                  <>
-                    <span className="add-text-desktop">Add to Basket</span>
-                    <span className="add-text-mobile">Add</span>
-                    <span className="add-price"> • ₹{formatPrice(currentPrice * quantity)}</span>
-                  </>
-                )}
-              </span>
-            </button>
+                <button
+                  onClick={() => openCart()}
+                  className="btn-primary"
+                  style={{
+                    backgroundColor: 'var(--color-gold-dark, #b45309)',
+                    color: '#fff',
+                    padding: '0.75rem 1.4rem',
+                    borderRadius: 'var(--radius-pill)',
+                    fontWeight: 800,
+                    fontSize: '0.92rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(180, 83, 9, 0.25)',
+                  }}
+                >
+                  <ShoppingCart size={17} />
+                  <span>View in Cart ({cartQty}) • ₹{formatPrice(currentPrice * cartQty)}</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => !isAdmin && addToCart(product, 1)}
+                disabled={isAdmin}
+                className="btn-primary product-add-btn"
+                style={{
+                  backgroundColor: isAdmin ? '#e2e8f0' : undefined,
+                  color: isAdmin ? '#94a3b8' : undefined,
+                  cursor: isAdmin ? 'not-allowed' : 'pointer',
+                  border: isAdmin ? '1px solid #cbd5e1' : undefined,
+                  boxShadow: isAdmin ? 'none' : undefined,
+                }}
+                title={isAdmin ? 'Admin accounts cannot purchase items' : 'Add to Basket'}
+              >
+                <ShoppingCart size={18} />
+                <span className="add-text">
+                  {isAdmin ? (
+                    'Admin (Disabled)'
+                  ) : (
+                    <>
+                      <span className="add-text-desktop">Add to Basket</span>
+                      <span className="add-text-mobile">Add</span>
+                      <span className="add-price"> • ₹{formatPrice(currentPrice)}</span>
+                    </>
+                  )}
+                </span>
+              </button>
+            )}
 
             <button
               onClick={() => {

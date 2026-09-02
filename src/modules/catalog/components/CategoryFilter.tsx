@@ -61,14 +61,11 @@ export const CategoryFilter: React.FC<Props> = ({ categories, selectedSlug, onSe
   );
 };
 
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+
 const CategoryFilterItem: React.FC<{ cat: Category; isSelected: boolean; onSelectCategory: (slug: string | null) => void }> = ({ cat, isSelected, onSelectCategory }) => {
   const defaultFallback = 'https://images.unsplash.com/photo-1608797178974-15b35a640578?auto=format&fit=crop&w=100&q=80';
-  const initialUrl = cat.imageUrl || (cat as any).image || defaultFallback;
-  const [imgSrc, setImgSrc] = React.useState(initialUrl);
-
-  React.useEffect(() => {
-    setImgSrc(cat.imageUrl || (cat as any).image || defaultFallback);
-  }, [cat.imageUrl, (cat as any).image]);
+  const imgUrl = cat.imageUrl || (cat as any).image || defaultFallback;
 
   return (
     <button
@@ -91,24 +88,28 @@ const CategoryFilterItem: React.FC<{ cat: Category; isSelected: boolean; onSelec
         cursor: 'pointer',
       }}
     >
-      {imgSrc && (
-        <img
-          src={imgSrc}
+      <div
+        style={{
+          width: '26px',
+          height: '26px',
+          borderRadius: '50%',
+          overflow: 'hidden',
+          flexShrink: 0,
+          border: isSelected ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
+        }}
+      >
+        <OptimizedImage
+          src={imgUrl}
+          fallbackSrc={defaultFallback}
           alt={cat.name}
-          onError={() => {
-            if (imgSrc !== defaultFallback) {
-              setImgSrc(defaultFallback);
-            }
-          }}
+          priority={false}
           style={{
-            width: '26px',
-            height: '26px',
-            borderRadius: '50%',
+            width: '100%',
+            height: '100%',
             objectFit: 'cover',
-            border: isSelected ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
           }}
         />
-      )}
+      </div>
       <span>{cat.name}</span>
     </button>
   );

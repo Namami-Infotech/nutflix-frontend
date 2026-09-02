@@ -1,17 +1,84 @@
 import axios from 'axios';
-import { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType } from '@/types';
+import { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType, Address } from '@/types';
 
-export type { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType };
+export type { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType, Address };
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
+  timeout: 6000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// ================= FAST SWR CACHE LAYER =================
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+const MEMORY_CACHE = new Map<string, CacheEntry<any>>();
+const CACHE_TTL_MS = 60 * 1000; // 1 minute fresh TTL, Stale-While-Revalidate after
+
+export function getCachedData<T>(key: string): T | null {
+  // 1. Check memory cache
+  const mem = MEMORY_CACHE.get(key);
+  if (mem) return mem.data;
+
+  // 2. Check localStorage cache
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(`nutflix_cache_${key}`);
+      if (stored) {
+        const parsed: CacheEntry<T> = JSON.parse(stored);
+        MEMORY_CACHE.set(key, parsed);
+        return parsed.data;
+      }
+    } catch (e) {}
+  }
+  return null;
+}
+
+export function setCachedData<T>(key: string, data: T) {
+  const entry: CacheEntry<T> = { data, timestamp: Date.now() };
+  MEMORY_CACHE.set(key, entry);
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(`nutflix_cache_${key}`, JSON.stringify(entry));
+    } catch (e) {}
+  }
+}
+
+export function invalidateApiCache(prefix?: string) {
+  if (!prefix) {
+    MEMORY_CACHE.clear();
+    if (typeof window !== 'undefined') {
+      try {
+        Object.keys(localStorage).forEach((k) => {
+          if (k.startsWith('nutflix_cache_')) localStorage.removeItem(k);
+        });
+      } catch (e) {}
+    }
+    return;
+  }
+
+  Array.from(MEMORY_CACHE.keys()).forEach((k) => {
+    if (k.includes(prefix)) MEMORY_CACHE.delete(k);
+  });
+
+  if (typeof window !== 'undefined') {
+    try {
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith(`nutflix_cache_${prefix}`) || k.includes(prefix)) {
+          localStorage.removeItem(k);
+        }
+      });
+    } catch (e) {}
+  }
+}
 
 // ================= COOKIE & TOKEN HELPERS =================
 export function getCookie(name: string): string | null {
@@ -126,80 +193,132 @@ api.interceptors.request.use((config) => {
 });
 
 export async function fetchCategories(): Promise<Category[]> {
-  try {
-    const res = await api.get('/categories');
-    if (res.data && Array.isArray(res.data.data)) {
-      return res.data.data;
-    }
-  } catch (error) {
+  const cacheKey = 'categories';
+  const cached = getCachedData<Category[]>(cacheKey);
+
+  const networkPromise = (async () => {
     try {
-      const res = await axios.get('/api/categories');
+      const res = await api.get('/categories');
       if (res.data && Array.isArray(res.data.data)) {
+        setCachedData(cacheKey, res.data.data);
         return res.data.data;
       }
-    } catch (e) {}
+    } catch (error) {
+      try {
+        const res = await axios.get('/api/categories', { timeout: 4000 });
+        if (res.data && Array.isArray(res.data.data)) {
+          setCachedData(cacheKey, res.data.data);
+          return res.data.data;
+        }
+      } catch (e) {}
+    }
+    return cached || [];
+  })();
+
+  if (cached && cached.length > 0) {
+    return cached;
   }
-  return [];
+  return await networkPromise;
 }
 
 export async function fetchProducts(params?: { category?: string; featured?: boolean; search?: string; page?: number; limit?: number }): Promise<Product[]> {
-  const query = new URLSearchParams();
-  if (params?.category) query.append('category', params.category);
-  if (params?.featured) query.append('featured', 'true');
-  if (params?.search) query.append('search', params.search);
-  if (params?.page) query.append('page', String(params.page));
-  if (params?.limit) query.append('limit', String(params.limit));
+  const cacheKey = `products_${JSON.stringify(params || {})}`;
+  const cached = getCachedData<Product[]>(cacheKey);
 
-  try {
-    const res = await api.get(`/products?${query.toString()}`);
-    if (res.data) {
-      if (Array.isArray(res.data.data)) return res.data.data;
-      if (res.data.data?.products) return res.data.data.products;
-    }
-  } catch (error) {
+  const networkPromise = (async () => {
+    const query = new URLSearchParams();
+    if (params?.category) query.append('category', params.category);
+    if (params?.featured) query.append('featured', 'true');
+    if (params?.search) query.append('search', params.search);
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+
     try {
-      const res = await axios.get(`/api/products?${query.toString()}`);
+      const res = await api.get(`/products?${query.toString()}`);
       if (res.data) {
-        if (Array.isArray(res.data.data)) return res.data.data;
-        if (res.data.data?.products) return res.data.data.products;
+        const prods = Array.isArray(res.data.data) ? res.data.data : res.data.data?.products;
+        if (Array.isArray(prods)) {
+          setCachedData(cacheKey, prods);
+          return prods;
+        }
       }
-    } catch (e) {}
+    } catch (error) {
+      try {
+        const res = await axios.get(`/api/products?${query.toString()}`, { timeout: 4000 });
+        if (res.data) {
+          const prods = Array.isArray(res.data.data) ? res.data.data : res.data.data?.products;
+          if (Array.isArray(prods)) {
+            setCachedData(cacheKey, prods);
+            return prods;
+          }
+        }
+      } catch (e) {}
+    }
+    return cached || [];
+  })();
+
+  if (cached && cached.length > 0) {
+    return cached;
   }
-  return [];
+  return await networkPromise;
 }
 
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
-  try {
-    const res = await api.get(`/products/${slug}`);
-    if (res.data && res.data.data) {
-      return res.data.data;
-    }
-  } catch (error) {
+  const cacheKey = `product_${slug}`;
+  const cached = getCachedData<Product>(cacheKey);
+
+  const networkPromise = (async () => {
     try {
-      const res = await axios.get(`/api/products/${slug}`);
+      const res = await api.get(`/products/${slug}`);
       if (res.data && res.data.data) {
+        setCachedData(cacheKey, res.data.data);
         return res.data.data;
       }
-    } catch (e) {}
+    } catch (error) {
+      try {
+        const res = await axios.get(`/api/products/${slug}`, { timeout: 4000 });
+        if (res.data && res.data.data) {
+          setCachedData(cacheKey, res.data.data);
+          return res.data.data;
+        }
+      } catch (e) {}
+    }
+    return cached || null;
+  })();
+
+  if (cached) {
+    return cached;
   }
-  return null;
+  return await networkPromise;
 }
 
 export async function fetchImpactMetrics(): Promise<ImpactMetric[]> {
-  try {
-    const res = await api.get('/impact');
-    if (res.data && Array.isArray(res.data.data)) {
-      return res.data.data;
-    }
-  } catch (error) {
+  const cacheKey = 'impact_metrics';
+  const cached = getCachedData<ImpactMetric[]>(cacheKey);
+
+  const networkPromise = (async () => {
     try {
-      const res = await axios.get('/api/impact');
+      const res = await api.get('/impact');
       if (res.data && Array.isArray(res.data.data)) {
+        setCachedData(cacheKey, res.data.data);
         return res.data.data;
       }
-    } catch (e) {}
+    } catch (error) {
+      try {
+        const res = await axios.get('/api/impact', { timeout: 4000 });
+        if (res.data && Array.isArray(res.data.data)) {
+          setCachedData(cacheKey, res.data.data);
+          return res.data.data;
+        }
+      } catch (e) {}
+    }
+    return cached || [];
+  })();
+
+  if (cached && cached.length > 0) {
+    return cached;
   }
-  return [];
+  return await networkPromise;
 }
 
 let LOCAL_REVIEWS_STORE: Review[] = [];
@@ -304,20 +423,32 @@ export async function submitReview(reviewData: {
 
 
 export async function fetchBanners(): Promise<MasterBanner[]> {
-  try {
-    const res = await api.get('/banners');
-    if (res.data && Array.isArray(res.data.data)) {
-      return res.data.data;
-    }
-  } catch (error) {
+  const cacheKey = 'banners';
+  const cached = getCachedData<MasterBanner[]>(cacheKey);
+
+  const networkPromise = (async () => {
     try {
-      const res = await axios.get('/api/banners');
+      const res = await api.get('/banners');
       if (res.data && Array.isArray(res.data.data)) {
+        setCachedData(cacheKey, res.data.data);
         return res.data.data;
       }
-    } catch (e) {}
+    } catch (error) {
+      try {
+        const res = await axios.get('/api/banners', { timeout: 4000 });
+        if (res.data && Array.isArray(res.data.data)) {
+          setCachedData(cacheKey, res.data.data);
+          return res.data.data;
+        }
+      } catch (e) {}
+    }
+    return cached || [];
+  })();
+
+  if (cached && cached.length > 0) {
+    return cached;
   }
-  return [];
+  return await networkPromise;
 }
 
 export async function submitOrder(orderData: any) {
@@ -711,6 +842,7 @@ export async function syncCartApi(items: Array<{ productId: number; quantity: nu
 export async function createProduct(productData: any) {
   try {
     const res = await api.post('/products', productData);
+    invalidateApiCache('product');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to create product' };
@@ -720,6 +852,7 @@ export async function createProduct(productData: any) {
 export async function updateProduct(id: number, productData: any) {
   try {
     const res = await api.put(`/products/${id}`, productData);
+    invalidateApiCache('product');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to update product' };
@@ -729,6 +862,7 @@ export async function updateProduct(id: number, productData: any) {
 export async function deleteProduct(id: number) {
   try {
     const res = await api.delete(`/products/${id}`);
+    invalidateApiCache('product');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to delete product' };
@@ -738,6 +872,7 @@ export async function deleteProduct(id: number) {
 export async function createBanner(bannerData: any) {
   try {
     const res = await api.post('/banners', bannerData);
+    invalidateApiCache('banners');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to create banner' };
@@ -747,6 +882,7 @@ export async function createBanner(bannerData: any) {
 export async function updateBanner(id: number, bannerData: any) {
   try {
     const res = await api.put(`/banners/${id}`, bannerData);
+    invalidateApiCache('banners');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to update banner' };
@@ -756,6 +892,7 @@ export async function updateBanner(id: number, bannerData: any) {
 export async function deleteBanner(id: number) {
   try {
     const res = await api.delete(`/banners/${id}`);
+    invalidateApiCache('banners');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to delete banner' };
@@ -774,6 +911,7 @@ export async function fetchUsers() {
 export async function createCategory(categoryData: any) {
   try {
     const res = await api.post('/categories', categoryData);
+    invalidateApiCache('categories');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to create category' };
@@ -783,6 +921,7 @@ export async function createCategory(categoryData: any) {
 export async function updateCategory(id: number, categoryData: any) {
   try {
     const res = await api.put(`/categories/${id}`, categoryData);
+    invalidateApiCache('categories');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to update category' };
@@ -792,6 +931,7 @@ export async function updateCategory(id: number, categoryData: any) {
 export async function deleteCategory(id: number) {
   try {
     const res = await api.delete(`/categories/${id}`);
+    invalidateApiCache('categories');
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to delete category' };
@@ -979,6 +1119,193 @@ export function formatPrice(amount: number | string | null | undefined): string 
 
 export function formatCurrency(amount: number | string | null | undefined, currencySymbol: string = '₹'): string {
   return `${currencySymbol}${formatPrice(amount)}`;
+}
+
+// ================= ADDRESS MANAGEMENT API =================
+
+export async function fetchMyAddresses(): Promise<Address[]> {
+  try {
+    const res = await api.get('/addresses');
+    if (res.data && Array.isArray(res.data.data)) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('nutflix_saved_addresses', JSON.stringify(res.data.data));
+      }
+      return res.data.data;
+    }
+  } catch (error) {
+    // Fallback to local storage
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('nutflix_saved_addresses');
+      if (cached) {
+        const parsed: Address[] = JSON.parse(cached);
+        return parsed.filter((a) => !a.isDeleted);
+      }
+    } catch (e) {}
+  }
+
+  return [];
+}
+
+export async function createAddress(addressData: {
+  fullName: string;
+  phone: string;
+  streetAddress: string;
+  city: string;
+  state?: string;
+  postalCode: string;
+  country?: string;
+  isDefault?: boolean;
+}): Promise<Address | null> {
+  try {
+    const res = await api.post('/addresses', addressData);
+    if (res.data && res.data.data) {
+      // Refresh local cache
+      await fetchMyAddresses();
+      return res.data.data;
+    }
+  } catch (error) {
+    // Fallback local storage creation
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('nutflix_saved_addresses');
+      const list: Address[] = cached ? JSON.parse(cached) : [];
+      const isFirst = list.filter((a) => !a.isDeleted).length === 0;
+      const isDefault = Boolean(addressData.isDefault || isFirst);
+
+      if (isDefault) {
+        list.forEach((a) => {
+          a.isDefault = false;
+        });
+      }
+
+      const newAddr: Address = {
+        id: Date.now(),
+        userId: 0,
+        fullName: addressData.fullName,
+        phone: addressData.phone,
+        streetAddress: addressData.streetAddress,
+        city: addressData.city,
+        state: addressData.state || '',
+        postalCode: addressData.postalCode,
+        country: addressData.country || 'India',
+        isDefault,
+        isDeleted: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      list.push(newAddr);
+      localStorage.setItem('nutflix_saved_addresses', JSON.stringify(list));
+      return newAddr;
+    } catch (e) {}
+  }
+
+  return null;
+}
+
+export async function updateAddress(
+  id: number,
+  addressData: {
+    fullName?: string;
+    phone?: string;
+    streetAddress?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+    isDefault?: boolean;
+  }
+): Promise<Address | null> {
+  try {
+    const res = await api.put(`/addresses/${id}`, addressData);
+    if (res.data && res.data.data) {
+      await fetchMyAddresses();
+      return res.data.data;
+    }
+  } catch (error) {
+    // Fallback local storage update
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('nutflix_saved_addresses');
+      const list: Address[] = cached ? JSON.parse(cached) : [];
+      const index = list.findIndex((a) => a.id === id);
+
+      if (index !== -1) {
+        if (addressData.isDefault) {
+          list.forEach((a) => {
+            a.isDefault = false;
+          });
+        }
+        list[index] = {
+          ...list[index],
+          ...addressData,
+          updatedAt: new Date().toISOString(),
+        };
+        localStorage.setItem('nutflix_saved_addresses', JSON.stringify(list));
+        return list[index];
+      }
+    } catch (e) {}
+  }
+
+  return null;
+}
+
+export async function deleteAddress(id: number): Promise<boolean> {
+  try {
+    const res = await api.delete(`/addresses/${id}`);
+    if (res.data && res.data.success) {
+      await fetchMyAddresses();
+      return true;
+    }
+  } catch (error) {
+    // Fallback local storage soft-delete
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('nutflix_saved_addresses');
+      const list: Address[] = cached ? JSON.parse(cached) : [];
+      const index = list.findIndex((a) => a.id === id);
+
+      if (index !== -1) {
+        const wasDefault = list[index].isDefault;
+        list[index].isDeleted = true;
+        list[index].isDefault = false;
+
+        if (wasDefault) {
+          const remaining = list.filter((a) => !a.isDeleted);
+          if (remaining.length > 0) {
+            remaining[0].isDefault = true;
+          }
+        }
+
+        localStorage.setItem('nutflix_saved_addresses', JSON.stringify(list));
+        return true;
+      }
+    } catch (e) {}
+  }
+
+  return false;
+}
+
+export async function setDefaultAddress(id: number): Promise<Address | null> {
+  try {
+    const res = await api.patch(`/addresses/${id}/default`);
+    if (res.data && res.data.data) {
+      await fetchMyAddresses();
+      return res.data.data;
+    }
+  } catch (error) {
+    // Fallback
+  }
+
+  return updateAddress(id, { isDefault: true });
 }
 
 

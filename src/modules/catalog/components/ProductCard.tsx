@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Product, formatWeightAndUnit, getProductPrices, formatPrice } from '@/lib/api';
 import { useCart } from '../../cart/cart.context';
 import { useAuth } from '@/modules/auth';
-import { Star, ShoppingCart, Eye } from 'lucide-react';
+import { Star, ShoppingCart, Eye, Plus, Minus } from 'lucide-react';
 import Link from 'next/link';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 interface Props {
   product: Product;
@@ -16,10 +17,9 @@ const FALLBACK_IMG = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d
 
 export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
   const [mounted, setMounted] = useState(false);
-  const { items, addToCart, openCart } = useCart();
+  const { items, addToCart, updateQuantity, openCart } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
-  const [imgSrc, setImgSrc] = useState(product.imageUrl || FALLBACK_IMG);
 
   useEffect(() => {
     setMounted(true);
@@ -27,10 +27,6 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
 
   const cartItem = mounted && Array.isArray(items) ? items.find((i) => String(i.product.id) === String(product.id)) : null;
   const cartQty = cartItem ? cartItem.quantity : 0;
-
-  useEffect(() => {
-    setImgSrc(product.imageUrl || FALLBACK_IMG);
-  }, [product.imageUrl]);
 
   const productUrl = `/products/${product.slug || product.id}`;
   const { regularPrice, currentPrice, hasDiscount, discountPercent } = getProductPrices(product);
@@ -98,10 +94,10 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           style={{ display: 'block', width: '100%', height: '100%', textDecoration: 'none' }}
           title={`View details of ${product.name}`}
         >
-          <img
-            src={imgSrc}
+          <OptimizedImage
+            src={product.imageUrl}
+            fallbackSrc={FALLBACK_IMG}
             alt={product.name}
-            onError={() => setImgSrc(FALLBACK_IMG)}
             className="product-card-image"
             style={{ cursor: 'pointer' }}
           />
@@ -180,26 +176,104 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             )}
           </div>
 
-          <button
-            onClick={() => !isAdmin && addToCart(product)}
-            disabled={isAdmin}
-            className={`btn-primary add-to-cart-btn ${isAdmin ? 'disabled-out-of-stock' : ''}`}
-            style={
-              isAdmin
-                ? {
-                  backgroundColor: '#e2e8f0',
-                  color: '#94a3b8',
-                  cursor: 'not-allowed',
-                  boxShadow: 'none',
-                  border: '1px solid #cbd5e1',
-                }
-                : {}
-            }
-            title={isAdmin ? 'Admin accounts cannot add to cart' : 'Add to Basket'}
-          >
-            <ShoppingCart size={14} />
-            <span>{isAdmin ? 'Admin (Disabled)' : 'Add'}</span>
-          </button>
+          {cartQty > 0 && !isAdmin ? (
+            <div
+              className="qty-control-inline"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                backgroundColor: 'var(--color-forest)',
+                borderRadius: '8px',
+                padding: '2px 4px',
+                gap: '0.35rem',
+                color: '#fff',
+                boxShadow: '0 2px 8px rgba(22, 35, 26, 0.18)',
+              }}
+            >
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  updateQuantity(product.id, cartQty - 1);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  width: '26px',
+                  height: '26px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  fontWeight: 900,
+                  fontSize: '1rem',
+                  borderRadius: '6px',
+                  transition: 'background 0.15s ease',
+                  padding: 0,
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)')}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                title="Decrease quantity"
+              >
+                <Minus size={13} color="#fff" strokeWidth={3} />
+              </button>
+              <span style={{ fontWeight: 900, fontSize: '0.88rem', minWidth: '18px', textAlign: 'center', color: 'var(--color-gold)' }}>
+                {cartQty}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  updateQuantity(product.id, cartQty + 1);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ffffff',
+                  width: '26px',
+                  height: '26px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  fontWeight: 900,
+                  fontSize: '1rem',
+                  borderRadius: '6px',
+                  transition: 'background 0.15s ease',
+                  padding: 0,
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.25)')}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                title="Increase quantity"
+              >
+                <Plus size={13} color="#fff" strokeWidth={3} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => !isAdmin && addToCart(product, 1)}
+              disabled={isAdmin}
+              className={`btn-primary add-to-cart-btn ${isAdmin ? 'disabled-out-of-stock' : ''}`}
+              style={
+                isAdmin
+                  ? {
+                    backgroundColor: '#e2e8f0',
+                    color: '#94a3b8',
+                    cursor: 'not-allowed',
+                    boxShadow: 'none',
+                    border: '1px solid #cbd5e1',
+                  }
+                  : {}
+              }
+              title={isAdmin ? 'Admin accounts cannot add to cart' : 'Add to Basket'}
+            >
+              <ShoppingCart size={14} />
+              <span>{isAdmin ? 'Admin (Disabled)' : 'Add'}</span>
+            </button>
+          )}
         </div>
       </div>
 

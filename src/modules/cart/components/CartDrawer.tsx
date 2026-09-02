@@ -6,6 +6,7 @@ import { formatWeightAndUnit, getAuthToken, getProductPrices, formatPrice } from
 import { useAuth } from '@/modules/auth';
 import { X, Plus, Minus, Trash2, ShoppingCart, ArrowRight, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
 export const CartDrawer: React.FC = () => {
   const { items, isOpen, closeCart, updateQuantity, removeFromCart, subtotal, freeShippingThreshold } = useCart();
@@ -190,17 +191,25 @@ export const CartDrawer: React.FC = () => {
                       position: 'relative',
                     }}
                   >
-                    <img
-                      src={item.product.imageUrl}
-                      alt={item.product.name}
+                    <div
                       style={{
                         width: '70px',
                         height: '70px',
                         borderRadius: '8px',
-                        objectFit: 'cover',
+                        overflow: 'hidden',
                         flexShrink: 0,
                       }}
-                    />
+                    >
+                      <OptimizedImage
+                        src={item.product.imageUrl}
+                        alt={item.product.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </div>
 
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <div style={{ paddingRight: '1.5rem' }}>

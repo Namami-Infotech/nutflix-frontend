@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { fetchCategories, fetchProducts, fetchImpactMetrics, fetchReviews, fetchBanners } from '@/lib/api';
+import { fetchCategories, fetchProducts, fetchImpactMetrics, fetchReviews, fetchBanners, getCachedData } from '@/lib/api';
 import { Category, Product, ImpactMetric, Review, MasterBanner } from '@/types';
 import { HeroBanner } from '@/modules/home';
 import { CategoryFilter, ProductGrid, ProductDetailModal, AddProductModal } from '@/modules/catalog';
@@ -20,23 +20,35 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const [cats, prods, metrics, revs, bannerList] = await Promise.all([
+    let isMounted = true;
+
+    async function loadEssentialData() {
+      // Fetch primary above-the-fold data in parallel
+      const [cats, prods, bannerList] = await Promise.all([
         fetchCategories(),
         fetchProducts(),
-        fetchImpactMetrics(),
-        fetchReviews(),
         fetchBanners(),
       ]);
+
+      if (!isMounted) return;
       setCategories(cats);
       setProducts(prods);
-      setImpactMetrics(metrics);
-      setReviews(revs);
       setBanners(bannerList);
       setLoading(false);
+
+      // Fetch non-critical metrics & reviews in background
+      Promise.all([fetchImpactMetrics(), fetchReviews()]).then(([metrics, revs]) => {
+        if (!isMounted) return;
+        setImpactMetrics(metrics);
+        setReviews(revs);
+      });
     }
-    loadData();
+
+    loadEssentialData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleAddProduct = (newProduct: Product) => {
@@ -60,7 +72,7 @@ export default function HomePage() {
       <HeroBanner banners={banners} />
 
       {/* Featured Catalog Section */}
-      <section id="products" style={{ padding: '4rem 0 5rem', backgroundColor: '#ffffff' }}>
+      <section id="products" style={{ padding: '2rem 0 5rem', backgroundColor: '#ffffff' }}>
         <div className="container">
           {/* Section Header */}
           <div style={{ marginBottom: '2.2rem' }}>
