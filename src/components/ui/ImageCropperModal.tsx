@@ -18,8 +18,9 @@ interface ImageCropperModalProps {
   isOpen: boolean;
   onClose: () => void;
   imageSrc: string | null;
-  aspect?: number; // 1 for Square (Product & Category), 1900/600 for Banner
+  aspect?: number; // 1 for Square (Product & Category), 1900/650 for Banner
   title?: string;
+  targetType?: 'product' | 'category' | 'banner';
   onCropComplete: (croppedImageBase64: string) => void;
 }
 
@@ -29,6 +30,7 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   imageSrc,
   aspect = 1,
   title = 'Crop Image',
+  targetType,
   onCropComplete,
 }) => {
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
@@ -77,14 +79,22 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
 
   if (!isOpen || !imageSrc) return null;
 
-  const isBanner = Math.abs(currentAspect - 1900 / 650) < 0.05;
-  const isSquare = Math.abs(currentAspect - 1) < 0.05;
+  const isBanner = targetType === 'banner' || Math.abs(currentAspect - 1900 / 650) < 0.05;
+
+  let displayLabel = '1:1 Square (Product & Category)';
+  if (targetType === 'category') {
+    displayLabel = '1:1 Square (Category)';
+  } else if (targetType === 'product') {
+    displayLabel = '1:1 Square (Product)';
+  } else if (isBanner) {
+    displayLabel = '1900×650 (Hero Banner)';
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="720px" zIndex={99999}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
         
-        {/* Aspect Ratio Selector */}
+        {/* Aspect Ratio Indicator (Only shows the active size for current item) */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -98,71 +108,55 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-forest)' }}>
-              Aspect Ratio:
+              Crop Ratio:
             </span>
             <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
-              ({isSquare ? '1:1 Square' : '1900×650 Banner'})
+              ({isBanner ? '1900×650 Banner' : '1:1 Square'})
             </span>
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {/* Banner 1900x650 Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentAspect(1900 / 650);
-                setZoom(1);
-                setCrop({ x: 0, y: 0 });
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.42rem 0.85rem',
-                borderRadius: '8px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                backgroundColor: isBanner ? 'var(--color-forest)' : '#ffffff',
-                color: isBanner ? '#ffffff' : '#334155',
-                border: isBanner ? '1px solid var(--color-forest)' : '1px solid #cbd5e1',
-                boxShadow: isBanner ? '0 2px 8px rgba(15, 41, 30, 0.2)' : '0 1px 2px rgba(0,0,0,0.04)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <RectangleHorizontal size={14} />
-              <span>1900×650 (Hero Banner)</span>
-              {isBanner && <Check size={13} style={{ marginLeft: '2px' }} />}
-            </button>
-
-            {/* Product & Category 1:1 Square Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setCurrentAspect(1);
-                setZoom(1);
-                setCrop({ x: 0, y: 0 });
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.42rem 0.85rem',
-                borderRadius: '8px',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                backgroundColor: isSquare ? 'var(--color-forest)' : '#ffffff',
-                color: isSquare ? '#ffffff' : '#334155',
-                border: isSquare ? '1px solid var(--color-forest)' : '1px solid #cbd5e1',
-                boxShadow: isSquare ? '0 2px 8px rgba(15, 41, 30, 0.2)' : '0 1px 2px rgba(0,0,0,0.04)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <Square size={13} />
-              <span>1:1 Square (Product & Category)</span>
-              {isSquare && <Check size={13} style={{ marginLeft: '2px' }} />}
-            </button>
+            {isBanner ? (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.42rem 0.85rem',
+                  borderRadius: '8px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  backgroundColor: 'var(--color-forest)',
+                  color: '#ffffff',
+                  border: '1px solid var(--color-forest)',
+                  boxShadow: '0 2px 8px rgba(15, 41, 30, 0.2)',
+                }}
+              >
+                <RectangleHorizontal size={14} />
+                <span>1900×650 (Hero Banner)</span>
+                <Check size={13} style={{ marginLeft: '2px' }} />
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.42rem 0.85rem',
+                  borderRadius: '8px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  backgroundColor: 'var(--color-forest)',
+                  color: '#ffffff',
+                  border: '1px solid var(--color-forest)',
+                  boxShadow: '0 2px 8px rgba(15, 41, 30, 0.2)',
+                }}
+              >
+                <Square size={13} />
+                <span>{displayLabel}</span>
+                <Check size={13} style={{ marginLeft: '2px' }} />
+              </div>
+            )}
           </div>
         </div>
 

@@ -12,6 +12,7 @@ export default function AboutPage() {
     <div style={{ backgroundColor: 'var(--color-bg-light)', minHeight: '100vh', paddingBottom: '5rem' }}>
       {/* Hero Section */}
       <section
+        className="page-header-banner"
         style={{
           backgroundColor: 'var(--color-forest)',
           color: '#ffffff',
@@ -54,7 +55,7 @@ export default function AboutPage() {
       </section>
 
       {/* Brand Value Pillars: Quality • Freshness • Value • Convenience */}
-      <section className="container" style={{ maxWidth: '1100px', marginTop: '-2.5rem', position: 'relative', zIndex: 2 }}>
+      <section className="container about-pillars-section" style={{ maxWidth: '1100px', marginTop: '-2.5rem', position: 'relative', zIndex: 2 }}>
         <div
           style={{
             display: 'grid',
@@ -277,8 +278,8 @@ export default function AboutPage() {
                   <Globe size={18} color="var(--color-gold)" style={{ flexShrink: 0 }} />
                   <div>
                     <strong>Website:</strong>{' '}
-                    <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700, textDecoration: 'none' }}>
-                      www.nutflix.in
+                    <a href="https://www.nut-flix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700, textDecoration: 'none' }}>
+                      www.nut-flix.in
                     </a>
                   </div>
                 </div>

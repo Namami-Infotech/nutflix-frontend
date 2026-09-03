@@ -155,7 +155,7 @@ export default function PrivacyPolicyPage() {
               We do not sell or misuse customers&apos; personal information. Information may be shared with payment gateways, delivery partners or service providers only when required for completing your order or complying with applicable law.
             </p>
             <p style={{ color: 'var(--color-forest)', lineHeight: '1.7', fontSize: '0.95rem', fontWeight: 700, marginTop: '0.6rem' }}>
-              By using <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', textDecoration: 'underline' }}>www.nutflix.in</a>, you agree to this Privacy Policy.
+              By using <a href="https://www.nut-flix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', textDecoration: 'underline' }}>www.nut-flix.in</a>, you agree to this Privacy Policy.
             </p>
           </div>
 
@@ -233,7 +233,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Globe size={16} color="var(--color-gold)" />
-                <span><strong>Website:</strong> <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>www.nutflix.in</a></span>
+                <span><strong>Website:</strong> <a href="https://www.nut-flix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>www.nut-flix.in</a></span>
               </div>
               <div><strong>FSSAI License No.:</strong> 22826039000325</div>
             </div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Product, formatWeightAndUnit, getProductPrices, formatPrice } from '@/lib/api';
 import { useCart } from '../../cart/cart.context';
 import { useAuth } from '@/modules/auth';
-import { Star, ShoppingCart, Eye, Plus, Minus } from 'lucide-react';
+import { Star, ShoppingCart, Plus, Minus } from 'lucide-react';
 import Link from 'next/link';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 
@@ -102,22 +102,6 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             style={{ cursor: 'pointer' }}
           />
         </Link>
-
-        {/* Quick View Button Overlay */}
-        {onQuickView && (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onQuickView(product);
-            }}
-            className="quick-view-btn"
-            title="Quick View"
-          >
-            <Eye size={13} />
-            <span>Quick View</span>
-          </button>
-        )}
       </div>
 
       {/* Product Information */}
@@ -329,28 +313,6 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           text-overflow: ellipsis;
         }
 
-        .quick-view-btn {
-          opacity: 0;
-          transition: opacity 0.2s ease;
-          position: absolute;
-          bottom: 0.6rem;
-          right: 0.6rem;
-          background-color: #ffffff;
-          color: var(--color-forest);
-          padding: 0.4rem 0.8rem;
-          border-radius: var(--radius-pill);
-          font-weight: 700;
-          font-size: 0.75rem;
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        }
-
-        .product-card:hover .quick-view-btn {
-          opacity: 1;
-        }
-
         .product-card-body {
           padding: 1.1rem;
           flex: 1;
@@ -448,9 +410,6 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           .add-to-cart-btn {
             padding: 0.4rem 0.7rem !important;
             font-size: 0.75rem !important;
-          }
-          .quick-view-btn {
-            display: none;
           }
         }
       `}</style>

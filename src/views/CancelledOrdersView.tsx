@@ -45,7 +45,7 @@ export default function CancelledOrdersView({
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Items</th>
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Amount</th>
               <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Exception Status</th>
-              <th style={{ padding: '0.5rem 0.75rem', fontWeight: 800 }}>Re-open / Update Status</th>
+              
             </tr>
           </thead>
           <tbody>
@@ -70,17 +70,7 @@ export default function CancelledOrdersView({
                     {ord.status}
                   </span>
                 </td>
-                <td style={{ padding: '0.55rem 0.75rem', borderTopRightRadius: '8px', borderBottomRightRadius: '8px' }}>
-                  <select
-                    value={ord.status}
-                    onChange={(e) => onStatusChange(ord.id, e.target.value)}
-                    style={{ padding: '0.3rem 0.6rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontWeight: 700, fontSize: '0.75rem', outline: 'none', cursor: 'pointer', backgroundColor: '#fff' }}
-                  >
-                    <option value="cancelled">Cancelled</option>
-                    <option value="returned">Returned</option>
-                    <option value="confirmed">Re-Confirm Order</option>
-                  </select>
-                </td>
+           
               </tr>
             ))}
           </tbody>

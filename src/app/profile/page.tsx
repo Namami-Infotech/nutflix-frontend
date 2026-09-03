@@ -49,11 +49,13 @@ import {
   updateAddress,
   deleteAddress,
   setDefaultAddress,
+  updateUserProfileApi,
 } from '@/lib/api';
 import { AddressModal } from '@/modules/checkout/components/AddressModal';
 import { useCart } from '@/modules/cart/cart.context';
 import { OrderTrackerModal } from '@/modules/orders/components/OrderTrackerModal';
 import { LoginModal } from '@/modules/layout/components/LoginModal';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 export default function UserProfilePage() {
   const { items: cartItems, removeFromCart, updateQuantity, subtotal: totalPrice, openCart } = useCart();
@@ -86,10 +88,28 @@ export default function UserProfilePage() {
   const [isTrackerOpen, setIsTrackerOpen] = useState(false);
 
   // Address edit state
+  const [confirmModalState, setConfirmModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    itemName?: string;
+    itemType?: string;
+    warningNote?: React.ReactNode;
+    confirmText?: string;
+    onConfirm: () => Promise<void> | void;
+    isLoading?: boolean;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    onConfirm: () => {},
+  });
+
   const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editAddress, setEditAddress] = useState('');
   const [editGst, setEditGst] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // Saved Addresses State & Modal
   const [userAddresses, setUserAddresses] = useState<Address[]>([]);
@@ -123,18 +143,37 @@ export default function UserProfilePage() {
     setIsProfileAddressModalOpen(true);
   };
 
-  const handleDeleteProfileAddress = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this address?')) return;
+  const handleDeleteProfileAddress = (id: number) => {
+    const targetAddr = userAddresses.find(a => a.id === id);
+    const addrLabel = targetAddr
+      ? `${targetAddr.fullName || 'Address'} (${targetAddr.streetAddress || ''}, ${targetAddr.city || ''})`
+      : 'this address';
 
-    try {
-      const ok = await deleteAddress(id);
-      if (ok) {
-        showToast('Address deleted successfully.');
-        await loadProfileAddresses();
+    setConfirmModalState({
+      isOpen: true,
+      title: 'Delete Delivery Address',
+      itemName: addrLabel,
+      itemType: 'address',
+      warningNote: 'This action will remove this saved address from your profile.',
+      confirmText: 'Yes, Delete Address',
+      onConfirm: async () => {
+        setConfirmModalState(prev => ({ ...prev, isLoading: true }));
+        try {
+          const ok = await deleteAddress(id);
+          if (ok) {
+            showToast('Address deleted successfully.');
+            await loadProfileAddresses();
+            setConfirmModalState(prev => ({ ...prev, isOpen: false, isLoading: false }));
+          } else {
+            showToast('Failed to delete address');
+            setConfirmModalState(prev => ({ ...prev, isLoading: false }));
+          }
+        } catch (err: any) {
+          showToast('Failed to delete address');
+          setConfirmModalState(prev => ({ ...prev, isLoading: false }));
+        }
       }
-    } catch (err: any) {
-      showToast('Failed to delete address');
-    }
+    });
   };
 
   const handleSetDefaultProfileAddress = async (id: number) => {
@@ -147,14 +186,11 @@ export default function UserProfilePage() {
     }
   };
 
-  // Collapsible Orders State
-  const [expandedOrders, setExpandedOrders] = useState<Record<number, boolean>>({});
+  // Collapsible Orders State (Single active collapse)
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
 
   const toggleOrderExpand = (orderId: number) => {
-    setExpandedOrders((prev) => ({
-      ...prev,
-      [orderId]: !prev[orderId],
-    }));
+    setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
   };
 
   // Multi-Item Review Modal State
@@ -238,6 +274,7 @@ export default function UserProfilePage() {
       const storedUser = getUserFromCookie();
       if (storedUser) {
         setUserData(storedUser);
+        setEditEmail(storedUser.email || '');
         setEditPhone(storedUser.phone || '');
         setEditAddress(storedUser.address || '');
         setEditGst(storedUser.gstNumber || '');
@@ -302,10 +339,29 @@ export default function UserProfilePage() {
     await loadCartFromDbApi();
   };
 
-  const handleDbCartRemoveItem = async (productId: number) => {
-    removeFromCart(productId);
-    await removeFromCartApi(productId);
-    await loadCartFromDbApi();
+  const handleDbCartRemoveItem = (productId: number) => {
+    const item = (dbCartItems || []).find((ci: any) => ci.product?.id === productId || ci.productId === productId);
+    const prodName = item?.product?.name || 'this product';
+
+    setConfirmModalState({
+      isOpen: true,
+      title: 'Remove Item from Cart',
+      itemName: prodName,
+      itemType: 'item',
+      warningNote: 'Are you sure you want to remove this item from your shopping cart?',
+      confirmText: 'Yes, Remove',
+      onConfirm: async () => {
+        setConfirmModalState(prev => ({ ...prev, isLoading: true }));
+        try {
+          removeFromCart(productId);
+          await removeFromCartApi(productId);
+          await loadCartFromDbApi();
+          setConfirmModalState(prev => ({ ...prev, isOpen: false, isLoading: false }));
+        } catch (err) {
+          setConfirmModalState(prev => ({ ...prev, isLoading: false }));
+        }
+      }
+    });
   };
 
   const loadUserOrders = async (email: string) => {
@@ -320,40 +376,114 @@ export default function UserProfilePage() {
     }
   };
 
-  const handleCancelOrder = async (orderId: number) => {
-    if (confirm('Are you sure you want to cancel this order?')) {
-      const res = await updateOrderStatus(orderId, 'cancelled');
-      if (res.success) {
-        showToast('Order cancelled successfully.');
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+  const handleCancelOrder = (orderId: number) => {
+    setConfirmModalState({
+      isOpen: true,
+      title: 'Cancel Order',
+      itemName: `Order #${orderId}`,
+      itemType: 'order',
+      warningNote: 'Are you sure you want to cancel this order? This action cannot be reversed.',
+      confirmText: 'Yes, Cancel Order',
+      onConfirm: async () => {
+        setConfirmModalState(prev => ({ ...prev, isLoading: true }));
+        try {
+          const res = await updateOrderStatus(orderId, 'cancelled');
+          if (res.success) {
+            showToast('Order cancelled successfully.');
+            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+            setConfirmModalState(prev => ({ ...prev, isOpen: false, isLoading: false }));
+          } else {
+            showToast('Failed to cancel order.');
+            setConfirmModalState(prev => ({ ...prev, isLoading: false }));
+          }
+        } catch (err) {
+          showToast('Failed to cancel order.');
+          setConfirmModalState(prev => ({ ...prev, isLoading: false }));
+        }
       }
-    }
+    });
   };
 
-  const handleReturnOrder = async (orderId: number) => {
-    if (confirm('Would you like to initiate a return request for this order?')) {
-      const res = await updateOrderStatus(orderId, 'returned');
-      if (res.success) {
-        showToast('Return request submitted.');
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'returned' } : o));
+  const handleReturnOrder = (orderId: number) => {
+    setConfirmModalState({
+      isOpen: true,
+      title: 'Return Request',
+      itemName: `Order #${orderId}`,
+      itemType: 'order',
+      type: 'warning',
+      warningNote: 'Would you like to initiate a return request for this order?',
+      confirmText: 'Yes, Request Return',
+      onConfirm: async () => {
+        setConfirmModalState(prev => ({ ...prev, isLoading: true }));
+        try {
+          const res = await updateOrderStatus(orderId, 'returned');
+          if (res.success) {
+            showToast('Return request submitted.');
+            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'returned' } : o));
+            setConfirmModalState(prev => ({ ...prev, isOpen: false, isLoading: false }));
+          } else {
+            showToast('Failed to submit return request.');
+            setConfirmModalState(prev => ({ ...prev, isLoading: false }));
+          }
+        } catch (err) {
+          showToast('Failed to submit return request.');
+          setConfirmModalState(prev => ({ ...prev, isLoading: false }));
+        }
       }
-    }
+    });
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const updated = {
-      ...userData,
-      phone: editPhone,
-      address: editAddress,
-      gstNumber: editGst
-    };
-    setUserData(updated);
-    if (typeof window !== 'undefined') {
-      setUserCookie(updated);
+    if (!editEmail.trim()) {
+      showToast('Email address is required.');
+      return;
     }
-    setIsEditingAddress(false);
-    showToast('Profile information updated!');
+    if (!editEmail.includes('@') || !editEmail.includes('.')) {
+      showToast('Please enter a valid email address.');
+      return;
+    }
+
+    setIsSavingProfile(true);
+    try {
+      if (userData?.id) {
+        const res = await updateUserProfileApi(Number(userData.id), {
+          email: editEmail.trim(),
+        });
+
+        if (res && (res.success || res.data)) {
+          const updated = {
+            ...userData,
+            email: res.data?.email || editEmail.trim(),
+          };
+          setUserData(updated);
+          if (typeof window !== 'undefined') {
+            setUserCookie(updated);
+            window.dispatchEvent(new Event('authChange'));
+            window.dispatchEvent(new Event('storage'));
+          }
+          showToast('Profile updated successfully!');
+        } else {
+          showToast(res?.message || 'Failed to update profile.');
+        }
+      } else {
+        const updated = {
+          ...userData,
+          email: editEmail.trim(),
+        };
+        setUserData(updated);
+        if (typeof window !== 'undefined') {
+          setUserCookie(updated);
+          window.dispatchEvent(new Event('authChange'));
+          window.dispatchEvent(new Event('storage'));
+        }
+        showToast('Profile information updated!');
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Error updating profile.');
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -566,12 +696,17 @@ export default function UserProfilePage() {
         }
         .order-meta-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr) auto;
+          grid-template-columns: repeat(4, 1fr);
           gap: 1rem;
           align-items: center;
           border-bottom: 1px solid #eee;
           padding-bottom: 1rem;
           margin-bottom: 1rem;
+        }
+        .order-shipping-addr {
+          font-size: 0.78rem;
+          color: #555;
+          flex: 1 1 220px;
         }
         .order-footer-row {
           display: flex;
@@ -642,9 +777,7 @@ export default function UserProfilePage() {
             gap: 0.5rem !important;
           }
           .profile-delete-btn {
-            width: 100% !important;
-            justify-content: center !important;
-            padding: 0.6rem !important;
+            display: none !important;
           }
           .profile-logout-btn {
             width: 100% !important;
@@ -662,11 +795,13 @@ export default function UserProfilePage() {
             border-radius: 10px !important;
           }
           .order-card-box {
-            padding: 1rem !important;
+            padding: 0.9rem 0.85rem !important;
           }
           .order-meta-grid {
             grid-template-columns: 1fr 1fr !important;
-            gap: 0.75rem 0.5rem !important;
+            gap: 0.65rem 0.5rem !important;
+            margin-bottom: 0.65rem !important;
+            padding-bottom: 0.65rem !important;
           }
           .order-meta-grid > div:nth-child(4) {
             grid-column: 1 / -1 !important;
@@ -674,12 +809,23 @@ export default function UserProfilePage() {
           .order-meta-grid > div:nth-child(5) {
             grid-column: 1 / -1 !important;
           }
+          .order-shipping-addr {
+            flex: none !important;
+            width: 100% !important;
+            margin-bottom: 0.2rem !important;
+          }
           .order-footer-row {
             flex-direction: column !important;
             align-items: stretch !important;
+            justify-content: flex-start !important;
+            gap: 0.65rem !important;
+            padding-top: 0.65rem !important;
+            margin-top: 0.5rem !important;
           }
           .order-action-buttons {
             width: 100% !important;
+            display: flex !important;
+            gap: 0.5rem !important;
           }
           .order-action-buttons button {
             flex: 1 1 auto !important;
@@ -858,18 +1004,18 @@ export default function UserProfilePage() {
               </Link>
             )}
 
-            <button
+            {/* <button
               onClick={() => setActiveTab('cart')}
               className={`profile-tab-pill ${activeTab === 'cart' ? 'active' : 'inactive'}`}
             >
               <ShoppingCart size={17} /> My Cart ({cartItems.length})
-            </button>
+            </button> */}
 
             <button
               onClick={() => setActiveTab('settings')}
               className={`profile-tab-pill ${activeTab === 'settings' ? 'active' : 'inactive'}`}
             >
-              <User size={17} /> Profile & Address
+              <MapPin size={17} /> Address
             </button>
           </div>
 
@@ -907,7 +1053,7 @@ export default function UserProfilePage() {
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       {orders.map((ord) => {
-                        const isExpanded = !!expandedOrders[ord.id];
+                        const isExpanded = expandedOrderId === ord.id;
                         const items = Array.isArray(ord.items) && ord.items.length > 0 ? ord.items : [];
                         const primaryItem = items[0] || {
                           name: `Order #${ord.orderNumber || ord.id}`,
@@ -1095,7 +1241,7 @@ export default function UserProfilePage() {
 
                                 {/* Shipping Address & Action Buttons */}
                                 <div className="order-footer-row">
-                                  <div style={{ fontSize: '0.78rem', color: '#555', flex: '1 1 220px' }}>
+                                  <div className="order-shipping-addr">
                                     📍 <strong>Shipping Address:</strong> {ord.shippingAddress}
                                   </div>
 
@@ -1154,12 +1300,6 @@ export default function UserProfilePage() {
                                           }}
                                         >
                                           <Star size={13} fill="#eab308" color="#eab308" /> Write Review
-                                        </button>
-                                        <button
-                                          onClick={() => handleReturnOrder(ord.id)}
-                                          style={{ padding: '0.45rem 0.75rem', borderRadius: '8px', border: '1px solid #fed7aa', backgroundColor: '#fff7ed', color: '#ea580c', fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
-                                        >
-                                          Request Return
                                         </button>
                                       </>
                                     )}
@@ -1296,9 +1436,11 @@ export default function UserProfilePage() {
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem', color: '#333' }}>Email Address</label>
                   <input
                     type="email"
-                    value={userData.email}
-                    disabled
-                    style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', border: '1px solid #ccc', backgroundColor: '#f9f9f9', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    placeholder="Enter email address"
+                    required
+                    style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', boxSizing: 'border-box' }}
                   />
                 </div>
 
@@ -1306,37 +1448,16 @@ export default function UserProfilePage() {
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem', color: '#333' }}>Phone Number</label>
                   <input
                     type="text"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    placeholder="Enter 10-digit phone number"
-                    style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                    value={userData.phone || 'Not provided'}
+                    disabled
+                    style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', border: '1px solid #ccc', backgroundColor: '#f9f9f9', fontSize: '0.9rem', boxSizing: 'border-box', color: '#666' }}
                   />
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem', color: '#333' }}>Primary Shipping Address</label>
-                  <textarea
-                    value={editAddress}
-                    onChange={(e) => setEditAddress(e.target.value)}
-                    rows={3}
-                    placeholder="Enter complete delivery street address, city, state, and pincode"
-                    style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', boxSizing: 'border-box' }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem', color: '#333' }}>GST Number (Optional)</label>
-                  <input
-                    type="text"
-                    value={editGst}
-                    onChange={(e) => setEditGst(e.target.value)}
-                    placeholder="e.g. 22AAAAA0000A1Z5"
-                    style={{ width: '100%', padding: '0.7rem', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', boxSizing: 'border-box' }}
-                  />
-                </div>
 
                 <button
                   type="submit"
+                  disabled={isSavingProfile}
                   style={{
                     backgroundColor: 'var(--color-forest)',
                     color: '#fff',
@@ -1345,12 +1466,13 @@ export default function UserProfilePage() {
                     borderRadius: '8px',
                     fontWeight: 900,
                     fontSize: '0.92rem',
-                    cursor: 'pointer',
+                    cursor: isSavingProfile ? 'not-allowed' : 'pointer',
+                    opacity: isSavingProfile ? 0.7 : 1,
                     marginTop: '0.35rem',
                     width: '100%'
                   }}
                 >
-                  Save Profile Changes
+                  {isSavingProfile ? 'Saving Changes...' : 'Save Profile Changes'}
                 </button>
               </form>
 
@@ -1388,29 +1510,7 @@ export default function UserProfilePage() {
                 </div>
 
                 {/* SAVED ADDRESS CARDS IN PROFILE */}
-                {userAddresses.length === 0 ? (
-                  <div style={{ padding: '2rem 1.5rem', textAlign: 'center', backgroundColor: '#f9f9f9', borderRadius: '12px', border: '1px dashed #ccc' }}>
-                    <MapPin size={28} color="#999" style={{ marginBottom: '0.4rem' }} />
-                    <div style={{ fontSize: '0.9rem', color: '#666', fontWeight: 600 }}>No saved addresses yet</div>
-                    <div style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.2rem', marginBottom: '1rem' }}>Add an address to speed up your checkout process.</div>
-                    <button
-                      type="button"
-                      onClick={handleOpenProfileAddAddress}
-                      style={{
-                        backgroundColor: 'var(--color-forest)',
-                        color: '#fff',
-                        padding: '0.6rem 1.25rem',
-                        borderRadius: '8px',
-                        border: 'none',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Plus size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Add Address
-                    </button>
-                  </div>
-                ) : (
+                {userAddresses.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                     {userAddresses.map((addr) => {
                       return (
@@ -1500,36 +1600,7 @@ export default function UserProfilePage() {
                 )}
               </div>
 
-                <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e5e7eb' }}>
-                  <h4 style={{ color: '#dc2626', fontSize: '0.95rem', fontWeight: 900, marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Trash2 size={16} /> Danger Zone: Delete Account
-                  </h4>
-                  <p style={{ color: '#6b7280', fontSize: '0.82rem', marginBottom: '0.85rem', lineHeight: 1.5 }}>
-                    Once you delete your account, your account status will be set to inactive and you will not be able to log in again without contacting support.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteModalOpen(true)}
-                    style={{
-                      backgroundColor: '#fff',
-                      color: '#dc2626',
-                      border: '1px solid #f87171',
-                      padding: '0.65rem 1.25rem',
-                      borderRadius: '8px',
-                      fontWeight: 800,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fef2f2')}
-                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fff')}
-                  >
-                    <Trash2 size={15} /> Delete My Account
-                  </button>
-                </div>
+
             </div>
           )}
         </div>
@@ -1542,59 +1613,41 @@ export default function UserProfilePage() {
         onClose={() => setIsTrackerOpen(false)}
       />
 
+      {/* General Action / Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModalState.isOpen}
+        onClose={() => {
+          if (!confirmModalState.isLoading) {
+            setConfirmModalState(prev => ({ ...prev, isOpen: false }));
+          }
+        }}
+        onConfirm={confirmModalState.onConfirm}
+        title={confirmModalState.title}
+        itemName={confirmModalState.itemName}
+        itemType={confirmModalState.itemType}
+        warningNote={confirmModalState.warningNote}
+        confirmText={confirmModalState.confirmText}
+        isLoading={confirmModalState.isLoading}
+        type={confirmModalState.type || 'danger'}
+      />
+
       {/* Delete Account Confirmation Modal */}
-      {deleteModalOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ backgroundColor: '#fff', borderRadius: '16px', maxWidth: '440px', width: '100%', padding: '1.75rem', boxShadow: '0 20px 40px rgba(0,0,0,0.25)', position: 'relative' }}>
-            <button
-              onClick={() => setDeleteModalOpen(false)}
-              disabled={isDeletingAccount}
-              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}
-            >
-              <X size={20} />
-            </button>
-
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
-              <Trash2 size={24} />
-            </div>
-
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--color-forest)', margin: '0 0 0.5rem' }}>
-              Delete Account
-            </h3>
-
-            <p style={{ fontSize: '0.88rem', color: '#4b5563', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-              Are you sure you want to delete your account <strong>{userData.name || userData.email || ''}</strong>?
-              <br /><br />
-              This action will mark your account as <strong>inactive</strong>. You will be logged out and cannot sign in again unless reactivated by support.
-            </p>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setDeleteModalOpen(false)}
-                disabled={isDeletingAccount}
-                style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: '#fff', color: '#374151', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteAccount}
-                disabled={isDeletingAccount}
-                style={{ padding: '0.65rem 1.25rem', borderRadius: '8px', border: 'none', backgroundColor: '#dc2626', color: '#fff', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', opacity: isDeletingAccount ? 0.7 : 1 }}
-              >
-                {isDeletingAccount ? (
-                  <>Deleting...</>
-                ) : (
-                  <>
-                    <Trash2 size={15} /> Yes, Delete Account
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          if (!isDeletingAccount) {
+            setDeleteModalOpen(false);
+          }
+        }}
+        onConfirm={handleDeleteAccount}
+        title="Delete Account"
+        itemName={userData?.name || userData?.email || ''}
+        itemType="account"
+        warningNote="This action will mark your account as inactive. You will be logged out and cannot sign in again unless reactivated by support."
+        confirmText="Yes, Delete Account"
+        isLoading={isDeletingAccount}
+        type="danger"
+      />
 
       {/* Add Review Modal for Delivered Orders */}
       {reviewModalOrder && (

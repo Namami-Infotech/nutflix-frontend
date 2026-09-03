@@ -43,8 +43,8 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 8 * 1024 * 1024) {
-        alert('File size exceeds 8MB limit. Please choose a smaller image.');
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size exceeds 5MB limit. Please choose a smaller image (under 5MB).');
         return;
       }
       const reader = new FileReader();

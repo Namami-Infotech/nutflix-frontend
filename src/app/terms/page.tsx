@@ -4,7 +4,7 @@ import { Scale, FileCheck, CheckCircle2, AlertCircle, HelpCircle, Mail, Phone, M
 
 export const metadata = {
   title: 'Terms & Conditions | NUTFLIX - Quality Dry Fruits',
-  description: 'Terms and Conditions for NUTFLIX (A Brand of Darshan Techno System). Please review our terms before purchasing from www.nutflix.in.',
+  description: 'Terms and Conditions for NUTFLIX (A Brand of Darshan Techno System). Please review our terms before purchasing from www.nut-flix.in.',
 };
 
 export default function TermsPage() {
@@ -14,6 +14,7 @@ export default function TermsPage() {
     <div style={{ backgroundColor: 'var(--color-bg-light)', minHeight: '100vh', paddingBottom: '5rem' }}>
       {/* Hero Header */}
       <section
+        className="page-header-banner"
         style={{
           backgroundColor: 'var(--color-forest)',
           color: '#ffffff',
@@ -48,7 +49,7 @@ export default function TermsPage() {
             Terms & Conditions
           </h1>
           <p style={{ fontSize: '1.05rem', color: 'var(--color-cream)', lineHeight: '1.6', maxWidth: '640px', margin: '0 auto' }}>
-            Please read these Terms and Conditions carefully before browsing or purchasing from www.nutflix.in.
+            Please read these Terms and Conditions carefully before browsing or purchasing from www.nut-flix.in.
           </p>
           <div style={{ marginTop: '1.2rem', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
             Last Updated: {lastUpdated} • NUTFLIX (A Brand of Darshan Techno System)
@@ -145,7 +146,7 @@ export default function TermsPage() {
               Terms of Use & Purchase Agreement
             </h2>
             <p style={{ color: 'var(--color-forest)', fontSize: '0.98rem', fontWeight: 700, marginBottom: '0.8rem' }}>
-              By accessing or purchasing from <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', textDecoration: 'underline' }}>www.nutflix.in</a>, you agree to the following terms:
+              By accessing or purchasing from <a href="https://www.nut-flix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', textDecoration: 'underline' }}>www.nut-flix.in</a>, you agree to the following terms:
             </p>
             <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.8', fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               <li><strong>Product Prices & Availability:</strong> Product prices and availability may change without prior notice.</li>
@@ -223,7 +224,7 @@ export default function TermsPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Globe size={16} color="var(--color-gold)" />
-                <span><strong>Website:</strong> <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>www.nutflix.in</a></span>
+                <span><strong>Website:</strong> <a href="https://www.nut-flix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>www.nut-flix.in</a></span>
               </div>
               <div><strong>FSSAI License No.:</strong> 22826039000325</div>
             </div>

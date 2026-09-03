@@ -43,6 +43,7 @@ import {
 import Link from 'next/link';
 
 import { AddressModal } from './AddressModal';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 // Dynamically load Razorpay standard Checkout script
 const loadRazorpayScript = (): Promise<boolean> => {
@@ -150,16 +151,41 @@ export const CheckoutForm: React.FC = () => {
     setIsAddressModalOpen(true);
   };
 
+  const [deleteAddressConfirm, setDeleteAddressConfirm] = useState<{
+    isOpen: boolean;
+    addressId: number | null;
+    addressLabel?: string;
+    isLoading: boolean;
+  }>({
+    isOpen: false,
+    addressId: null,
+    isLoading: false,
+  });
+
   const handleOpenEditModal = (addr: Address, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setAddressToEdit(addr);
     setIsAddressModalOpen(true);
   };
 
-  const handleDeleteAddress = async (id: number, e?: React.MouseEvent) => {
+  const handleDeleteAddress = (id: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this address?')) return;
+    const addr = savedAddresses.find(a => a.id === id);
+    const addrLabel = addr ? `${addr.fullName || 'Address'} (${addr.streetAddress || ''}, ${addr.city || ''})` : 'this address';
 
+    setDeleteAddressConfirm({
+      isOpen: true,
+      addressId: id,
+      addressLabel: addrLabel,
+      isLoading: false,
+    });
+  };
+
+  const handleConfirmDeleteAddress = async () => {
+    const id = deleteAddressConfirm.addressId;
+    if (!id) return;
+
+    setDeleteAddressConfirm(prev => ({ ...prev, isLoading: true }));
     try {
       const success = await deleteAddress(id);
       if (success) {
@@ -180,9 +206,14 @@ export const CheckoutForm: React.FC = () => {
             setPostalCode('');
           }
         }
+        setDeleteAddressConfirm(prev => ({ ...prev, isOpen: false, isLoading: false }));
+      } else {
+        showToast('Failed to delete address.', 'error');
+        setDeleteAddressConfirm(prev => ({ ...prev, isLoading: false }));
       }
     } catch (err: any) {
       showToast(err?.message || 'Failed to delete address.', 'error');
+      setDeleteAddressConfirm(prev => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -222,11 +253,18 @@ export const CheckoutForm: React.FC = () => {
       return;
     }
 
+    if (!shippingAddress.trim() || !city.trim() || !postalCode.trim()) {
+      setErrorMessage('Please select or add a delivery address to proceed.');
+      return;
+    }
+
+    const finalEmail = customerEmail.trim().toLowerCase() || user?.email?.toLowerCase() || getUserFromCookie()?.email?.toLowerCase() || '';
+
     const fullAddress = `${shippingAddress.trim()}, ${city.trim()}, ${postalCode.trim()}`;
 
     const orderPayload = {
-      customerName: customerName.trim(),
-      customerEmail: customerEmail.trim().toLowerCase(),
+      customerName: (customerName.trim() || user?.name || 'Customer').trim(),
+      customerEmail: finalEmail,
       customerPhone: customerPhone.trim(),
       shippingAddress: fullAddress,
       paymentType: selectedPayment,
@@ -688,7 +726,7 @@ export const CheckoutForm: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--color-forest)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <MapPin size={20} color="var(--color-gold)" />
-              <span>1. Delivery Address & Contact</span>
+              <span>1. Delivery Address</span>
             </h3>
             <button
               type="button"
@@ -713,41 +751,10 @@ export const CheckoutForm: React.FC = () => {
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-            {/* Contact Information */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="jane@example.com"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 0.95rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.92rem' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
-                  Mobile Number *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="9876543210"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 0.95rem', borderRadius: '10px', border: '1px solid var(--color-border)', outline: 'none', fontSize: '0.92rem' }}
-                />
-              </div>
-            </div>
-
+          <div>
             {/* SAVED ADDRESSES DIRECT LIST */}
             {savedAddresses.length > 0 ? (
-              <div style={{ marginTop: '0.35rem' }}>
+              <div>
                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#555', marginBottom: '0.65rem' }}>
                   Select Delivery Address ({savedAddresses.length}/4 saved):
                 </div>
@@ -1123,6 +1130,23 @@ export const CheckoutForm: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Delete Address Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteAddressConfirm.isOpen}
+        onClose={() => {
+          if (!deleteAddressConfirm.isLoading) {
+            setDeleteAddressConfirm(prev => ({ ...prev, isOpen: false }));
+          }
+        }}
+        onConfirm={handleConfirmDeleteAddress}
+        title="Delete Delivery Address"
+        itemName={deleteAddressConfirm.addressLabel}
+        itemType="address"
+        warningNote="Are you sure you want to remove this delivery address from your saved addresses?"
+        confirmText="Yes, Delete Address"
+        isLoading={deleteAddressConfirm.isLoading}
+      />
     </div>
   );
 };

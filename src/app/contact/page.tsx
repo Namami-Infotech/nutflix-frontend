@@ -29,6 +29,7 @@ export default function ContactPage() {
     <div style={{ backgroundColor: 'var(--color-bg-light)', minHeight: '100vh', paddingBottom: '5rem' }}>
       {/* Hero Header */}
       <section
+        className="page-header-banner"
         style={{
           backgroundColor: 'var(--color-forest)',
           color: '#ffffff',
@@ -72,7 +73,7 @@ export default function ContactPage() {
       </section>
 
       {/* Main Content Grid */}
-      <div className="container" style={{ maxWidth: '1140px', marginTop: '3.5rem' }}>
+      <div className="container contact-main-container" style={{ maxWidth: '1140px', marginTop: '3.5rem' }}>
         <div
           style={{
             display: 'grid',
@@ -186,8 +187,8 @@ export default function ContactPage() {
                   </h3>
                   <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', marginBottom: '0.4rem' }}>
                     <strong>Official Website:</strong>{' '}
-                    <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>
-                      www.nutflix.in
+                    <a href="https://www.nut-flix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>
+                      www.nut-flix.in
                     </a>
                   </p>
                   <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.8rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '10px', border: '1px solid var(--color-border)' }}>
@@ -449,6 +450,17 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .page-header-banner {
+            display: none !important;
+          }
+          .contact-main-container {
+            margin-top: 1.5rem !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

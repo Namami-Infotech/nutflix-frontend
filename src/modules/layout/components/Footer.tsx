@@ -147,7 +147,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <strong style={{ color: '#fff' }}>Website:</strong>{' '}
-                <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: '#a0b0a4', textDecoration: 'none' }}>www.nutflix.in</a>
+                <a href="https://www.nut-flix.in" target="_blank" rel="noopener noreferrer" style={{ color: '#a0b0a4', textDecoration: 'none' }}>www.nut-flix.in</a>
               </li>
             </ul>
           </div>

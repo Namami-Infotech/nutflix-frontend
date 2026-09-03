@@ -192,20 +192,24 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
-export async function fetchCategories(): Promise<Category[]> {
-  const cacheKey = 'categories';
+export async function fetchCategories(params?: { includeInactive?: boolean }): Promise<Category[]> {
+  const cacheKey = `categories_${JSON.stringify(params || {})}`;
   const cached = getCachedData<Category[]>(cacheKey);
 
   const networkPromise = (async () => {
+    const query = new URLSearchParams();
+    if (params?.includeInactive) query.append('includeInactive', 'true');
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+
     try {
-      const res = await api.get('/categories');
+      const res = await api.get(`/categories${queryString}`);
       if (res.data && Array.isArray(res.data.data)) {
         setCachedData(cacheKey, res.data.data);
         return res.data.data;
       }
     } catch (error) {
       try {
-        const res = await axios.get('/api/categories', { timeout: 4000 });
+        const res = await axios.get(`/api/categories${queryString}`, { timeout: 4000 });
         if (res.data && Array.isArray(res.data.data)) {
           setCachedData(cacheKey, res.data.data);
           return res.data.data;
@@ -221,7 +225,7 @@ export async function fetchCategories(): Promise<Category[]> {
   return await networkPromise;
 }
 
-export async function fetchProducts(params?: { category?: string; featured?: boolean; search?: string; page?: number; limit?: number }): Promise<Product[]> {
+export async function fetchProducts(params?: { category?: string; featured?: boolean; search?: string; page?: number; limit?: number; includeInactive?: boolean }): Promise<Product[]> {
   const cacheKey = `products_${JSON.stringify(params || {})}`;
   const cached = getCachedData<Product[]>(cacheKey);
 
@@ -232,6 +236,7 @@ export async function fetchProducts(params?: { category?: string; featured?: boo
     if (params?.search) query.append('search', params.search);
     if (params?.page) query.append('page', String(params.page));
     if (params?.limit) query.append('limit', String(params.limit));
+    if (params?.includeInactive) query.append('includeInactive', 'true');
 
     try {
       const res = await api.get(`/products?${query.toString()}`);
@@ -422,20 +427,24 @@ export async function submitReview(reviewData: {
 }
 
 
-export async function fetchBanners(): Promise<MasterBanner[]> {
-  const cacheKey = 'banners';
+export async function fetchBanners(params?: { includeInactive?: boolean }): Promise<MasterBanner[]> {
+  const cacheKey = `banners_${JSON.stringify(params || {})}`;
   const cached = getCachedData<MasterBanner[]>(cacheKey);
 
   const networkPromise = (async () => {
+    const query = new URLSearchParams();
+    if (params?.includeInactive) query.append('includeInactive', 'true');
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+
     try {
-      const res = await api.get('/banners');
+      const res = await api.get(`/banners${queryString}`);
       if (res.data && Array.isArray(res.data.data)) {
         setCachedData(cacheKey, res.data.data);
         return res.data.data;
       }
     } catch (error) {
       try {
-        const res = await axios.get('/api/banners', { timeout: 4000 });
+        const res = await axios.get(`/api/banners${queryString}`, { timeout: 4000 });
         if (res.data && Array.isArray(res.data.data)) {
           setCachedData(cacheKey, res.data.data);
           return res.data.data;
@@ -653,6 +662,45 @@ function getStoredLocalOrders(): any[] {
   }
 }
 
+export async function fetchAllOrders(params?: { status?: string; startDate?: string; endDate?: string; search?: string }) {
+  const stored = getStoredLocalOrders();
+  const allLocal = [...stored, ...LOCAL_ORDERS_STORE];
+  const uniqueMap = new Map();
+  allLocal.forEach(item => {
+    if (!uniqueMap.has(item.id || item.orderNumber)) {
+      uniqueMap.set(item.id || item.orderNumber, item);
+    }
+  });
+  const mergedLocal = Array.from(uniqueMap.values());
+
+  const query = new URLSearchParams();
+  if (params?.status && params.status !== 'all') query.set('status', params.status);
+  if (params?.startDate) query.set('startDate', params.startDate);
+  if (params?.endDate) query.set('endDate', params.endDate);
+  if (params?.search) query.set('search', params.search);
+
+  const qs = query.toString() ? `?${query.toString()}` : '';
+
+  try {
+    const res = await api.get(`/orders/all-orders${qs}`);
+    let backendOrders: any[] = [];
+    if (res.data && Array.isArray(res.data.data)) {
+      backendOrders = res.data.data;
+    } else {
+      const fallbackRes = await api.get(`/orders${qs}`);
+      if (fallbackRes.data && Array.isArray(fallbackRes.data.data)) {
+        backendOrders = fallbackRes.data.data;
+      }
+    }
+
+    const backendIds = new Set(backendOrders.map((o: any) => o.id || o.orderNumber));
+    const extraLocal = mergedLocal.filter((o: any) => !backendIds.has(o.id || o.orderNumber));
+    return [...backendOrders, ...extraLocal];
+  } catch (error) {
+    return mergedLocal;
+  }
+}
+
 export async function fetchAdminOrders() {
   const stored = getStoredLocalOrders();
   const allLocal = [...stored, ...LOCAL_ORDERS_STORE];
@@ -665,11 +713,20 @@ export async function fetchAdminOrders() {
   const mergedLocal = Array.from(uniqueMap.values());
 
   try {
-    const res = await api.get('/orders');
+    const res = await api.get('/orders/all-orders');
+    let backendOrders: any[] = [];
     if (res.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-      return res.data.data;
+      backendOrders = res.data.data;
+    } else {
+      const fallbackRes = await api.get('/orders');
+      if (fallbackRes.data && Array.isArray(fallbackRes.data.data) && fallbackRes.data.data.length > 0) {
+        backendOrders = fallbackRes.data.data;
+      }
     }
-    return mergedLocal;
+
+    const backendIds = new Set(backendOrders.map((o: any) => o.id || o.orderNumber));
+    const extraLocal = mergedLocal.filter((o: any) => !backendIds.has(o.id || o.orderNumber));
+    return [...backendOrders, ...extraLocal];
   } catch (error) {
     return mergedLocal;
   }
@@ -944,6 +1001,33 @@ export async function deleteUser(id: number) {
     return res.data;
   } catch (error: any) {
     return error?.response?.data || { success: false, message: 'Failed to delete user' };
+  }
+}
+
+export async function updateUserStatic(id: number, isStatic: boolean) {
+  try {
+    const res = await api.patch(`/users/${id}/static`, { static: isStatic });
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || { success: false, message: 'Failed to update user static status' };
+  }
+}
+
+export async function updateUserStatus(id: number, status: string) {
+  try {
+    const res = await api.patch(`/users/${id}/status`, { status });
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || { success: false, message: 'Failed to update user status' };
+  }
+}
+
+export async function updateUserProfileApi(id: number, profileData: { name?: string; email?: string; address?: string; gstNumber?: string }) {
+  try {
+    const res = await api.put(`/users/profile/${id}`, profileData);
+    return res.data;
+  } catch (error: any) {
+    return error?.response?.data || { success: false, message: 'Failed to update profile' };
   }
 }
 

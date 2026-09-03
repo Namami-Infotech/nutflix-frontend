@@ -495,7 +495,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                 <ShieldCheck size={24} color="var(--color-gold)" />
               </div>
               <h3 style={{ fontSize: '1.45rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.2rem' }}>
-                {activeTab === 'login' ? 'Mobile Sign In' : 'Create an Account'}
+                {activeTab === 'login' ? 'Sign In' : 'Create an Account'}
               </h3>
               <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
                 {activeTab === 'login'
@@ -554,7 +554,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                   transition: 'all 0.2s ease',
                 }}
               >
-                Sign In (Phone)
+                Sign In
               </button>
               <button
                 type="button"
@@ -745,7 +745,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
                             transition: 'all 0.2s',
                           }}
                         >
-                          {sendingOtp ? 'Sending...' : 'Verify'}
+                          {sendingOtp ? 'Sending...' : 'Send OTP'}
                         </button>
                       ) : (
                         <button

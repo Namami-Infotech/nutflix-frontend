@@ -165,7 +165,7 @@ function CatalogContent() {
   return (
     <div style={{ backgroundColor: 'var(--color-bg-light)', minHeight: '85vh', paddingBottom: '5rem' }}>
       {/* Header Banner */}
-      <section style={{ backgroundColor: 'var(--color-forest)', color: '#ffffff', padding: '4rem 0 3rem', textAlign: 'center' }}>
+      <section className="page-header-banner" style={{ backgroundColor: 'var(--color-forest)', color: '#ffffff', padding: '4rem 0 3rem', textAlign: 'center' }}>
         <div className="container" style={{ maxWidth: '780px' }}>
           <span className="badge-impact" style={{ marginBottom: '1rem' }}>
             <Sparkles size={14} color="var(--color-gold)" /> Direct From Tanzanian Farmers
@@ -182,7 +182,7 @@ function CatalogContent() {
       </section>
 
       {/* Catalog Main Container */}
-      <div className="container" style={{ paddingTop: '3rem' }}>
+      <div className="container catalog-container" style={{ paddingTop: '3rem' }}>
         {/* Category Filters */}
         <CategoryFilter
           categories={categories}
@@ -191,23 +191,9 @@ function CatalogContent() {
         />
 
         {/* Filter Controls Bar (Search + Sort + Count) */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1.2rem',
-            margin: '2rem 0',
-            padding: '1.2rem 1.5rem',
-            backgroundColor: '#ffffff',
-            borderRadius: '20px',
-            border: '1px solid var(--color-border)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          {/* Live Search Input */}
-          <div style={{ position: 'relative', minWidth: '240px', flex: 1 }}>
+        <div className="products-filter-bar">
+          {/* Live Search Input (Hidden on Mobile) */}
+          <div className="products-search-box" style={{ position: 'relative', minWidth: '240px', flex: 1 }}>
             <Search size={18} color="var(--color-forest)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               type="text"
@@ -250,10 +236,7 @@ function CatalogContent() {
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            {/* <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text-muted)' }}>
-              Showing {displayedProducts.length} of {sortedProducts.length} items
-            </span> */}
+          <div className="products-sort-wrapper">
             <ProductSort sortBy={sortBy} onSortChange={setSortBy} />
           </div>
         </div>
@@ -306,6 +289,55 @@ function CatalogContent() {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        .products-filter-bar {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1.2rem;
+          margin: 2rem 0;
+          padding: 1rem 1.5rem;
+          background-color: #ffffff;
+          border-radius: 20px;
+          border: 1px solid var(--color-border);
+          box-shadow: var(--shadow-sm);
+        }
+
+        .products-sort-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+          .page-header-banner {
+            display: none !important;
+          }
+
+          .catalog-container {
+            padding-top: 1.25rem !important;
+          }
+
+          .products-filter-bar {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 0.25rem !important;
+            margin: 0.25rem 0 1.2rem !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+            align-items: center !important;
+          }
+
+          .products-search-box {
+            display: none !important;
+          }
+
+          .products-sort-wrapper {
+            margin-left: auto;
+          }
         }
       `}</style>
     </div>

@@ -65,6 +65,11 @@ export const AddressModal: React.FC<AddressModalProps> = ({
       return;
     }
 
+    if (postalCode.trim().length !== 6) {
+      setErrorMsg('Please enter a valid 6-digit PIN / Postal code.');
+      return;
+    }
+
     setLoading(true);
     try {
       if (addressToEdit) {
@@ -325,9 +330,15 @@ export const AddressModal: React.FC<AddressModalProps> = ({
               <input
                 type="text"
                 required
+                maxLength={6}
+                inputMode="numeric"
+                pattern="[0-9]{6}"
                 placeholder="e.g. 400001"
                 value={postalCode}
-                onChange={(e) => setPostalCode(e.target.value)}
+                onChange={(e) => {
+                  const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setPostalCode(digitsOnly);
+                }}
                 style={{
                   width: '100%',
                   padding: '0.75rem 0.95rem',

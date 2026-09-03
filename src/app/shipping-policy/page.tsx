@@ -14,6 +14,7 @@ export default function ShippingPolicyPage() {
     <div style={{ backgroundColor: 'var(--color-bg-light)', minHeight: '100vh', paddingBottom: '5rem' }}>
       {/* Hero Header */}
       <section
+        className="page-header-banner"
         style={{
           backgroundColor: 'var(--color-forest)',
           color: '#ffffff',
@@ -208,7 +209,7 @@ export default function ShippingPolicyPage() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Globe size={16} color="var(--color-gold)" />
-                <span><strong>Website:</strong> <a href="https://www.nutflix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>www.nutflix.in</a></span>
+                <span><strong>Website:</strong> <a href="https://www.nut-flix.in" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-gold)', fontWeight: 700 }}>www.nut-flix.in</a></span>
               </div>
               <div><strong>FSSAI License No.:</strong> 22826039000325</div>
             </div>

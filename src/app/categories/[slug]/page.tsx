@@ -52,6 +52,7 @@ export default function CategoryProductsPage({ params }: { params?: { slug?: str
     <div style={{ backgroundColor: '#FAF7F2', minHeight: '88vh', paddingBottom: '6rem' }}>
       {/* Category Header Banner */}
       <section 
+        className="page-header-banner"
         style={{ 
           backgroundColor: 'var(--color-forest)', 
           color: '#ffffff', 
@@ -99,7 +100,7 @@ export default function CategoryProductsPage({ params }: { params?: { slug?: str
       </section>
 
       {/* Main Categories Grid Container */}
-      <div className="container" style={{ paddingTop: '3rem' }}>
+      <div className="container categories-main-container" style={{ paddingTop: '3rem' }}>
         
         {/* Section Header with Debounced Search */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -113,8 +114,8 @@ export default function CategoryProductsPage({ params }: { params?: { slug?: str
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            {/* Category Search Input */}
-            <div style={{ position: 'relative', width: '280px' }}>
+            {/* Category Search Input (Hidden on Mobile) */}
+            <div className="category-search-box" style={{ position: 'relative', width: '280px' }}>
               <Search size={18} color="var(--color-forest)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
@@ -203,6 +204,20 @@ export default function CategoryProductsPage({ params }: { params?: { slug?: str
           </div>
         )}
       </div>
+
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .page-header-banner {
+            display: none !important;
+          }
+          .categories-main-container {
+            padding-top: 1.5rem !important;
+          }
+          .category-search-box {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

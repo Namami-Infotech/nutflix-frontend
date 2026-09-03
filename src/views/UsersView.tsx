@@ -1,25 +1,37 @@
 'use client';
 
 import React, { useState } from 'react';
-import { UserCheck, ShieldCheck, Mail, Phone, MapPin, FileText, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { UserCheck, ShieldCheck, Mail, Phone, MapPin, FileText, Trash2, CheckCircle, AlertCircle, KeyRound } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 
 interface UsersViewProps {
   usersList: any[];
   searchQuery: string;
   onDeleteUser?: (id: number) => void;
+  onToggleStatic?: (id: number, isStatic: boolean) => void | Promise<void>;
 }
 
-export default function UsersView({ usersList, searchQuery, onDeleteUser }: UsersViewProps) {
+export default function UsersView({ usersList, searchQuery, onDeleteUser, onToggleStatic }: UsersViewProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadingStaticId, setLoadingStaticId] = useState<number | null>(null);
   const pageSize = 5;
 
   const filteredUsers = usersList.filter(
-    u => !searchQuery || u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase())
+    u => !searchQuery || u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || u.email?.toLowerCase().includes(searchQuery.toLowerCase()) || u.phone?.includes(searchQuery)
   );
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const handleToggle = async (userId: number, currentStatus: boolean) => {
+    if (!onToggleStatic) return;
+    setLoadingStaticId(userId);
+    try {
+      await onToggleStatic(userId, !currentStatus);
+    } finally {
+      setLoadingStaticId(null);
+    }
+  };
 
   return (
     <div style={{ backgroundColor: '#fff', padding: '1rem', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 4px 14px rgba(0,0,0,0.03)' }}>
@@ -54,6 +66,8 @@ export default function UsersView({ usersList, searchQuery, onDeleteUser }: User
               const initials = usr.name ? usr.name.substring(0, 2).toUpperCase() : 'US';
               const isAdmin = usr.role === 'admin';
               const isInactive = usr.status === 'inactive';
+              const isStatic = Boolean(usr.static);
+              const isToggling = loadingStaticId === usr.id;
 
               return (
                 <tr key={usr.id} style={{ backgroundColor: '#faf8f5', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: isInactive ? 0.7 : 1 }}>
@@ -131,6 +145,7 @@ export default function UsersView({ usersList, searchQuery, onDeleteUser }: User
                       {usr.phone || 'N/A'}
                     </div>
                   </td>
+
                   <td style={{ padding: '0.55rem 0.75rem', color: '#64748b', fontSize: '0.78rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                       <MapPin size={13} color="#64748b" />

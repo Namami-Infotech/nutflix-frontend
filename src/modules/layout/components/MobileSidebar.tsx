@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -20,8 +20,11 @@ import {
   MessageCircle,
   ExternalLink,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/modules/auth';
+import { deleteUser } from '@/lib/api';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -33,6 +36,8 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
   const router = useRouter();
   const { isLoggedIn, user, logout, openLoginModal } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Automatically close sidebar on navigation
   useEffect(() => {
@@ -57,6 +62,23 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
     onClose();
     await logout();
     router.push('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+    try {
+      setIsDeleting(true);
+      await deleteUser(Number(user.id));
+      await logout();
+      onClose();
+      router.push('/');
+    } catch (err: any) {
+      console.error('Failed to delete account:', err);
+      alert(err?.message || 'Failed to delete account. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+    }
   };
 
   const handleLoginClick = () => {
@@ -613,37 +635,78 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
                 FSSAI Lic.: 22826039000325
               </div>
               <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                🌐 www.nutflix.in
+                🌐 www.nut-flix.in
               </div>
             </div>
           </div>
 
-          {/* Logout Option if user is Logged In */}
+          {/* Actions if user is Logged In */}
           {isLoggedIn && (
-            <button
-              onClick={handleLogout}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.6rem',
-                padding: '0.75rem',
-                borderRadius: '12px',
-                backgroundColor: '#fff1f0',
-                color: '#e11d48',
-                border: '1px solid #fed7d7',
-                fontWeight: 800,
-                fontSize: '0.88rem',
-                cursor: 'pointer',
-                marginTop: 'auto',
-              }}
-            >
-              <LogOut size={18} />
-              Sign Out
-            </button>
+            <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingTop: '0.5rem' }}>
+              <button
+                onClick={() => setDeleteModalOpen(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.65rem',
+                  borderRadius: '12px',
+                  backgroundColor: '#ffffff',
+                  color: '#dc2626',
+                  border: '1px solid #fca5a5',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <Trash2 size={15} />
+                Delete Account
+              </button>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.6rem',
+                  padding: '0.75rem',
+                  borderRadius: '12px',
+                  backgroundColor: '#fff1f0',
+                  color: '#e11d48',
+                  border: '1px solid #fed7d7',
+                  fontWeight: 800,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                }}
+              >
+                <LogOut size={18} />
+                Sign Out
+              </button>
+            </div>
           )}
         </div>
       </div>
+
+      {/* Delete Account Confirmation Modal in MobileSidebar */}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteModalOpen(false);
+          }
+        }}
+        onConfirm={handleDeleteAccount}
+        title="Delete Account"
+        itemName={user?.name || user?.email || ''}
+        itemType="account"
+        warningNote="This action will mark your account as inactive. You will be logged out and cannot sign in again unless reactivated by support."
+        confirmText="Yes, Delete Account"
+        isLoading={isDeleting}
+        type="danger"
+      />
 
       <style jsx global>{`
         @keyframes slideInLeft {

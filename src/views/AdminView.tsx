@@ -26,6 +26,7 @@ import {
   Menu
 } from 'lucide-react';
 import { ImageCropperModal } from '@/components/ui/ImageCropperModal';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 import BrandLogo from '@/components/BrandLogo';
 import {
   fetchAdminOrders,
@@ -44,6 +45,7 @@ import {
   deleteBanner,
   fetchUsers,
   deleteUser,
+  updateUserStatic,
   loginUser,
   fetchPaymentTypes,
   updatePaymentTypeStatus,
@@ -70,6 +72,7 @@ import PaymentsView from './PaymentsView';
 export default function AdminView() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [adminUser, setAdminUser] = useState<any>(null);
   const [emailInput, setEmailInput] = useState('admin@nutflix.com');
   const [passwordInput, setPasswordInput] = useState('123456');
@@ -186,8 +189,8 @@ export default function AdminView() {
   const handleProductFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showToast('File size exceeds 10MB limit. Please choose a smaller image.', 'error');
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File size exceeds 5MB limit. Please choose an image under 5MB.', 'error');
         return;
       }
       const reader = new FileReader();
@@ -208,8 +211,8 @@ export default function AdminView() {
   const handleCategoryFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showToast('File size exceeds 10MB limit. Please choose a smaller image.', 'error');
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File size exceeds 5MB limit. Please choose an image under 5MB.', 'error');
         return;
       }
       const reader = new FileReader();
@@ -230,8 +233,8 @@ export default function AdminView() {
   const handleBannerFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        showToast('File size exceeds 10MB limit. Please choose a smaller image.', 'error');
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File size exceeds 5MB limit. Please choose an image under 5MB.', 'error');
         return;
       }
       const reader = new FileReader();
@@ -262,6 +265,21 @@ export default function AdminView() {
 
   const [toastMsg, setToastMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    itemName?: string;
+    itemType?: string;
+    warningNote?: React.ReactNode;
+    confirmText?: string;
+    onConfirm: () => Promise<void> | void;
+    isLoading?: boolean;
+  }>({
+    isOpen: false,
+    title: '',
+    onConfirm: () => {},
+  });
+
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMsg({ type, text });
     setTimeout(() => setToastMsg(null), 3500);
@@ -290,9 +308,9 @@ export default function AdminView() {
     try {
       const [ordersRes, productsRes, categoriesRes, bannersRes, usersRes, paymentTypesRes] = await Promise.all([
         fetchAdminOrders(),
-        fetchProducts(),
-        fetchCategories(),
-        fetchBanners(),
+        fetchProducts({ includeInactive: true }),
+        fetchCategories({ includeInactive: true }),
+        fetchBanners({ includeInactive: true }),
         fetchUsers(),
         fetchPaymentTypes()
       ]);
@@ -357,10 +375,15 @@ export default function AdminView() {
   };
 
   const handleLogout = async () => {
-    await logoutUser();
-    setIsAdminLoggedIn(false);
-    setAdminUser(null);
-    showToast('Logged out of Admin Portal');
+    setIsLoggingOut(true);
+    try {
+      await logoutUser();
+    } catch (e) {
+      // ignore
+    }
+    if (typeof window !== 'undefined') {
+      window.location.replace('/');
+    }
   };
 
   const handleStatusChange = async (orderId: number, newStatus: string) => {
@@ -437,15 +460,46 @@ export default function AdminView() {
     }
   };
 
-  const handleDeleteProduct = async (id: number) => {
-    if (confirm('Deactivate this product? (Status will be set to inactive)')) {
-      const res = await deleteProduct(id);
-      if (res.success) {
-        showToast('Product status set to inactive');
-        setProducts(prev => prev.filter(p => p.id !== id));
-      } else {
-        showToast(res.message || 'Failed to deactivate product', 'error');
+  const handleDeleteProduct = (id: number) => {
+    const prod = products.find(p => p.id === id);
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Deactivate Product',
+      itemName: prod?.name || `Product #${id}`,
+      itemType: 'product',
+      warningNote: 'This action will deactivate the product. You can activate it again anytime.',
+      confirmText: 'Yes, Deactivate Product',
+      onConfirm: async () => {
+        setDeleteConfirmModal(prev => ({ ...prev, isLoading: true }));
+        try {
+          const res = await deleteProduct(id);
+          if (res.success) {
+            showToast('Product status set to inactive');
+            setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'inactive' } : p));
+            setDeleteConfirmModal(prev => ({ ...prev, isOpen: false, isLoading: false }));
+          } else {
+            showToast(res.message || 'Failed to deactivate product', 'error');
+            setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+          }
+        } catch (err: any) {
+          showToast(err?.message || 'Failed to deactivate product', 'error');
+          setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+        }
       }
+    });
+  };
+
+  const handleActivateProduct = async (id: number) => {
+    try {
+      const res = await updateProduct(id, { status: 'active' });
+      if (res.success) {
+        showToast('Product activated successfully!');
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'active' } : p));
+      } else {
+        showToast(res.message || 'Failed to activate product', 'error');
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to activate product', 'error');
     }
   };
 
@@ -495,21 +549,61 @@ export default function AdminView() {
     }
   };
 
-  const handleDeleteCategory = async (id: number) => {
-    if (confirm('Deactivate this category? (Status will be set to inactive)')) {
-      const res = await deleteCategory(id);
-      if (res.success) {
-        showToast('Category status set to inactive');
-        setCategories(prev => prev.filter(c => c.id !== id));
-      } else {
-        showToast(res.message || 'Failed to deactivate category', 'error');
+  const handleDeleteCategory = (id: number) => {
+    const cat = categories.find(c => c.id === id);
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Deactivate Category',
+      itemName: cat?.name || `Category #${id}`,
+      itemType: 'category',
+      warningNote: 'This action will mark this category as inactive. You can activate it again anytime.',
+      confirmText: 'Yes, Deactivate Category',
+      onConfirm: async () => {
+        setDeleteConfirmModal(prev => ({ ...prev, isLoading: true }));
+        try {
+          const res = await deleteCategory(id);
+          if (res.success) {
+            showToast('Category status set to inactive');
+            setCategories(prev => prev.map(c => c.id === id ? { ...c, status: 'inactive' } : c));
+            setDeleteConfirmModal(prev => ({ ...prev, isOpen: false, isLoading: false }));
+          } else {
+            showToast(res.message || 'Failed to deactivate category', 'error');
+            setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+          }
+        } catch (err: any) {
+          showToast(err?.message || 'Failed to deactivate category', 'error');
+          setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+        }
       }
+    });
+  };
+
+  const handleActivateCategory = async (id: number) => {
+    try {
+      const res = await updateCategory(id, { status: 'active' });
+      if (res.success) {
+        showToast('Category activated successfully!');
+        setCategories(prev => prev.map(c => c.id === id ? { ...c, status: 'active' } : c));
+      } else {
+        showToast(res.message || 'Failed to activate category', 'error');
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to activate category', 'error');
     }
   };
 
   // BANNER CRUD
   const handleSaveBanner = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!editingBanner) {
+      const activeBannersCount = banners.filter(b => b.status !== 'inactive' && b.isActive !== false).length;
+      if (activeBannersCount >= 10) {
+        showToast('Maximum 10 active banners allowed. Please deactivate an existing banner first.', 'error');
+        return;
+      }
+    }
+
     if (!bannerForm.imageUrl) {
       showToast('Please upload a banner image first.', 'error');
       return;
@@ -547,27 +641,94 @@ export default function AdminView() {
     }
   };
 
-  const handleDeleteBanner = async (id: number) => {
-    if (confirm('Deactivate this banner? (Status will be set to inactive)')) {
-      const res = await deleteBanner(id);
-      if (res.success) {
-        showToast('Banner status set to inactive');
-        setBanners(prev => prev.filter(b => b.id !== id));
-      } else {
-        showToast(res.message || 'Failed to deactivate banner', 'error');
+  const handleDeleteBanner = (id: number) => {
+    const b = banners.find(item => item.id === id);
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Deactivate Banner',
+      itemName: b?.title || `Banner #${id}`,
+      itemType: 'banner',
+      warningNote: 'This action will deactivate this banner. You can activate it again anytime.',
+      confirmText: 'Yes, Deactivate Banner',
+      onConfirm: async () => {
+        setDeleteConfirmModal(prev => ({ ...prev, isLoading: true }));
+        try {
+          const res = await deleteBanner(id);
+          if (res.success) {
+            showToast('Banner status set to inactive');
+            setBanners(prev => prev.map(bItem => bItem.id === id ? { ...bItem, status: 'inactive', isActive: false } : bItem));
+            setDeleteConfirmModal(prev => ({ ...prev, isOpen: false, isLoading: false }));
+          } else {
+            showToast(res.message || 'Failed to deactivate banner', 'error');
+            setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+          }
+        } catch (err: any) {
+          showToast(err?.message || 'Failed to deactivate banner', 'error');
+          setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+        }
       }
+    });
+  };
+
+  const handleActivateBanner = async (id: number) => {
+    const activeBannersCount = banners.filter(b => b.status !== 'inactive' && b.isActive !== false).length;
+    if (activeBannersCount >= 10) {
+      showToast('Cannot activate banner. Maximum 10 active banners allowed. Please deactivate an existing banner first.', 'error');
+      return;
+    }
+
+    try {
+      const res = await updateBanner(id, { status: 'active', isActive: true });
+      if (res.success) {
+        showToast('Banner activated successfully!');
+        setBanners(prev => prev.map(b => b.id === id ? { ...b, status: 'active', isActive: true } : b));
+      } else {
+        showToast(res.message || 'Failed to activate banner', 'error');
+      }
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to activate banner', 'error');
     }
   };
 
-  const handleDeleteUser = async (id: number) => {
-    if (confirm('Deactivate this user account? (Status will be set to inactive)')) {
-      const res = await deleteUser(id);
-      if (res.success) {
-        showToast('User status set to inactive');
-        setUsersList(prev => prev.map(u => u.id === id ? { ...u, status: 'inactive' } : u));
-      } else {
-        showToast(res.message || 'Failed to deactivate user', 'error');
+  const handleDeleteUser = (id: number) => {
+    const usr = usersList.find(u => u.id === id);
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Deactivate User Account',
+      itemName: usr?.name || usr?.email || `User #${id}`,
+      itemType: 'user account',
+      warningNote: 'This action will mark the user account as inactive.',
+      confirmText: 'Yes, Deactivate User',
+      onConfirm: async () => {
+        setDeleteConfirmModal(prev => ({ ...prev, isLoading: true }));
+        try {
+          const res = await deleteUser(id);
+          if (res.success) {
+            showToast('User status set to inactive');
+            setUsersList(prev => prev.map(u => u.id === id ? { ...u, status: 'inactive' } : u));
+            setDeleteConfirmModal(prev => ({ ...prev, isOpen: false, isLoading: false }));
+          } else {
+            showToast(res.message || 'Failed to deactivate user', 'error');
+            setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+          }
+        } catch (err: any) {
+          showToast(err?.message || 'Failed to deactivate user', 'error');
+          setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+        }
       }
+    });
+  };
+
+  const handleToggleUserStatic = async (id: number, isStatic: boolean) => {
+    // Optimistic UI update
+    setUsersList(prev => prev.map(u => u.id === id ? { ...u, static: isStatic } : u));
+    const res = await updateUserStatic(id, isStatic);
+    if (res.success) {
+      showToast(isStatic ? 'Static OTP mode activated (OTP: 123456, SMS bypass)' : 'Static OTP mode deactivated');
+    } else {
+      // Revert if failed
+      setUsersList(prev => prev.map(u => u.id === id ? { ...u, static: !isStatic } : u));
+      showToast(res.message || 'Failed to update static OTP mode', 'error');
     }
   };
 
@@ -596,7 +757,7 @@ export default function AdminView() {
     { id: 'products', label: 'Total Products', icon: Package, badge: null },
     { id: 'categories', label: 'Total Categories', icon: FolderTree, badge: null },
     { id: 'banners', label: 'Banners Upload', icon: ImageIcon, badge: null },
-    { id: 'new_orders', label: 'New Orders', icon: ShoppingBag, badge: null, color: '#3b82f6' },
+    { id: 'new_orders', label: 'All Orders', icon: ShoppingBag, badge: null, color: '#3b82f6' },
     { id: 'delivered_orders', label: 'Delivered Orders', icon: CheckCircle2, badge: null, color: '#10b981' },
     { id: 'cancelled_orders', label: 'Cancelled / Returned', icon: XCircle, badge: null, color: '#ef4444' },
     { id: 'payments', label: 'Payment Types', icon: CreditCard, badge: null },
@@ -628,7 +789,7 @@ export default function AdminView() {
         </div>
       )}
 
-      {isCheckingAuth ? (
+      {isCheckingAuth || isLoggingOut ? (
         <div style={{
           minHeight: '100vh',
           display: 'flex',
@@ -640,7 +801,9 @@ export default function AdminView() {
           gap: '1rem'
         }}>
           <RefreshCw size={36} style={{ animation: 'spin 1s linear infinite', color: '#f59e0b' }} />
-          <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Verifying admin session...</span>
+          <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
+            {isLoggingOut ? 'Logging out of Admin...' : 'Verifying admin session...'}
+          </span>
         </div>
       ) : !isAdminLoggedIn ? (
         /* PREMIUM ADMIN LOGIN SCREEN */
@@ -856,12 +1019,18 @@ export default function AdminView() {
               )}
 
               {activeMenu === 'users' && (
-                <UsersView usersList={usersList} searchQuery={searchQuery} onDeleteUser={handleDeleteUser} />
+                <UsersView
+                  usersList={usersList}
+                  searchQuery={searchQuery}
+                  onDeleteUser={handleDeleteUser}
+                  onToggleStatic={handleToggleUserStatic}
+                />
               )}
 
               {activeMenu === 'products' && (
                 <ProductsView
                   products={products}
+                  categories={categories}
                   searchQuery={searchQuery}
                   onAddProduct={() => {
                     setEditingProduct(null);
@@ -879,6 +1048,7 @@ export default function AdminView() {
                     setProductModalOpen(true);
                   }}
                   onDeleteProduct={handleDeleteProduct}
+                  onActivateProduct={handleActivateProduct}
                 />
               )}
 
@@ -902,6 +1072,7 @@ export default function AdminView() {
                     setCategoryModalOpen(true);
                   }}
                   onDeleteCategory={handleDeleteCategory}
+                  onActivateCategory={handleActivateCategory}
                 />
               )}
 
@@ -920,6 +1091,7 @@ export default function AdminView() {
                     setBannerModalOpen(true);
                   }}
                   onDeleteBanner={handleDeleteBanner}
+                  onActivateBanner={handleActivateBanner}
                 />
               )}
 
@@ -941,6 +1113,8 @@ export default function AdminView() {
                   paymentTypes={paymentTypesList}
                   orders={orders}
                   onTogglePaymentStatus={handleTogglePaymentStatus}
+                  onStatusChange={handleStatusChange}
+                  searchQuery={searchQuery}
                 />
               )}
             </div>
@@ -1193,7 +1367,7 @@ export default function AdminView() {
                             Click or Drag Image File Here to Upload
                           </span>
                           <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                            Supports PNG, JPG, WEBP (Max 10MB)
+                            Supports PNG, JPG, WEBP (Max 5MB)
                           </span>
                         </div>
                       )}
@@ -1209,7 +1383,11 @@ export default function AdminView() {
                       <input
                         type="text"
                         value={productForm.weight}
-                        onChange={(e) => setProductForm({ ...productForm, weight: e.target.value })}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 3);
+                          setProductForm({ ...productForm, weight: val });
+                        }}
+                        maxLength={3}
                         required
                         placeholder="e.g. 250, 500, 1"
                         style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
@@ -1227,10 +1405,6 @@ export default function AdminView() {
                       >
                         <option value="g">Gram (g)</option>
                         <option value="kg">Kilogram (kg)</option>
-                        <option value="mg">Milligram (mg)</option>
-                        <option value="ml">Milliliter (ml)</option>
-                        <option value="L">Liter (L)</option>
-                        <option value="pcs">Pieces (pcs)</option>
                         <option value="pack">Pack</option>
                       </select>
                     </div>
@@ -1507,7 +1681,7 @@ export default function AdminView() {
                             Click or Drag Image File Here to Upload
                           </span>
                           <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                            Supports PNG, JPG, WEBP (Max 10MB)
+                            Supports PNG, JPG, WEBP (Max 5MB)
                           </span>
                         </div>
                       )}
@@ -1563,6 +1737,14 @@ export default function AdminView() {
 
             {/* Modal Form Body */}
             <form onSubmit={handleSaveBanner} style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden', margin: 0 }}>
+              {!editingBanner && banners.filter(b => b.status !== 'inactive' && b.isActive !== false).length >= 10 && (
+                <div style={{ margin: '1rem 1.5rem 0', padding: '0.75rem 1rem', backgroundColor: '#fffbeb', border: '1px solid #fef3c7', borderLeft: '4px solid #f59e0b', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#92400e' }}>
+                  <AlertCircle size={16} color="#d97706" style={{ flexShrink: 0 }} />
+                  <span>
+                    <strong>Maximum 10 active banners reached:</strong> You cannot upload more active banners. Please deactivate an existing banner from the table first.
+                  </span>
+                </div>
+              )}
               <div style={{ padding: '1.35rem 1.5rem', overflowY: 'auto', flexGrow: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1.25rem', alignItems: 'start' }}>
                 {/* Left Column */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
@@ -1576,19 +1758,6 @@ export default function AdminView() {
                       onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
                       required
                       placeholder="e.g. Handcrafted Premium Dry Fruits"
-                      style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
-                      Badge Tag Text
-                    </label>
-                    <input
-                      type="text"
-                      value={bannerForm.badgeText}
-                      onChange={(e) => setBannerForm({ ...bannerForm, badgeText: e.target.value })}
-                      placeholder="e.g. Premium Harvest Special"
                       style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
                     />
                   </div>
@@ -1669,7 +1838,7 @@ export default function AdminView() {
                             Click or Drag Image File Here to Upload
                           </span>
                           <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                            Supports PNG, JPG, WEBP (Max 10MB)
+                            Supports PNG, JPG, WEBP (Max 5MB)
                           </span>
                         </div>
                       )}
@@ -1689,7 +1858,21 @@ export default function AdminView() {
                 </button>
                 <button
                   type="submit"
-                  style={{ backgroundColor: '#0f291e', color: '#ffffff', border: 'none', padding: '0.65rem 1.5rem', borderRadius: '10px', fontWeight: 900, fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(15, 41, 30, 0.25)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                  disabled={!editingBanner && banners.filter(b => b.status !== 'inactive' && b.isActive !== false).length >= 10}
+                  style={{
+                    backgroundColor: (!editingBanner && banners.filter(b => b.status !== 'inactive' && b.isActive !== false).length >= 10) ? '#94a3b8' : '#0f291e',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.65rem 1.5rem',
+                    borderRadius: '10px',
+                    fontWeight: 900,
+                    fontSize: '0.88rem',
+                    cursor: (!editingBanner && banners.filter(b => b.status !== 'inactive' && b.isActive !== false).length >= 10) ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 12px rgba(15, 41, 30, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}
                 >
                   <Plus size={16} /> {editingBanner ? 'Save Banner Changes' : 'Upload Banner'}
                 </button>
@@ -1706,6 +1889,7 @@ export default function AdminView() {
         imageSrc={adminCropperSrc}
         aspect={adminCropperAspect}
         title={adminCropperTitle}
+        targetType={adminCropperTarget}
         onCropComplete={async (croppedBase64) => {
           showToast('Uploading cropped image to server...');
           const uploadRes = await uploadImage(croppedBase64);
@@ -1722,6 +1906,23 @@ export default function AdminView() {
             showToast('Cropped banner image uploaded & URL saved!');
           }
         }}
+      />
+
+      {/* Universal Admin Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={() => {
+          if (!deleteConfirmModal.isLoading) {
+            setDeleteConfirmModal(prev => ({ ...prev, isOpen: false }));
+          }
+        }}
+        onConfirm={deleteConfirmModal.onConfirm}
+        title={deleteConfirmModal.title}
+        itemName={deleteConfirmModal.itemName}
+        itemType={deleteConfirmModal.itemType}
+        warningNote={deleteConfirmModal.warningNote}
+        confirmText={deleteConfirmModal.confirmText}
+        isLoading={deleteConfirmModal.isLoading}
       />
     </div>
   );

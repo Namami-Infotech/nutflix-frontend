@@ -1,18 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../cart.context';
 import { formatWeightAndUnit, getAuthToken, getProductPrices, formatPrice } from '@/lib/api';
 import { useAuth } from '@/modules/auth';
 import { X, Plus, Minus, Trash2, ShoppingCart, ArrowRight, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 export const CartDrawer: React.FC = () => {
   const { items, isOpen, closeCart, updateQuantity, removeFromCart, subtotal, freeShippingThreshold } = useCart();
   const { isLoggedIn, user, openLoginModal } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
   const router = useRouter();
+  const [itemToRemove, setItemToRemove] = useState<{ id: number; name: string } | null>(null);
 
   if (!isOpen) return null;
 
@@ -230,7 +232,7 @@ export const CartDrawer: React.FC = () => {
                       </div>
 
                       <button
-                        onClick={() => removeFromCart(item.product.id)}
+                        onClick={() => setItemToRemove({ id: item.product.id, name: item.product.name })}
                         style={{
                           position: 'absolute',
                           top: '0.75rem',
@@ -383,6 +385,23 @@ export const CartDrawer: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Remove Item from Cart Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!itemToRemove}
+        onClose={() => setItemToRemove(null)}
+        onConfirm={() => {
+          if (itemToRemove) {
+            removeFromCart(itemToRemove.id);
+            setItemToRemove(null);
+          }
+        }}
+        title="Remove Item from Cart"
+        itemName={itemToRemove?.name}
+        itemType="item"
+        warningNote="Are you sure you want to remove this item from your shopping cart?"
+        confirmText="Yes, Remove"
+      />
     </div>
   );
 };
