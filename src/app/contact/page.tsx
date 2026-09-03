@@ -33,10 +33,26 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim() || !emailRegex.test(formData.email.trim())) {
+      setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+
+    const cleanPhone = formData.phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10 || cleanPhone.length > 15) {
+      setErrorMsg('Please enter a valid phone/mobile number (10 to 15 digits).');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await createEnquiry(formData);
+      const res = await createEnquiry({
+        ...formData,
+        phone: cleanPhone,
+      });
       if (res.success) {
         setSubmitted(true);
       } else {
@@ -387,9 +403,14 @@ export default function ContactPage() {
                     <input
                       type="tel"
                       required
-                      placeholder="10-digit Mobile"
+                      maxLength={15}
+                      inputMode="numeric"
+                      placeholder="10 to 15 digit Mobile"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => {
+                        const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 15);
+                        setFormData({ ...formData, phone: digitsOnly });
+                      }}
                       style={{
                         width: '100%',
                         padding: '0.8rem 1rem',

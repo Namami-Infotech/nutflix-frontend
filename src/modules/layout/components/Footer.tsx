@@ -172,7 +172,7 @@ export const Footer: React.FC = () => {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.88rem', color: '#a0b0a4' }}>
               <li><Link href="/privacy-policy" style={{ color: '#a0b0a4' }}>Privacy Policy</Link></li>
               <li><Link href="/terms" style={{ color: '#a0b0a4' }}>Terms &amp; Conditions</Link></li>
-              <li><Link href="/refund-policy" style={{ color: '#a0b0a4' }}>Return &amp; Refund Policy</Link></li>
+              <li><Link href="/refund-policy" style={{ color: '#a0b0a4' }}>Cancellation Policy</Link></li>
               <li><Link href="/shipping-policy" style={{ color: '#a0b0a4' }}>Shipping &amp; Delivery</Link></li>
               <li><Link href="/contact" style={{ color: '#a0b0a4' }}>Customer Support</Link></li>
             </ul>
@@ -225,7 +225,7 @@ export const Footer: React.FC = () => {
             <Link href="/contact" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Contact Us</Link>
             <Link href="/privacy-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Privacy Policy</Link>
             <Link href="/terms" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Terms &amp; Conditions</Link>
-            <Link href="/refund-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Return &amp; Refund Policy</Link>
+            <Link href="/refund-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Cancellation Policy</Link>
             <Link href="/shipping-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Shipping &amp; Delivery</Link>
           </div>
           <p>© {new Date().getFullYear()} DARSHAN TECHNO SYSTEM (Brand: NUTFLIX). All rights reserved. GSTIN: 19ADZPG6957G3ZN • FSSAI Lic. No.: 22826039000325.</p>

@@ -156,7 +156,7 @@ export default function ShippingPolicyPage() {
                 • <strong>Delivery Charges:</strong> Any applicable delivery charges will be communicated or displayed at the time of placing the order.
               </p>
               <p>
-                • <strong>Customer Communication:</strong> In case of an unexpected delay, we will make reasonable efforts to inform the customer.
+                • <strong>Order Cancellation:</strong> Orders can only be cancelled before they are dispatched or shipped from our facility. Once an order is shipped, cancellations are strictly not permitted.
               </p>
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function ShippingPolicyPage() {
             Terms & Conditions
           </Link>
           <Link href="/refund-policy" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
-            Return & Refund Policy
+            Cancellation Policy
           </Link>
           <Link href="/contact" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
             Contact Us

@@ -65,6 +65,12 @@ export const AddressModal: React.FC<AddressModalProps> = ({
       return;
     }
 
+    const cleanPhoneNumber = phone.replace(/\D/g, '');
+    if (cleanPhoneNumber.length < 10 || cleanPhoneNumber.length > 15) {
+      setErrorMsg('Please enter a valid mobile number (10 to 15 digits).');
+      return;
+    }
+
     if (postalCode.trim().length !== 6) {
       setErrorMsg('Please enter a valid 6-digit PIN / Postal code.');
       return;
@@ -244,9 +250,14 @@ export const AddressModal: React.FC<AddressModalProps> = ({
               <input
                 type="tel"
                 required
-                placeholder="10-digit mobile number"
+                maxLength={15}
+                inputMode="numeric"
+                placeholder="10 to 15 digit mobile number"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 15);
+                  setPhone(digitsOnly);
+                }}
                 style={{
                   width: '100%',
                   padding: '0.75rem 0.95rem',

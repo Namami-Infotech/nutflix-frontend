@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Sparkles,
   Trash2,
+  Ban,
 } from 'lucide-react';
 import { useAuth } from '@/modules/auth';
 import { deleteUser } from '@/lib/api';
@@ -555,7 +556,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
                 <ChevronRight size={15} color="var(--color-text-muted)" />
               </Link>
 
-              {/* Return & Refund Policy */}
+              {/* Cancellation Policy */}
               <Link
                 href="/refund-policy"
                 style={{
@@ -571,8 +572,8 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-                  <Package size={18} color="var(--color-gold)" />
-                  <span>Return &amp; Refund Policy</span>
+                  <Ban size={18} color="var(--color-gold)" />
+                  <span>Cancellation Policy</span>
                 </div>
                 <ChevronRight size={15} color="var(--color-text-muted)" />
               </Link>

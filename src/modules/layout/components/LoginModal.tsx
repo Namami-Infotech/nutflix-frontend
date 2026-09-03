@@ -150,8 +150,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
         setErrorMsg('Please enter your full name before verifying mobile.');
         return;
       }
-      if (!emailInput.trim() || !emailInput.includes('@')) {
-        setErrorMsg('Please enter a valid email address before verifying mobile.');
+      if (!emailInput.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim())) {
+        setErrorMsg('Please enter a valid email address (e.g. name@example.com) before verifying mobile.');
         return;
       }
     }
@@ -197,8 +197,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
         setErrorMsg('Full Name is required.');
         return;
       }
-      if (!emailInput.trim()) {
-        setErrorMsg('Email Address is required.');
+      if (!emailInput.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim())) {
+        setErrorMsg('Please enter a valid email address (e.g. name@example.com).');
         return;
       }
       if (!cleanedPhone || cleanedPhone.length !== 10) {

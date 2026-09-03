@@ -190,7 +190,7 @@ export default function TermsPage() {
               4. Payment & Order Cancellation
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              Payments must be made through authorized electronic payment methods or Cash on Delivery where supported. If an order is cancelled by NUTFLIX due to unavoidable circumstances (such as pricing error or stock non-availability), any payment received will be refunded in accordance with our Return & Refund Policy.
+              Payments must be made through authorized electronic payment methods or Cash on Delivery where supported. Orders may only be cancelled prior to dispatch/shipping. If an order is cancelled by NUTFLIX due to unavoidable circumstances (such as pricing error or stock non-availability), any payment received will be refunded in accordance with our Cancellation Policy.
             </p>
           </div>
 
@@ -237,7 +237,7 @@ export default function TermsPage() {
             Privacy Policy
           </Link>
           <Link href="/refund-policy" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
-            Return & Refund Policy
+            Cancellation Policy
           </Link>
           <Link href="/shipping-policy" style={{ color: 'var(--color-forest)', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'underline' }}>
             Shipping & Delivery Policy

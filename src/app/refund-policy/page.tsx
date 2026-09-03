@@ -1,10 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { RotateCcw, Clock, Banknote, ShieldAlert, CheckCircle2, HelpCircle, Mail, Phone, MapPin, Globe } from 'lucide-react';
+import { Ban, Clock, CheckCircle2, HelpCircle, Phone, MapPin, Globe, AlertTriangle } from 'lucide-react';
 
 export const metadata = {
-  title: 'Return & Refund Policy | NUTFLIX - Quality Dry Fruits',
-  description: 'Return and Refund Policy for NUTFLIX (A Brand of Darshan Techno System). Quality dry fruits with prompt resolution and 48-hour refund processing.',
+  title: 'Cancellation Policy | NUTFLIX - Quality Dry Fruits',
+  description: 'Cancellation Policy for NUTFLIX (A Brand of Darshan Techno System). Orders can only be cancelled prior to dispatch and shipping.',
 };
 
 export default function RefundPolicyPage() {
@@ -42,14 +42,14 @@ export default function RefundPolicyPage() {
               border: '1px solid rgba(200, 157, 102, 0.3)',
             }}
           >
-            <RotateCcw size={16} />
-            <span>Customer Satisfaction</span>
+            <Ban size={16} />
+            <span>Order Guidelines</span>
           </div>
           <h1 style={{ fontSize: '2.8rem', fontWeight: 900, marginBottom: '1rem', letterSpacing: '-0.02em', color: '#ffffff' }}>
-            Return & Refund Policy
+            Cancellation Policy
           </h1>
           <p style={{ fontSize: '1.05rem', color: 'var(--color-cream)', lineHeight: '1.6', maxWidth: '640px', margin: '0 auto' }}>
-            Customer satisfaction is important to us. Clear guidelines for returns, replacements, and refunds.
+            Orders can only be cancelled prior to dispatch and shipping. Please review our guidelines below.
           </p>
           <div style={{ marginTop: '1.2rem', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
             Last Updated: {lastUpdated} • NUTFLIX (A Brand of Darshan Techno System)
@@ -81,10 +81,10 @@ export default function RefundPolicyPage() {
               <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
                 <Clock size={20} />
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Prompt Assistance</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Cancel Before Shipping</h3>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              Contact us promptly upon delivery if you receive a damaged, defective, or incorrect product.
+              You can cancel your order only before it is dispatched or shipped from our facility.
             </p>
           </div>
 
@@ -98,13 +98,13 @@ export default function RefundPolicyPage() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
-                <Banknote size={20} />
+              <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: '#fee2e2', color: '#b91c1c' }}>
+                <AlertTriangle size={20} />
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>48-Hour Initiation</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>No Post-Dispatch Cancellation</h3>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              Approved refunds are initiated within 48 hours of verification to your original payment mode.
+              Once shipped or out for delivery, orders cannot be cancelled or returned due to hygiene and food safety standards.
             </p>
           </div>
 
@@ -121,10 +121,10 @@ export default function RefundPolicyPage() {
               <div style={{ padding: '0.5rem', borderRadius: '12px', backgroundColor: 'var(--color-gold-light)', color: '#794d13' }}>
                 <CheckCircle2 size={20} />
               </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Customer Focused</h3>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-forest)' }}>Quick Payment Reversal</h3>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', lineHeight: '1.5' }}>
-              Dedicated support to ensure complete satisfaction with every dry fruit order.
+              Pre-shipping cancellations are processed and payment reversed to original method within 24-48 hours.
             </p>
           </div>
         </div>
@@ -143,74 +143,70 @@ export default function RefundPolicyPage() {
           {/* Core Official Policy Declaration Box */}
           <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.8rem', borderRadius: '16px', border: '1px solid var(--color-border)', marginBottom: '2.5rem' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              NUTFLIX Return & Refund Policy
+              NUTFLIX Cancellation Policy
             </h2>
             <p style={{ color: 'var(--color-forest)', fontSize: '1rem', fontWeight: 800, marginBottom: '0.75rem' }}>
-              Customer satisfaction is important to us.
+              Important Guidelines Regarding Order Cancellation:
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.7' }}>
               <p>
-                • If you receive a damaged, defective, incorrect or materially unsatisfactory product, please contact NUTFLIX promptly after delivery.
+                • <strong>Cancellation Before Shipping Only:</strong> Orders placed on NUTFLIX can only be cancelled before they have been shipped/dispatched from our facility.
               </p>
               <p>
-                • Eligible products should be returned in their original packaging, as far as reasonably possible.
+                • <strong>No Cancellation After Shipping:</strong> Once the parcel is dispatched or handed over to our courier/delivery partners, order cancellation is strictly not permitted.
               </p>
               <p>
-                • After receiving and verifying the returned material, the approved refund will be initiated within <strong>48 hours</strong>.
+                • <strong>Hygiene &amp; Consumable Goods:</strong> Dry fruits, nuts, and edible products are perishable and consumable food items. For health, quality, and hygiene reasons, returns are not accepted after dispatch or delivery.
               </p>
               <p>
-                • Refunds will normally be made through the original mode of payment. Any applicable bank or payment-gateway processing time may be additional.
-              </p>
-              <p>
-                • Products that have been substantially consumed, altered or damaged after delivery may not be eligible for return or refund.
+                • <strong>Payment Reversal:</strong> If an un-shipped order cancellation request is accepted, any prepaid payment will be initiated for reversal/refund to the original mode of payment within <strong>24 to 48 hours</strong>.
               </p>
             </div>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
             <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              1. How to Request a Return / Refund
+              1. How to Cancel Your Order (Prior to Dispatch)
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginBottom: '1rem' }}>
-              To report an issue with your order:
+              To cancel an order before it is dispatched:
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
               <div style={{ padding: '1.25rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '14px', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.1rem', marginBottom: '0.3rem' }}>Step 1</div>
-                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>Contact Support</div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Call or WhatsApp <strong>9330193041</strong> with your Order ID.</div>
+                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>Immediate Contact</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Call or WhatsApp <strong>9330193041</strong> with your Order ID before the package is shipped.</div>
               </div>
               <div style={{ padding: '1.25rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '14px', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.1rem', marginBottom: '0.3rem' }}>Step 2</div>
-                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>Verification</div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Provide photos/details of the damaged or incorrect item.</div>
+                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>Dispatch Status Check</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Our support team will verify if the parcel has been dispatched.</div>
               </div>
               <div style={{ padding: '1.25rem', backgroundColor: 'var(--color-cream-light)', borderRadius: '14px', border: '1px solid var(--color-border)' }}>
                 <div style={{ fontWeight: 900, color: 'var(--color-gold)', fontSize: '1.1rem', marginBottom: '0.3rem' }}>Step 3</div>
-                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>48h Initiation</div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Approved refund is initiated within 48 hours to original payment mode.</div>
+                <div style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', marginBottom: '0.3rem' }}>Cancellation Confirmation</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>Your order will be cancelled and payment reversed within 24–48 hours.</div>
               </div>
             </div>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
             <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              2. Eligibility Criteria
+              2. Cancellation Terms &amp; Restrictions
             </h2>
             <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li>Products that arrived defective, tampered, or damaged during transit.</li>
-              <li>Incorrect items delivered (wrong variant or quantity).</li>
-              <li>Items must be in their original packaging as far as reasonably possible.</li>
-              <li>Items substantially consumed or modified after delivery are non-returnable.</li>
+              <li>Orders are processed promptly to ensure quick delivery. Please submit cancellation requests as soon as possible after placing an order.</li>
+              <li>Once the order has been handed over for delivery / shipment, it cannot be recalled or cancelled.</li>
+              <li>NUTFLIX reserves the right to cancel any order due to unforeseen circumstances, stock unavailability, pricing inaccuracies, or unserviceable pin codes.</li>
             </ul>
           </div>
 
           <div style={{ marginBottom: '2.5rem' }}>
             <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              3. Refund Mode & Timelines
+              3. Payment Reversal for Pre-Shipping Cancellations
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              Approved refunds are initiated within 48 hours to the original mode of payment (UPI, Credit/Debit Card, Net Banking, or direct bank transfer for COD). Additional processing time may depend on your issuing bank or payment gateway.
+              For orders successfully cancelled before dispatch, the reversal of prepaid amounts is initiated within 24–48 hours to the original payment source (UPI, Credit/Debit Card, Net Banking). Bank processing times may take 3–7 business days.
             </p>
           </div>
 
@@ -218,10 +214,10 @@ export default function RefundPolicyPage() {
           <div style={{ padding: '1.5rem', borderRadius: '16px', backgroundColor: 'var(--color-cream-light)', border: '1px solid var(--color-border)' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <HelpCircle size={20} color="var(--color-gold)" />
-              <span>Returns & Refund Assistance</span>
+              <span>Order &amp; Cancellation Support</span>
             </h3>
             <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', lineHeight: '1.6', marginBottom: '1rem' }}>
-              Please reach out to our customer care desk for any return or refund support:
+              Need urgent help to cancel an un-shipped order? Please reach out to our customer care desk immediately:
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-forest)' }}>
               <div><strong>Brand:</strong> NUTFLIX (A Brand of Darshan Techno System)</div>
