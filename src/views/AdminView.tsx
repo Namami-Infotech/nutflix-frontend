@@ -23,7 +23,8 @@ import {
   Loader2,
   Plus,
   X,
-  Menu
+  Menu,
+  MessageSquare
 } from 'lucide-react';
 import { ImageCropperModal } from '@/components/ui/ImageCropperModal';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
@@ -55,7 +56,11 @@ import {
   getUserFromCookie,
   setUserCookie,
   setCookie,
-  formatPrice
+  formatPrice,
+  fetchEnquiries,
+  updateEnquiry,
+  deleteEnquiry,
+  Enquiry
 } from '@/lib/api';
 
 import AdminSidebar, { SidebarItem } from './AdminSidebar';
@@ -68,6 +73,7 @@ import NewOrdersView from './NewOrdersView';
 import DeliveredOrdersView from './DeliveredOrdersView';
 import CancelledOrdersView from './CancelledOrdersView';
 import PaymentsView from './PaymentsView';
+import EnquiriesView from './EnquiriesView';
 
 export default function AdminView() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -110,6 +116,7 @@ export default function AdminView() {
   const [banners, setBanners] = useState<any[]>([]);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [paymentTypesList, setPaymentTypesList] = useState<PaymentType[]>([]);
+  const [enquiriesList, setEnquiriesList] = useState<Enquiry[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   // Search Query
@@ -306,13 +313,14 @@ export default function AdminView() {
   const loadMasterData = async () => {
     setLoadingData(true);
     try {
-      const [ordersRes, productsRes, categoriesRes, bannersRes, usersRes, paymentTypesRes] = await Promise.all([
+      const [ordersRes, productsRes, categoriesRes, bannersRes, usersRes, paymentTypesRes, enquiriesRes] = await Promise.all([
         fetchAdminOrders(),
         fetchProducts({ includeInactive: true }),
         fetchCategories({ includeInactive: true }),
         fetchBanners({ includeInactive: true }),
         fetchUsers(),
-        fetchPaymentTypes()
+        fetchPaymentTypes(),
+        fetchEnquiries()
       ]);
       setOrders(ordersRes || []);
       setProducts(productsRes || []);
@@ -320,6 +328,7 @@ export default function AdminView() {
       setBanners(bannersRes || []);
       setUsersList(usersRes || []);
       setPaymentTypesList(paymentTypesRes || []);
+      setEnquiriesList(enquiriesRes || []);
     } catch (err) {
       console.error('Error loading master data:', err);
     } finally {
@@ -732,11 +741,57 @@ export default function AdminView() {
     }
   };
 
+  const handleUpdateEnquiryStatus = async (
+    id: number,
+    status: 'pending' | 'contacted' | 'resolved' | 'closed',
+    adminNotes?: string
+  ) => {
+    setEnquiriesList(prev =>
+      prev.map(e => (e.id === id ? { ...e, status, ...(adminNotes !== undefined ? { adminNotes } : {}) } : e))
+    );
+    const res = await updateEnquiry(id, { status, adminNotes });
+    if (res.success) {
+      showToast(`Inquiry status updated to ${status.toUpperCase()}`);
+    } else {
+      showToast(res.message || 'Failed to update enquiry status', 'error');
+    }
+  };
+
+  const handleDeleteEnquiry = (id: number) => {
+    const enq = enquiriesList.find(e => e.id === id);
+    setDeleteConfirmModal({
+      isOpen: true,
+      title: 'Delete Customer Inquiry',
+      itemName: enq ? `${enq.name} - ${enq.subject}` : `Inquiry #${id}`,
+      itemType: 'customer inquiry',
+      warningNote: 'This action will permanently remove this customer inquiry record.',
+      confirmText: 'Yes, Delete Inquiry',
+      onConfirm: async () => {
+        setDeleteConfirmModal(prev => ({ ...prev, isLoading: true }));
+        try {
+          const success = await deleteEnquiry(id);
+          if (success) {
+            showToast('Customer inquiry deleted successfully');
+            setEnquiriesList(prev => prev.filter(e => e.id !== id));
+            setDeleteConfirmModal(prev => ({ ...prev, isOpen: false, isLoading: false }));
+          } else {
+            showToast('Failed to delete inquiry', 'error');
+            setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+          }
+        } catch (err: any) {
+          showToast(err?.message || 'Failed to delete inquiry', 'error');
+          setDeleteConfirmModal(prev => ({ ...prev, isLoading: false }));
+        }
+      }
+    });
+  };
+
   // CALCULATIONS
   const totalOrdersCount = orders.length;
   const newOrdersList = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'returned');
   const deliveredOrdersList = orders.filter(o => o.status === 'delivered');
   const cancelledOrdersList = orders.filter(o => o.status === 'cancelled' || o.status === 'returned');
+  const pendingEnquiriesCount = enquiriesList.filter(e => e.status === 'pending').length;
 
   const totalRevenue = orders
     .filter(o => o.status !== 'cancelled' && o.status !== 'returned')
@@ -761,6 +816,7 @@ export default function AdminView() {
     { id: 'delivered_orders', label: 'Delivered Orders', icon: CheckCircle2, badge: null, color: '#10b981' },
     { id: 'cancelled_orders', label: 'Cancelled / Returned', icon: XCircle, badge: null, color: '#ef4444' },
     { id: 'payments', label: 'Payment Types', icon: CreditCard, badge: null },
+    { id: 'enquiries', label: 'Enquiries', icon: MessageSquare, badge: pendingEnquiriesCount > 0 ? pendingEnquiriesCount : null, color: '#f59e0b' },
   ];
 
   return (
@@ -1013,8 +1069,11 @@ export default function AdminView() {
                   deliveredCount={deliveredOrdersList.length}
                   cancelledCount={cancelledOrdersList.length}
                   totalRevenue={totalRevenue}
+                  enquiriesCount={enquiriesList.length}
+                  pendingEnquiriesCount={pendingEnquiriesCount}
                   recentOrders={orders}
                   onViewAllOrders={() => setActiveMenu('new_orders')}
+                  onViewEnquiries={() => setActiveMenu('enquiries')}
                 />
               )}
 
@@ -1115,6 +1174,15 @@ export default function AdminView() {
                   onTogglePaymentStatus={handleTogglePaymentStatus}
                   onStatusChange={handleStatusChange}
                   searchQuery={searchQuery}
+                />
+              )}
+
+              {activeMenu === 'enquiries' && (
+                <EnquiriesView
+                  enquiriesList={enquiriesList}
+                  searchQuery={searchQuery}
+                  onUpdateStatus={handleUpdateEnquiryStatus}
+                  onDeleteEnquiry={handleDeleteEnquiry}
                 />
               )}
             </div>

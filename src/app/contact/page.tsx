@@ -1,28 +1,52 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MapPin, Phone, Globe, MessageSquare, Clock, Send, CheckCircle2, ShieldCheck, Headphones, Award } from 'lucide-react';
+import { MapPin, Phone, Globe, MessageSquare, Clock, Send, CheckCircle2, ShieldCheck, Headphones, Award, AlertCircle } from 'lucide-react';
+import { createEnquiry, getUserFromCookie } from '@/lib/api';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    subject: '',
+    subject: 'Product Enquiries',
     message: '',
   });
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const user = getUserFromCookie();
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || user.name || '',
+        email: prev.email || user.email || '',
+        phone: prev.phone || user.phone || '',
+      }));
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
     setLoading(true);
-    setTimeout(() => {
+
+    try {
+      const res = await createEnquiry(formData);
+      if (res.success) {
+        setSubmitted(true);
+      } else {
+        setErrorMsg(res.message || 'Could not submit inquiry. Please check details and try again.');
+      }
+    } catch (err: any) {
+      setErrorMsg('Something went wrong. Please try again or reach us via phone / WhatsApp.');
+    } finally {
       setLoading(false);
-      setSubmitted(true);
-    }, 600);
+    }
   };
 
   return (
@@ -430,6 +454,26 @@ export default function ContactPage() {
                     }}
                   />
                 </div>
+
+                {errorMsg && (
+                  <div
+                    style={{
+                      padding: '0.75rem 1rem',
+                      borderRadius: '12px',
+                      backgroundColor: '#fef2f2',
+                      border: '1px solid #fca5a5',
+                      color: '#b91c1c',
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <AlertCircle size={18} color="#b91c1c" />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
 
                 <button
                   type="submit"

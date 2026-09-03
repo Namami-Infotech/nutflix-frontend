@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Users, Package, ShoppingBag, CheckCircle2, XCircle, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { Users, Package, ShoppingBag, CheckCircle2, XCircle, TrendingUp, ArrowUpRight, MessageSquare } from 'lucide-react';
 import { formatPrice } from '@/lib/api';
 
 interface DashboardViewProps {
@@ -12,8 +12,11 @@ interface DashboardViewProps {
   deliveredCount: number;
   cancelledCount: number;
   totalRevenue: number;
+  enquiriesCount?: number;
+  pendingEnquiriesCount?: number;
   recentOrders: any[];
   onViewAllOrders: () => void;
+  onViewEnquiries?: () => void;
 }
 
 // https://nutflix-frontend.vercel.app/dashboard
@@ -26,8 +29,11 @@ export default function DashboardView({
   deliveredCount,
   cancelledCount,
   totalRevenue,
+  enquiriesCount = 0,
+  pendingEnquiriesCount = 0,
   recentOrders,
-  onViewAllOrders
+  onViewAllOrders,
+  onViewEnquiries
 }: DashboardViewProps) {
   const cards = [
     {
@@ -36,7 +42,8 @@ export default function DashboardView({
       subtext: `${newOrdersCount} New Orders Pending`,
       icon: ShoppingBag,
       bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-      color: '#fff'
+      color: '#fff',
+      onClick: onViewAllOrders,
     },
     {
       title: 'Fulfilled Deliveries',
@@ -44,7 +51,16 @@ export default function DashboardView({
       subtext: 'Successfully Completed',
       icon: CheckCircle2,
       bg: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
-      color: '#fff'
+      color: '#fff',
+    },
+    {
+      title: 'Customer Inquiries',
+      value: enquiriesCount,
+      subtext: `${pendingEnquiriesCount} New Pending Inquiries`,
+      icon: MessageSquare,
+      bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      color: '#fff',
+      onClick: onViewEnquiries,
     },
     {
       title: 'Active Products',
@@ -52,15 +68,15 @@ export default function DashboardView({
       subtext: 'Live Catalog Items',
       icon: Package,
       bg: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-      color: '#fff'
+      color: '#fff',
     },
     {
       title: 'Total Sales Revenue',
       value: `₹${formatPrice(totalRevenue)}`,
       subtext: 'Active Revenue Stream',
       icon: TrendingUp,
-      bg: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-      color: '#fff'
+      bg: 'linear-gradient(135deg, #0f291e 0%, #1a4332 100%)',
+      color: '#fff',
     },
     {
       title: 'Total Users',
@@ -68,7 +84,7 @@ export default function DashboardView({
       subtext: 'Active Registered Base',
       icon: Users,
       bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-      color: '#fff'
+      color: '#fff',
     },
     {
       title: 'Cancelled / Returned',
@@ -76,7 +92,7 @@ export default function DashboardView({
       subtext: 'Order Exception Count',
       icon: XCircle,
       bg: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-      color: '#fff'
+      color: '#fff',
     }
   ];
 
@@ -89,6 +105,7 @@ export default function DashboardView({
           return (
             <div
               key={idx}
+              onClick={card.onClick}
               style={{
                 background: card.bg,
                 color: card.color,
@@ -100,7 +117,9 @@ export default function DashboardView({
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                minHeight: '92px'
+                minHeight: '92px',
+                cursor: card.onClick ? 'pointer' : 'default',
+                transition: 'transform 0.18s ease',
               }}
             >
               <div style={{ position: 'absolute', top: '-10px', right: '-10px', width: '65px', height: '65px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.12)', pointerEvents: 'none' }} />

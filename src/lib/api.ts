@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType, Address } from '@/types';
+import { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType, Address, Enquiry } from '@/types';
 
-export type { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType, Address };
+export type { Category, Product, ImpactMetric, Review, OrderData, MasterBanner, PaymentType, Address, Enquiry };
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
@@ -1390,6 +1390,118 @@ export async function setDefaultAddress(id: number): Promise<Address | null> {
   }
 
   return updateAddress(id, { isDefault: true });
+}
+
+// ================= ENQUIRIES API =================
+export async function createEnquiry(data: {
+  name: string;
+  email: string;
+  phone: string;
+  subject?: string;
+  message: string;
+}): Promise<{ success: boolean; message: string; data?: Enquiry }> {
+  try {
+    const res = await api.post('/enquiries', data);
+    if (res.data) {
+      invalidateApiCache('enquiries');
+      return {
+        success: true,
+        message: res.data.message || 'Inquiry submitted successfully!',
+        data: res.data.data,
+      };
+    }
+  } catch (err: any) {
+    console.warn('API error submitting enquiry:', err);
+    return {
+      success: false,
+      message: err.response?.data?.message || 'Failed to submit inquiry. Please try again.',
+    };
+  }
+  return { success: false, message: 'Failed to submit inquiry.' };
+}
+
+export async function fetchEnquiries(): Promise<Enquiry[]> {
+  try {
+    const res = await api.get('/enquiries');
+    if (res.data && res.data.data) {
+      const data: Enquiry[] = res.data.data;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('nutflix_admin_enquiries', JSON.stringify(data));
+      }
+      return data;
+    }
+  } catch (err) {
+    console.warn('API error fetching enquiries, using cached fallback:', err);
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('nutflix_admin_enquiries');
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+  }
+
+  return [];
+}
+
+export async function updateEnquiry(
+  id: number,
+  data: { status?: 'pending' | 'contacted' | 'resolved' | 'closed'; adminNotes?: string }
+): Promise<{ success: boolean; data?: Enquiry; message?: string }> {
+  try {
+    const res = await api.patch(`/enquiries/${id}`, data);
+    if (res.data && res.data.data) {
+      invalidateApiCache('enquiries');
+      return { success: true, data: res.data.data };
+    }
+  } catch (err: any) {
+    console.warn('API error updating enquiry:', err);
+  }
+
+  // Fallback update
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('nutflix_admin_enquiries');
+      if (cached) {
+        const list: Enquiry[] = JSON.parse(cached);
+        const idx = list.findIndex((e) => e.id === id);
+        if (idx !== -1) {
+          list[idx] = { ...list[idx], ...data, updatedAt: new Date().toISOString() };
+          localStorage.setItem('nutflix_admin_enquiries', JSON.stringify(list));
+          return { success: true, data: list[idx] };
+        }
+      }
+    } catch (e) {}
+  }
+
+  return { success: false, message: 'Failed to update enquiry.' };
+}
+
+export async function deleteEnquiry(id: number): Promise<boolean> {
+  try {
+    const res = await api.delete(`/enquiries/${id}`);
+    if (res.data) {
+      invalidateApiCache('enquiries');
+      return true;
+    }
+  } catch (err) {
+    console.warn('API error deleting enquiry:', err);
+  }
+
+  // Fallback delete
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('nutflix_admin_enquiries');
+      if (cached) {
+        let list: Enquiry[] = JSON.parse(cached);
+        list = list.filter((e) => e.id !== id);
+        localStorage.setItem('nutflix_admin_enquiries', JSON.stringify(list));
+        return true;
+      }
+    } catch (e) {}
+  }
+
+  return true;
 }
 
 

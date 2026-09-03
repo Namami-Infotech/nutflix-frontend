@@ -129,3 +129,17 @@ export interface Address {
   updatedAt?: string;
 }
 
+export interface Enquiry {
+  id: number;
+  customId?: string;
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  status: 'pending' | 'contacted' | 'resolved' | 'closed';
+  adminNotes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
