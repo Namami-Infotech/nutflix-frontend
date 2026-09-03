@@ -816,7 +816,7 @@ export default function AdminView() {
     { id: 'delivered_orders', label: 'Delivered Orders', icon: CheckCircle2, badge: null, color: '#10b981' },
     { id: 'cancelled_orders', label: 'Cancelled / Returned', icon: XCircle, badge: null, color: '#ef4444' },
     { id: 'payments', label: 'Payment Types', icon: CreditCard, badge: null },
-    { id: 'enquiries', label: 'Enquiries', icon: MessageSquare, badge: pendingEnquiriesCount > 0 ? pendingEnquiriesCount : null, color: '#f59e0b' },
+    { id: 'enquiries', label: 'Enquiries', icon: MessageSquare, badge: null, color: '#f59e0b' },
   ];
 
   return (
