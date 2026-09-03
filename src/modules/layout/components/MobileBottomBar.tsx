@@ -17,13 +17,43 @@ export const MobileBottomBar: React.FC = () => {
     setIsAdmin(user?.role?.toLowerCase() === 'admin');
   }, []);
 
+  const isOrdersActive =
+    pathname === '/my-orders' ||
+    Boolean(pathname?.startsWith('/profile')) ||
+    Boolean(pathname?.startsWith('/orders'));
+
   const navItems = [
-    { label: 'Home', href: '/', icon: Home },
-    { label: 'Shop All', href: '/products', icon: ShoppingCart },
-    { label: 'Categories', href: '/categories/cashews-nuts', icon: Package },
+    {
+      label: 'Home',
+      href: '/',
+      icon: Home,
+      isActive: pathname === '/',
+    },
+    {
+      label: 'Shop All',
+      href: '/products',
+      icon: ShoppingCart,
+      isActive: Boolean(pathname?.startsWith('/products')),
+    },
+    {
+      label: 'Categories',
+      href: '/categories/cashews-nuts',
+      icon: Package,
+      isActive: Boolean(pathname?.startsWith('/categories')),
+    },
     isAdmin
-      ? { label: 'Admin', href: '/admin', icon: ShieldCheck }
-      : { label: 'My Orders', href: '/my-orders', icon: User },
+      ? {
+          label: 'Admin',
+          href: '/admin',
+          icon: ShieldCheck,
+          isActive: Boolean(pathname?.startsWith('/admin')),
+        }
+      : {
+          label: 'My Orders',
+          href: '/my-orders',
+          icon: User,
+          isActive: Boolean(isOrdersActive),
+        },
   ];
 
   return (
@@ -53,7 +83,7 @@ export const MobileBottomBar: React.FC = () => {
       >
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = item.isActive;
 
           return (
             <Link

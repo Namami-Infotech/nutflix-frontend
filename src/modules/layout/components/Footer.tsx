@@ -69,7 +69,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Mobile Quick Navigation */}
-        <div className="mobile-footer-nav container" style={{ display: 'none', marginBottom: '2.5rem' }}>
+        {/* <div className="mobile-footer-nav container" style={{ display: 'none', marginBottom: '2.5rem' }}>
           <div
             style={{
               backgroundColor: '#ffffff',
@@ -97,7 +97,7 @@ export const Footer: React.FC = () => {
               </Link>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Main Desktop/Tablet Footer Grid */}
         <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2.5rem', marginBottom: '3rem' }}>
