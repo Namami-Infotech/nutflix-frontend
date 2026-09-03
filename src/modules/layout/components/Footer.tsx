@@ -159,7 +159,7 @@ export const Footer: React.FC = () => {
               <li><Link href="/about" style={{ color: '#a0b0a4' }}>About Us</Link></li>
               <li><Link href="/contact" style={{ color: '#a0b0a4' }}>Contact Us</Link></li>
               <li><Link href="/products" style={{ color: '#a0b0a4' }}>Shop All Produce</Link></li>
-              <li><Link href="/categories/cashews-nuts" style={{ color: '#a0b0a4' }}>Cashews &amp; Nuts</Link></li>
+              <li><Link href="/categories/cashews-nuts" style={{ color: '#a0b0a4' }}>Categories</Link></li>
               {isAdmin && (
                 <li><Link href="/admin" style={{ color: '#f59e0b', fontWeight: 700 }}>Admin Dashboard</Link></li>
               )}
