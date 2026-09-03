@@ -701,6 +701,10 @@ export default function AdminView() {
 
   const handleDeleteUser = (id: number) => {
     const usr = usersList.find(u => u.id === id);
+    if (usr?.role === 'admin') {
+      showToast('Admin accounts cannot be deactivated', 'error');
+      return;
+    }
     setDeleteConfirmModal({
       isOpen: true,
       title: 'Deactivate User Account',

@@ -162,16 +162,19 @@ export default function UsersView({ usersList, searchQuery, onDeleteUser, onTogg
                     <td style={{ padding: '0.55rem 0.75rem', borderTopRightRadius: '8px', borderBottomRightRadius: '8px' }}>
                       {!isInactive && (
                         <button
-                          onClick={() => onDeleteUser(usr.id)}
+                          disabled={isAdmin}
+                          onClick={() => !isAdmin && onDeleteUser(usr.id)}
+                          title={isAdmin ? 'Admin accounts cannot be deactivated' : 'Deactivate user'}
                           style={{
                             padding: '0.3rem 0.6rem',
-                            backgroundColor: '#fee2e2',
-                            border: '1px solid #fca5a5',
+                            backgroundColor: isAdmin ? '#f1f5f9' : '#fee2e2',
+                            border: `1px solid ${isAdmin ? '#e2e8f0' : '#fca5a5'}`,
                             borderRadius: '6px',
-                            cursor: 'pointer',
+                            cursor: isAdmin ? 'not-allowed' : 'pointer',
                             fontWeight: 700,
                             fontSize: '0.75rem',
-                            color: '#ef4444',
+                            color: isAdmin ? '#94a3b8' : '#ef4444',
+                            opacity: isAdmin ? 0.6 : 1,
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.25rem'
