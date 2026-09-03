@@ -106,13 +106,13 @@ export const ProductReviews: React.FC<Props> = ({
           <h3 className="reviews-title">Customer Ratings & Reviews</h3>
           <p className="reviews-subtitle">Real feedback from verified buyers of {productName}</p>
         </div>
-        <button
+        {/* <button
           onClick={() => setShowForm(!showForm)}
           className="btn-primary write-review-toggle-btn"
         >
           <MessageSquare size={16} />
           <span>{showForm ? 'Cancel Review' : 'Write a Review'}</span>
-        </button>
+        </button> */}
       </div>
 
       {/* Summary Box & Stats */}
