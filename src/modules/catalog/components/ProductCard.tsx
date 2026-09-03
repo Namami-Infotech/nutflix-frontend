@@ -17,7 +17,7 @@ const FALLBACK_IMG = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d
 
 export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
   const [mounted, setMounted] = useState(false);
-  const { items, addToCart, updateQuantity, openCart } = useCart();
+  const { items, addToCart, updateQuantity } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
 
@@ -35,37 +35,6 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
     <div className="product-card">
       {/* Product Image Container */}
       <div className="product-card-image-wrapper">
-        {cartQty > 0 && (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openCart();
-            }}
-            style={{
-              position: 'absolute',
-              top: '12px',
-              left: '12px',
-              backgroundColor: 'var(--color-forest)',
-              color: '#ffffff',
-              fontSize: '0.78rem',
-              fontWeight: 800,
-              padding: '0.35rem 0.75rem',
-              borderRadius: '20px',
-              boxShadow: '0 4px 10px rgba(0,0,0,0.18)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              zIndex: 10,
-              border: '1px solid rgba(255,255,255,0.25)',
-              cursor: 'pointer',
-            }}
-            title="Click to view Cart"
-          >
-            <ShoppingCart size={13} color="var(--color-gold)" />
-            <span>{cartQty} in Cart</span>
-          </button>
-        )}
 
         {/* Top-Right Discount % Badge */}
         {hasDiscount && (
