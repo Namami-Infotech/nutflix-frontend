@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const res = await axios.get(`${backendUrl}/payment/razorpay/key`);
     return NextResponse.json(res.data);
   } catch (error) {
-    const keyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_RqJtOyGfDiW0vw';
+    const keyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
     return NextResponse.json({
       success: true,
       data: { keyId },

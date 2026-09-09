@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Product, fetchCartApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi, syncCartApi, getAuthToken } from '@/lib/api';
+import { Product, fetchCartApi, addToCartApi, updateCartQuantityApi, removeFromCartApi, clearCartApi, syncCartApi, getAuthToken, getProductPrices } from '@/lib/api';
 import { useAuth } from '@/modules/auth';
 
 export interface CartItem {
@@ -42,6 +42,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: dbItem.productId || dbItem.id,
           name: dbItem.name,
           price: String(dbItem.price),
+          sellingPrice: dbItem.sellingPrice !== undefined && dbItem.sellingPrice !== null ? String(dbItem.sellingPrice) : undefined,
           imageUrl: dbItem.imageUrl,
           weight: dbItem.weight || '250g',
           slug: dbItem.slug || '',
@@ -120,10 +121,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = items.reduce((acc, item) => {
-    const effPrice = (item.product.sellingPrice && parseFloat(String(item.product.sellingPrice)) > 0)
-      ? parseFloat(String(item.product.sellingPrice))
-      : (parseFloat(item.product.price) || 0);
-    return acc + effPrice * item.quantity;
+    const { currentPrice } = getProductPrices(item.product);
+    return acc + currentPrice * item.quantity;
   }, 0);
 
   return (

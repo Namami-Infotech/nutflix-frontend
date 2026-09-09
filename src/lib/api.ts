@@ -527,9 +527,9 @@ export async function getRazorpayKey(): Promise<string> {
       return res.data.data.keyId;
     }
   } catch (e) {
-    console.warn('Failed to fetch Razorpay key from backend, using fallback.');
+    console.warn('Failed to fetch Razorpay key from backend.');
   }
-  return process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_RqJtOyGfDiW0vw';
+  return process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || '';
 }
 
 export async function createRazorpayOrder(orderParams: {

@@ -238,8 +238,13 @@ export const CheckoutForm: React.FC = () => {
     loadPayments();
   }, []);
 
-  const shippingCost = subtotal >= 30 ? 0 : 3.99;
-  const totalAmount = subtotal + shippingCost;
+  const shippingCost = 0;
+  const itemsSubtotal = items.reduce((acc, item) => {
+    const { currentPrice } = getProductPrices(item.product);
+    return acc + currentPrice * item.quantity;
+  }, 0);
+  const effectiveSubtotal = itemsSubtotal > 0 ? itemsSubtotal : subtotal;
+  const totalAmount = effectiveSubtotal + shippingCost;
   const isOnlineActive = paymentTypes.some((t) => t.code === 'online');
   const isCashActive = paymentTypes.some((t) => t.code === 'cash');
 
@@ -331,7 +336,13 @@ export const CheckoutForm: React.FC = () => {
       }
 
       const rzpOrderData = orderRes.data || orderRes;
-      const keyId = rzpOrderData.keyId || (await getRazorpayKey()) || 'rzp_test_RqJtOyGfDiW0vw';
+      const keyId = rzpOrderData.keyId || (await getRazorpayKey());
+
+      if (!keyId) {
+        setLoading(false);
+        setErrorMessage('Payment gateway is not properly configured. Missing Razorpay Key ID.');
+        return;
+      }
 
       // 2. Configure Razorpay Standard Checkout options with prefilled details
       const options = {
@@ -1058,7 +1069,7 @@ export const CheckoutForm: React.FC = () => {
           <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.88rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-muted)' }}>
               <span>Subtotal</span>
-              <span>₹{formatPrice(subtotal)}</span>
+              <span>₹{formatPrice(effectiveSubtotal)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-muted)' }}>
               <span>Shipping</span>
