@@ -19,6 +19,7 @@ export const ProductDetailModal: React.FC<Props> = ({ product, isOpen = true, on
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
   const [paymentModesText, setPaymentModesText] = useState('Online / UPI, Cash on Delivery');
+  const [showFullDesc, setShowFullDesc] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -101,9 +102,46 @@ export const ProductDetailModal: React.FC<Props> = ({ product, isOpen = true, on
               </div>
             </div>
 
-            <p style={{ fontSize: '0.88rem', color: 'var(--color-text-muted)', lineHeight: '1.55', marginBottom: '1rem' }}>
-              {product.description}
-            </p>
+            {product.description && (
+              <div style={{ marginBottom: '1rem' }}>
+                <p
+                  style={{
+                    fontSize: '0.88rem',
+                    color: 'var(--color-text-muted)',
+                    lineHeight: '1.55',
+                    margin: 0,
+                    marginBottom: (product.description.length > 140) ? '0.35rem' : '0',
+                    display: showFullDesc ? 'block' : '-webkit-box',
+                    WebkitLineClamp: product.description.length > 140 && !showFullDesc ? 3 : undefined,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: product.description.length > 140 && !showFullDesc ? 'hidden' : 'visible',
+                  }}
+                >
+                  {product.description}
+                </p>
+                {product.description.length > 140 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFullDesc(!showFullDesc)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      color: 'var(--color-gold-dark, #b45309)',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    {showFullDesc ? 'View less' : 'View more'}
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Impact Box */}
             <div

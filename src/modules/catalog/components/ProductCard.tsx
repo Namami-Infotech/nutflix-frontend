@@ -17,6 +17,7 @@ const FALLBACK_IMG = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d
 
 export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
   const [mounted, setMounted] = useState(false);
+  const [showFullDesc, setShowFullDesc] = useState(false);
   const { items, addToCart, updateQuantity } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
@@ -30,6 +31,8 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
 
   const productUrl = `/products/${product.slug || product.id}`;
   const { regularPrice, currentPrice, hasDiscount, discountPercent } = getProductPrices(product);
+  const descText = product.description || '';
+  const isLongDesc = descText.length > 70;
 
   return (
     <div className="product-card">
@@ -68,6 +71,7 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             fallbackSrc={FALLBACK_IMG}
             alt={product.name}
             className="product-card-image"
+            objectFit="cover"
             style={{ cursor: 'pointer' }}
           />
         </Link>
@@ -112,9 +116,48 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             </span>
           </div>
 
-          <Link href={productUrl} style={{ textDecoration: 'none', display: 'block' }}>
-            <p className="product-desc" style={{ cursor: 'pointer' }}>{product.description}</p>
-          </Link>
+          {descText && (
+            <div style={{ marginBottom: '0.6rem' }}>
+              <Link href={productUrl} style={{ textDecoration: 'none', display: 'block' }}>
+                <p
+                  className={showFullDesc ? 'product-desc-expanded' : 'product-desc'}
+                  style={{
+                    cursor: 'pointer',
+                    margin: 0,
+                    marginBottom: isLongDesc ? '0.25rem' : '0',
+                    ...(showFullDesc ? { display: 'block', overflow: 'visible' } : {})
+                  }}
+                >
+                  {descText}
+                </p>
+              </Link>
+              {isLongDesc && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowFullDesc(!showFullDesc);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    color: 'var(--color-gold-dark, #b45309)',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  {showFullDesc ? 'View less' : 'View more'}
+                </button>
+              )}
+            </div>
+          )}
 
         </div>
 
@@ -253,9 +296,11 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
         .product-card-image-wrapper {
           position: relative;
           width: 100%;
-          height: 220px;
+          aspect-ratio: 1 / 1;
+          height: auto;
           background-color: var(--color-bg-light);
           overflow: hidden;
+          display: block;
         }
 
         .product-card-image {
@@ -263,6 +308,11 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           height: 100%;
           object-fit: cover;
           display: block;
+          transition: transform 0.25s ease;
+        }
+
+        .product-card:hover .product-card-image {
+          transform: scale(1.03);
         }
 
         .product-origin-badge {
@@ -283,7 +333,7 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
         }
 
         .product-card-body {
-          padding: 1.1rem;
+          padding: 0.85rem 1rem 1rem;
           flex: 1;
           display: flex;
           flex-direction: column;
@@ -323,14 +373,21 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
         .product-desc {
           font-size: 0.8rem;
           color: var(--color-text-muted);
-          margin-bottom: 0.6rem;
+          margin-bottom: 0.4rem;
+          line-height: 1.45;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
 
-
+        .product-desc-expanded {
+          font-size: 0.8rem;
+          color: var(--color-text-muted);
+          margin-bottom: 0.4rem;
+          line-height: 1.45;
+          display: block;
+        }
 
         .product-card-footer {
           display: flex;
@@ -360,7 +417,8 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
 
         @media (max-width: 640px) {
           .product-card-image-wrapper {
-            height: 155px;
+            aspect-ratio: 1 / 1;
+            height: auto;
           }
           .product-card-body {
             padding: 0.75rem;
@@ -370,7 +428,8 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
             margin-bottom: 0.3rem;
           }
           .product-desc {
-            display: none;
+            font-size: 0.75rem;
+            line-height: 1.35;
           }
 
           .price-main {

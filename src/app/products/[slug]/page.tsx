@@ -28,6 +28,7 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [showFullDesc, setShowFullDesc] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -168,15 +169,46 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '4rem', alignItems: 'flex-start' }}>
         {/* Product Gallery Left */}
         <div>
-          <div style={{ borderRadius: '24px', overflow: 'hidden', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)', position: 'relative', height: '440px' }}>
+          <div
+            style={{
+              borderRadius: '24px',
+              overflow: 'hidden',
+              border: '1px solid var(--color-border)',
+              boxShadow: 'var(--shadow-sm)',
+              position: 'relative',
+              width: '100%',
+              aspectRatio: '1 / 1',
+              backgroundColor: 'var(--color-bg-light)',
+            }}
+          >
             <OptimizedImage
               src={product.imageUrl}
               alt={product.name}
               priority={true}
-              style={{ width: '100%', height: '440px', objectFit: 'cover', filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none' }}
+              objectFit="cover"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                filter: isOutOfStock ? 'grayscale(35%) opacity(0.85)' : 'none',
+              }}
             />
             {hasDiscount && !isOutOfStock && (
-              <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', backgroundColor: '#15803d', color: '#ffffff', fontSize: '0.85rem', fontWeight: 900, padding: '0.35rem 0.85rem', borderRadius: '20px', boxShadow: '0 4px 12px rgba(21,128,61,0.35)', zIndex: 5 }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '1.25rem',
+                  right: '1.25rem',
+                  backgroundColor: '#15803d',
+                  color: '#ffffff',
+                  fontSize: '0.85rem',
+                  fontWeight: 900,
+                  padding: '0.35rem 0.85rem',
+                  borderRadius: '20px',
+                  boxShadow: '0 4px 12px rgba(21,128,61,0.35)',
+                  zIndex: 5,
+                }}
+              >
                 {discountPercent}% OFF
               </div>
             )}
@@ -251,9 +283,46 @@ export default function ProductDetailPage({ params }: { params?: { slug?: string
             </div>
           </div>
 
-          <p style={{ fontSize: '1rem', color: 'var(--color-text-muted)', lineHeight: '1.7', marginBottom: '1.5rem' }}>
-            {product.description}
-          </p>
+          {product.description && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p
+                style={{
+                  fontSize: '1rem',
+                  color: 'var(--color-text-muted)',
+                  lineHeight: '1.7',
+                  margin: 0,
+                  marginBottom: (product.description.length > 180) ? '0.4rem' : '0',
+                  display: showFullDesc ? 'block' : '-webkit-box',
+                  WebkitLineClamp: product.description.length > 180 && !showFullDesc ? 3 : undefined,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: product.description.length > 180 && !showFullDesc ? 'hidden' : 'visible',
+                }}
+              >
+                {product.description}
+              </p>
+              {product.description.length > 180 && (
+                <button
+                  type="button"
+                  onClick={() => setShowFullDesc(!showFullDesc)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontSize: '0.88rem',
+                    fontWeight: 800,
+                    color: 'var(--color-gold-dark, #b45309)',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  {showFullDesc ? 'View less' : 'View more'}
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Action Row */}
           <div className="product-action-row">

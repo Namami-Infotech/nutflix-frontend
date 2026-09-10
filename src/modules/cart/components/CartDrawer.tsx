@@ -205,10 +205,13 @@ export const CartDrawer: React.FC = () => {
                       <OptimizedImage
                         src={item.product.imageUrl}
                         alt={item.product.name}
+                        objectFit="contain"
                         style={{
                           width: '100%',
                           height: '100%',
-                          objectFit: 'cover',
+                          objectFit: 'contain',
+                          backgroundColor: '#ffffff',
+                          padding: '2px',
                         }}
                       />
                     </div>
