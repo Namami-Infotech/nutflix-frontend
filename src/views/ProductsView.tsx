@@ -344,12 +344,12 @@ export default function ProductsView({
                     <td style={{ padding: '0.55rem 0.75rem', borderTopRightRadius: '8px', borderBottomRightRadius: '8px' }}>
                       <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                         {/* Edit Button commented out as requested */}
-                        {/* <button
+                        <button
                           onClick={() => onEditProduct && onEditProduct(prod)}
                           style={{ padding: '0.3rem 0.6rem', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                         >
                           <Edit size={13} /> Edit
-                        </button> */}
+                        </button>
 
                         {isInactive ? (
                           onActivateProduct && (
