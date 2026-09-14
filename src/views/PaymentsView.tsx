@@ -634,6 +634,28 @@ export default function PaymentsView({
                               Txn: {ord.transactionId || ord.razorpayPaymentId || ord.paymentMethod?.match(/pay_[a-zA-Z0-9]+/)?.[0] || ord.paymentMethod}
                             </span>
                           )}
+                          {ord.paymentScreenshot && (
+                            <a
+                              href={ord.paymentScreenshot}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                backgroundColor: '#eff6ff',
+                                color: '#1d4ed8',
+                                border: '1px solid #bfdbfe',
+                                padding: '0.12rem 0.45rem',
+                                borderRadius: '4px',
+                                fontWeight: 700,
+                                fontSize: '0.66rem',
+                                textDecoration: 'none',
+                              }}
+                            >
+                              📸 View QR Receipt
+                            </a>
+                          )}
                         </div>
                       </td>
                       <td style={{ padding: '0.55rem 0.75rem' }}>

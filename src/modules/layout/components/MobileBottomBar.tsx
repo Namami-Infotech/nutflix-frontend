@@ -14,7 +14,7 @@ export const MobileBottomBar: React.FC = () => {
 
   useEffect(() => {
     const user = getUserFromCookie();
-    setIsAdmin(user?.role?.toLowerCase() === 'admin');
+    setIsAdmin(String(user?.role || '').toLowerCase() === 'admin');
   }, []);
 
   const isOrdersActive =

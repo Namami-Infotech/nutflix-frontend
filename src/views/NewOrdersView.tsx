@@ -21,7 +21,15 @@ export default function NewOrdersView({
   const [statusTab, setStatusTab] = useState<OrderStatusTab>('all');
   const pageSize = 5;
 
-  const allOrdersList = orders || [];
+  const isQrOrder = (o: any) => Boolean(
+    o?.paymentScreenshot ||
+    (o?.paymentMethod && o.paymentMethod.toLowerCase().includes('qr')) ||
+    o?.paymentType === 'qr'
+  );
+  const isUnverifiedQr = (o: any) => isQrOrder(o) && (o?.status === 'pending' || !o?.status);
+
+  // Unverified QR orders must not appear in All Orders table until verified by admin
+  const allOrdersList = (orders || []).filter(o => !isUnverifiedQr(o));
 
   const confirmedCount = allOrdersList.filter(o => o?.status === 'confirmed' || o?.status === 'pending').length;
   const processingCount = allOrdersList.filter(o => o?.status === 'processing' || o?.status === 'packed').length;
@@ -181,6 +189,28 @@ export default function NewOrdersView({
                         >
                           Txn: {ord.transactionId || ord.razorpayPaymentId || ord.paymentMethod.match(/pay_[a-zA-Z0-9]+/)?.[0] || ord.paymentMethod}
                         </span>
+                      )}
+                      {ord.paymentScreenshot && (
+                        <a
+                          href={ord.paymentScreenshot}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            backgroundColor: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '1px solid #bfdbfe',
+                            padding: '0.12rem 0.45rem',
+                            borderRadius: '4px',
+                            fontWeight: 700,
+                            fontSize: '0.66rem',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          📸 View QR Screenshot
+                        </a>
                       )}
                     </div>
                   </td>

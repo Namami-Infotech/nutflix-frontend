@@ -209,6 +209,30 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({ order, isO
                   Txn: {order.transactionId || order.razorpayPaymentId || order.paymentMethod.match(/pay_[a-zA-Z0-9]+/)?.[0]}
                 </div>
               )}
+              {order.paymentScreenshot && (
+                <div style={{ marginTop: '4px' }}>
+                  <a
+                    href={order.paymentScreenshot}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      color: '#1d4ed8',
+                      backgroundColor: '#eff6ff',
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '4px',
+                      border: '1px solid #bfdbfe',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    📸 View Payment Receipt
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 

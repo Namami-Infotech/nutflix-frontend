@@ -5,6 +5,7 @@ import { useCart } from '@/modules/cart';
 import {
   submitOrder,
   fetchPaymentTypes,
+  uploadImage,
   PaymentType,
   Address,
   fetchMyAddresses,
@@ -39,6 +40,10 @@ import {
   Trash2,
   Check,
   X,
+  QrCode,
+  UploadCloud,
+  Eye,
+  ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -78,6 +83,33 @@ export const CheckoutForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [orderComplete, setOrderComplete] = useState<any | null>(null);
+
+  // Pay with QR Code Screenshot & UTR States
+  const [qrScreenshotFile, setQrScreenshotFile] = useState<File | null>(null);
+  const [qrScreenshotPreview, setQrScreenshotPreview] = useState<string>('');
+  const [qrTransactionId, setQrTransactionId] = useState<string>('');
+  const [uploadingQrScreenshot, setUploadingQrScreenshot] = useState<boolean>(false);
+
+  const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('Screenshot file size exceeds 10MB limit.', 'error');
+        return;
+      }
+      setQrScreenshotFile(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setQrScreenshotPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveScreenshot = () => {
+    setQrScreenshotFile(null);
+    setQrScreenshotPreview('');
+  };
 
   // Address Selection & Dialog Modal States
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
@@ -247,6 +279,7 @@ export const CheckoutForm: React.FC = () => {
   const totalAmount = effectiveSubtotal + shippingCost;
   const isOnlineActive = paymentTypes.some((t) => t.code === 'online');
   const isCashActive = paymentTypes.some((t) => t.code === 'cash');
+  const isQrActive = paymentTypes.some((t) => t.code === 'qr') || paymentTypes.length === 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -301,6 +334,54 @@ export const CheckoutForm: React.FC = () => {
       } catch (err: any) {
         setLoading(false);
         setErrorMessage(err?.message || 'Error processing COD order.');
+      }
+      return;
+    }
+
+    // Pay with QR Code Checkout Flow
+    if (selectedPayment === 'qr') {
+      if (!qrScreenshotFile) {
+        setErrorMessage('Please upload your payment screenshot to verify payment.');
+        showToast('Please upload your payment screenshot.', 'error');
+        return;
+      }
+
+      setLoading(true);
+      setUploadingQrScreenshot(true);
+
+      try {
+        // 1. Upload screenshot to backend/uploads/QR
+        const uploadRes = await uploadImage(qrScreenshotFile, 'QR');
+        if (!uploadRes.success || !uploadRes.url) {
+          setLoading(false);
+          setUploadingQrScreenshot(false);
+          setErrorMessage(uploadRes.message || 'Failed to upload payment screenshot. Please try again.');
+          showToast(uploadRes.message || 'Failed to upload screenshot.', 'error');
+          return;
+        }
+
+        // 2. Submit order with QR payment and screenshot URL
+        const res = await submitOrder({
+          ...orderPayload,
+          paymentType: 'qr',
+          paymentMethod: 'Pay with QR Code',
+          transactionId: qrTransactionId.trim() || undefined,
+          paymentScreenshot: uploadRes.url,
+        });
+
+        setLoading(false);
+        setUploadingQrScreenshot(false);
+
+        if (res.success && res.data) {
+          setOrderComplete(res.data);
+          clearCart();
+        } else {
+          setErrorMessage(res.message || 'Failed to place QR Code order.');
+        }
+      } catch (err: any) {
+        setLoading(false);
+        setUploadingQrScreenshot(false);
+        setErrorMessage(err?.message || 'Error processing QR Code payment order.');
       }
       return;
     }
@@ -465,11 +546,58 @@ export const CheckoutForm: React.FC = () => {
                 borderRadius: '12px',
                 fontSize: '0.85rem',
                 color: '#065f46',
-                marginBottom: '1.5rem',
+                marginBottom: '1rem',
                 textAlign: 'center',
               }}
             >
               ✅ <strong>Transaction ID:</strong> <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{orderComplete.transactionId || orderComplete.razorpayPaymentId}</span>
+            </div>
+          )}
+
+          {orderComplete.paymentScreenshot && (
+            <div
+              style={{
+                backgroundColor: '#f8fafc',
+                border: '1px solid #cbd5e1',
+                padding: '0.85rem 1rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.85rem',
+                textAlign: 'left',
+              }}
+            >
+              <img
+                src={orderComplete.paymentScreenshot}
+                alt="Payment Receipt"
+                style={{ width: '52px', height: '52px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-forest)' }}>
+                  📸 Payment Screenshot Uploaded
+                </div>
+                <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                  Stored in <code style={{ backgroundColor: '#f1f5f9', padding: '1px 4px', borderRadius: '4px' }}>backend/uploads/QR</code>. Verified with order.
+                </div>
+              </div>
+              <a
+                href={orderComplete.paymentScreenshot}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  color: 'var(--color-forest)',
+                  backgroundColor: '#ffffff',
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  textDecoration: 'none',
+                }}
+              >
+                View
+              </a>
             </div>
           )}
 
@@ -500,7 +628,7 @@ export const CheckoutForm: React.FC = () => {
 
   const token = getAuthToken();
   const authenticated = Boolean(token || isLoggedIn);
-  const isAdmin = user?.role?.toLowerCase() === 'admin';
+  const isAdmin = String(user?.role || '').toLowerCase() === 'admin';
 
   if (isAdmin) {
     return (
@@ -941,6 +1069,46 @@ export const CheckoutForm: React.FC = () => {
               </div>
             )}
 
+            {/* Pay with QR Code Option */}
+            {isQrActive && (
+              <div
+                onClick={() => setSelectedPayment('qr')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  padding: '1rem 1.15rem',
+                  borderRadius: '14px',
+                  border: selectedPayment === 'qr' ? '2px solid var(--color-gold)' : '1.5px solid var(--color-border)',
+                  backgroundColor: selectedPayment === 'qr' ? 'var(--color-gold-light)' : '#ffffff',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="paymentType"
+                  checked={selectedPayment === 'qr'}
+                  onChange={() => setSelectedPayment('qr')}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+                />
+                <QrCode size={26} color="var(--color-forest)" />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.94rem', color: 'var(--color-forest)' }}>
+                      Pay with QR Code
+                    </span>
+                    <span style={{ backgroundColor: '#10b981', color: '#ffffff', fontSize: '0.68rem', fontWeight: 800, padding: '2px 7px', borderRadius: '6px' }}>
+                      UPI / Scan & Pay
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                    Scan QR via Google Pay, PhonePe, Paytm or BHIM & upload screenshot
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Cash on Delivery Option */}
             {isCashActive && (
               <div
@@ -977,7 +1145,7 @@ export const CheckoutForm: React.FC = () => {
             )}
 
             {/* No active payment methods alert */}
-            {!isOnlineActive && !isCashActive && (
+            {!isOnlineActive && !isCashActive && !isQrActive && (
               <div style={{ padding: '1rem 1.2rem', borderRadius: '14px', border: '1.5px dashed #fca5a5', backgroundColor: '#fef2f2', color: '#b91c1c', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <AlertCircle size={20} />
                 <span>Currently no payment methods are enabled. Please contact support.</span>
@@ -985,7 +1153,218 @@ export const CheckoutForm: React.FC = () => {
             )}
           </div>
 
-          {isOnlineActive && (
+          {/* QR Code Scan & Screenshot Upload Section */}
+          {selectedPayment === 'qr' && (
+            <div
+              style={{
+                backgroundColor: '#fbfcf9',
+                borderRadius: '16px',
+                border: '1.5px solid var(--color-gold)',
+                padding: '1.5rem',
+                marginBottom: '1.5rem',
+                boxShadow: '0 4px 16px rgba(27, 67, 50, 0.06)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.2rem' }}>
+                <div style={{ padding: '0.45rem', borderRadius: '10px', backgroundColor: '#e2ece4', color: 'var(--color-forest)' }}>
+                  <QrCode size={22} />
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-forest)' }}>
+                    Scan QR Code to Pay ₹{formatPrice(totalAmount)}
+                  </h4>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+                    Scan with any UPI App (GPay, PhonePe, Paytm) & upload payment screenshot
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gap: '1.5rem',
+                  alignItems: 'start',
+                }}
+              >
+                {/* QR Code Visual Column */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    backgroundColor: '#ffffff',
+                    padding: '1.2rem',
+                    borderRadius: '14px',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      position: 'relative',
+                      padding: '10px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '12px',
+                      border: '2px dashed var(--color-gold)',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    <img
+                      src="/images/qr-code.jpg"
+                      alt="UPI QR Code"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/qr-1789384287719-24192059.jpg';
+                      }}
+                      style={{
+                        width: '190px',
+                        height: '190px',
+                        objectFit: 'contain',
+                        display: 'block',
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.2rem' }}>
+                    Amount: ₹{formatPrice(totalAmount)}
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                    Supported: Google Pay, PhonePe, Paytm, BHIM UPI
+                  </div>
+                </div>
+
+                {/* Screenshot Upload & UTR Column */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                  {/* Transaction ID / UTR Input */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
+                      UPI Reference / UTR Number (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 12-digit UTR (423456789012)"
+                      value={qrTransactionId}
+                      onChange={(e) => setQrTransactionId(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.65rem 0.85rem',
+                        borderRadius: '10px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '0.88rem',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+
+                  {/* Screenshot Upload Box */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
+                      Upload Payment Screenshot <span style={{ color: '#dc2626' }}>*</span>
+                    </label>
+
+                    {qrScreenshotPreview ? (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.8rem',
+                          padding: '0.75rem',
+                          backgroundColor: '#ffffff',
+                          borderRadius: '12px',
+                          border: '1.5px solid #10b981',
+                        }}
+                      >
+                        <img
+                          src={qrScreenshotPreview}
+                          alt="Screenshot Preview"
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            border: '1px solid #e2e8f0',
+                          }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#065f46', fontSize: '0.82rem', fontWeight: 700 }}>
+                            <CheckCircle2 size={15} color="#10b981" />
+                            <span>Screenshot Attached</span>
+                          </div>
+                          <div style={{ fontSize: '0.74rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {qrScreenshotFile?.name} ({(Number(qrScreenshotFile?.size || 0) / 1024).toFixed(1)} KB)
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveScreenshot}
+                          style={{
+                            backgroundColor: '#fff1f2',
+                            border: '1px solid #fecdd3',
+                            color: '#e11d48',
+                            borderRadius: '8px',
+                            padding: '0.4rem 0.65rem',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '1.4rem 1rem',
+                          backgroundColor: '#ffffff',
+                          borderRadius: '12px',
+                          border: '1.5px dashed #94a3b8',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          textAlign: 'center',
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                            const file = e.dataTransfer.files[0];
+                            if (file.size > 10 * 1024 * 1024) {
+                              showToast('Screenshot file size exceeds 10MB limit.', 'error');
+                              return;
+                            }
+                            setQrScreenshotFile(file);
+                            const reader = new FileReader();
+                            reader.onload = () => setQrScreenshotPreview(reader.result as string);
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      >
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleScreenshotChange}
+                          style={{ display: 'none' }}
+                        />
+                        <UploadCloud size={28} color="var(--color-forest)" style={{ marginBottom: '0.35rem' }} />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)' }}>
+                          Click to upload payment screenshot
+                        </span>
+                        <span style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '3px' }}>
+                          Upload JPG, PNG, WEBP, AVIF (Saves to backend/uploads/QR)
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isOnlineActive && selectedPayment === 'online' && (
             <div style={{ padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #bfdbfe', backgroundColor: '#eff6ff', fontSize: '0.82rem', color: '#1e40af', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Lock size={16} />
               <span>256-Bit SSL Encrypted & Secured by Razorpay Gateway</span>
@@ -1013,7 +1392,7 @@ export const CheckoutForm: React.FC = () => {
             {loading ? (
               <>
                 <Loader2 size={20} className="animate-spin" />
-                <span>Processing Payment...</span>
+                <span>{uploadingQrScreenshot ? 'Uploading Screenshot & Verifying...' : 'Processing Payment...'}</span>
               </>
             ) : isAdmin ? (
               'Admin (Cannot Place Order)'
@@ -1023,6 +1402,11 @@ export const CheckoutForm: React.FC = () => {
               <>
                 <CreditCard size={18} />
                 <span>Pay with Razorpay • ₹{formatPrice(totalAmount)}</span>
+              </>
+            ) : selectedPayment === 'qr' ? (
+              <>
+                <QrCode size={18} />
+                <span>Place Order with QR Screenshot • ₹{formatPrice(totalAmount)}</span>
               </>
             ) : (
               <>

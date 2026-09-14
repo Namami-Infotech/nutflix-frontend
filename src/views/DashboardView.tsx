@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Users, Package, ShoppingBag, CheckCircle2, XCircle, TrendingUp, ArrowUpRight, MessageSquare } from 'lucide-react';
+import { Users, Package, ShoppingBag, CheckCircle2, XCircle, TrendingUp, ArrowUpRight, MessageSquare, QrCode } from 'lucide-react';
 import { formatPrice } from '@/lib/api';
 
 interface DashboardViewProps {
@@ -14,9 +14,11 @@ interface DashboardViewProps {
   totalRevenue: number;
   enquiriesCount?: number;
   pendingEnquiriesCount?: number;
+  pendingQrCount?: number;
   recentOrders: any[];
   onViewAllOrders: () => void;
   onViewEnquiries?: () => void;
+  onViewQrOrders?: () => void;
 }
 
 // https://nutflix-frontend.vercel.app/dashboard
@@ -31,9 +33,11 @@ export default function DashboardView({
   totalRevenue,
   enquiriesCount = 0,
   pendingEnquiriesCount = 0,
+  pendingQrCount = 0,
   recentOrders,
   onViewAllOrders,
-  onViewEnquiries
+  onViewEnquiries,
+  onViewQrOrders
 }: DashboardViewProps) {
   const cards = [
     {
@@ -45,6 +49,15 @@ export default function DashboardView({
       color: '#fff',
       onClick: onViewAllOrders,
     },
+    ...(onViewQrOrders ? [{
+      title: 'QR Payment Verification',
+      value: pendingQrCount,
+      subtext: `${pendingQrCount} Pending Verification`,
+      icon: QrCode,
+      bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+      color: '#fff',
+      onClick: onViewQrOrders,
+    }] : []),
     {
       title: 'Fulfilled Deliveries',
       value: deliveredCount,

@@ -24,7 +24,8 @@ import {
   Plus,
   X,
   Menu,
-  MessageSquare
+  MessageSquare,
+  QrCode
 } from 'lucide-react';
 import { ImageCropperModal } from '@/components/ui/ImageCropperModal';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
@@ -60,7 +61,9 @@ import {
   fetchEnquiries,
   updateEnquiry,
   deleteEnquiry,
-  Enquiry
+  Enquiry,
+  sendOtpApi,
+  verifyOtpLoginApi
 } from '@/lib/api';
 
 import AdminSidebar, { SidebarItem } from './AdminSidebar';
@@ -74,16 +77,25 @@ import DeliveredOrdersView from './DeliveredOrdersView';
 import CancelledOrdersView from './CancelledOrdersView';
 import PaymentsView from './PaymentsView';
 import EnquiriesView from './EnquiriesView';
+import QROrdersView from './QROrdersView';
 
 export default function AdminView() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [adminUser, setAdminUser] = useState<any>(null);
-  const [emailInput, setEmailInput] = useState('admin@nutflix.com');
-  const [passwordInput, setPasswordInput] = useState('123456');
+  const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+
+  // Admin Login Mode: 'otp' | 'password'
+  const [adminLoginMode, setAdminLoginMode] = useState<'otp' | 'password'>('otp');
+  const [adminPhone, setAdminPhone] = useState('');
+  const [adminOtp, setAdminOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [sendingOtp, setSendingOtp] = useState(false);
 
   // Active Menu
   const [activeMenu, setActiveMenu] = useState<string>('dashboard');
@@ -378,6 +390,78 @@ export default function AdminView() {
       }
     } catch (err) {
       setLoginError('Server error during admin login.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleSendAdminOtp = async () => {
+    const cleanNum = adminPhone.trim().replace(/\D/g, '');
+    if (!cleanNum || cleanNum.length < 10) {
+      setLoginError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    setLoginError('');
+    setSendingOtp(true);
+    try {
+      const res = await sendOtpApi({ phone: cleanNum, purpose: 'login' });
+      if (res.success) {
+        setOtpSent(true);
+        setOtpTimer(60);
+        showToast(`OTP sent successfully to +91 ${cleanNum}`);
+      } else {
+        setLoginError(res.message || 'Failed to send OTP to this mobile number.');
+      }
+    } catch (err: any) {
+      setLoginError(err?.message || 'Server error while sending OTP.');
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleAdminOtpLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanNum = adminPhone.trim().replace(/\D/g, '');
+    if (!cleanNum || cleanNum.length < 10) {
+      setLoginError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    if (!adminOtp || adminOtp.trim().length < 4) {
+      setLoginError('Please enter the OTP received.');
+      return;
+    }
+
+    setLoginError('');
+    setLoginLoading(true);
+
+    try {
+      const res = await verifyOtpLoginApi({ phone: cleanNum, otp: adminOtp.trim() });
+      if (res.success && res.data) {
+        const user = res.data.user;
+        const isRoleAdmin = user?.role?.toLowerCase() === 'admin';
+        if (!isRoleAdmin) {
+          setLoginError('Access Denied: The account linked to +91 ' + cleanNum + ' does not have Admin privileges.');
+          return;
+        }
+
+        if (typeof window !== 'undefined') {
+          setCookie('accessToken', res.data.accessToken);
+          setCookie('nutflix_accessToken', res.data.accessToken);
+          if (res.data.refreshToken) {
+            setCookie('refreshToken', res.data.refreshToken);
+            setCookie('nutflix_refreshToken', res.data.refreshToken);
+          }
+          setUserCookie(user);
+        }
+
+        setIsAdminLoggedIn(true);
+        setAdminUser(user);
+        showToast(`Welcome back, Admin ${user.name || ''}!`);
+      } else {
+        setLoginError(res.message || 'Invalid OTP code.');
+      }
+    } catch (err: any) {
+      setLoginError(err?.message || 'Server error during OTP verification.');
     } finally {
       setLoginLoading(false);
     }
@@ -791,17 +875,29 @@ export default function AdminView() {
   };
 
   // CALCULATIONS
-  const totalOrdersCount = orders.length;
-  const newOrdersList = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'returned');
-  const deliveredOrdersList = orders.filter(o => o.status === 'delivered');
+  const isQrOrder = (o: any) => Boolean(
+    o?.paymentScreenshot ||
+    (o?.paymentMethod && o.paymentMethod.toLowerCase().includes('qr')) ||
+    o?.paymentType === 'qr'
+  );
+  // Unverified QR orders are still pending payment verification by admin
+  const isUnverifiedQrOrder = (o: any) => isQrOrder(o) && (o?.status === 'pending' || !o?.status);
+  const pendingQrCount = orders.filter(o => isUnverifiedQrOrder(o)).length;
+
+  // General orders tables and metrics exclude unverified QR orders until admin verifies payment
+  const verifiedOrders = orders.filter(o => !isUnverifiedQrOrder(o));
+
+  const totalOrdersCount = verifiedOrders.length;
+  const newOrdersList = verifiedOrders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled' && o.status !== 'returned');
+  const deliveredOrdersList = verifiedOrders.filter(o => o.status === 'delivered');
   const cancelledOrdersList = orders.filter(o => o.status === 'cancelled' || o.status === 'returned');
   const pendingEnquiriesCount = enquiriesList.filter(e => e.status === 'pending').length;
 
-  const totalRevenue = orders
+  const totalRevenue = verifiedOrders
     .filter(o => o.status !== 'cancelled' && o.status !== 'returned')
     .reduce((sum, o) => sum + (parseFloat(o.totalAmount) || 0), 0);
 
-  const paymentBreakdown = orders.reduce((acc: any, ord: any) => {
+  const paymentBreakdown = verifiedOrders.reduce((acc: any, ord: any) => {
     const method = ord.paymentMethod || 'UPI';
     if (!acc[method]) acc[method] = { count: 0, total: 0 };
     acc[method].count += 1;
@@ -812,13 +908,14 @@ export default function AdminView() {
   // Sidebar Config
   const sidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null },
+    { id: 'qr_orders', label: 'Verify QR Payments', icon: QrCode, badge: null, color: '#10b981' },
+    { id: 'new_orders', label: 'All Orders', icon: ShoppingBag, badge: null, color: '#3b82f6' },
+    { id: 'delivered_orders', label: 'Delivered Orders', icon: CheckCircle2, badge: null, color: '#10b981' },
+    { id: 'cancelled_orders', label: 'Cancelled / Returned', icon: XCircle, badge: null, color: '#ef4444' },
     { id: 'users', label: 'Total Users', icon: Users, badge: null },
     { id: 'products', label: 'Total Products', icon: Package, badge: null },
     { id: 'categories', label: 'Total Categories', icon: FolderTree, badge: null },
     { id: 'banners', label: 'Banners Upload', icon: ImageIcon, badge: null },
-    { id: 'new_orders', label: 'All Orders', icon: ShoppingBag, badge: null, color: '#3b82f6' },
-    { id: 'delivered_orders', label: 'Delivered Orders', icon: CheckCircle2, badge: null, color: '#10b981' },
-    { id: 'cancelled_orders', label: 'Cancelled / Returned', icon: XCircle, badge: null, color: '#ef4444' },
     { id: 'payments', label: 'Payment Types', icon: CreditCard, badge: null },
     { id: 'enquiries', label: 'Enquiries', icon: MessageSquare, badge: null, color: '#f59e0b' },
   ];
@@ -909,55 +1006,203 @@ export default function AdminView() {
               </div>
             )}
 
-            <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.45rem', color: '#334155' }}>Admin Email</label>
-                <input
-                  type="email"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="admin@nutflix.com"
-                  required
-                  style={{ width: '100%', padding: '0.85rem 1.1rem', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '0.92rem', outline: 'none', transition: 'border-color 0.2s' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.45rem', color: '#334155' }}>Password</label>
-                <input
-                  type="password"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  style={{ width: '100%', padding: '0.85rem 1.1rem', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '0.92rem', outline: 'none', transition: 'border-color 0.2s' }}
-                />
-              </div>
-
-              <div style={{ backgroundColor: '#faf8f5', border: '1px solid #f0e6d8', padding: '0.9rem 1rem', borderRadius: '12px', fontSize: '0.78rem', color: '#475569', lineHeight: 1.6 }}>
-                🔑 <strong>Default Credentials:</strong><br />
-                Email: <code style={{ color: '#b45309', fontWeight: 800 }}>admin@nutflix.com</code> | Password: <code style={{ color: '#b45309', fontWeight: 800 }}>123456</code>
-              </div>
-
+            {/* Login Method Tabs */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', backgroundColor: '#f1f5f9', padding: '4px', borderRadius: '12px', marginBottom: '1.5rem' }}>
               <button
-                type="submit"
-                disabled={loginLoading}
+                type="button"
+                onClick={() => { setAdminLoginMode('otp'); setLoginError(''); }}
                 style={{
-                  background: 'linear-gradient(135deg, #0f291e 0%, #1a4332 100%)',
-                  color: '#fff',
                   border: 'none',
-                  padding: '0.95rem',
-                  borderRadius: '14px',
-                  fontWeight: 900,
-                  fontSize: '0.98rem',
+                  backgroundColor: adminLoginMode === 'otp' ? '#0f291e' : 'transparent',
+                  color: adminLoginMode === 'otp' ? '#fff' : '#64748b',
+                  fontWeight: 800,
+                  fontSize: '0.82rem',
+                  padding: '0.6rem 0.8rem',
+                  borderRadius: '9px',
                   cursor: 'pointer',
-                  boxShadow: '0 6px 20px rgba(15, 41, 30, 0.3)',
-                  transition: 'transform 0.2s'
+                  transition: 'all 0.18s ease'
                 }}
               >
-                {loginLoading ? 'Authenticating...' : 'Sign In to Dashboard'}
+                📱 Mobile OTP
               </button>
-            </form>
+              <button
+                type="button"
+                onClick={() => { setAdminLoginMode('password'); setLoginError(''); }}
+                style={{
+                  border: 'none',
+                  backgroundColor: adminLoginMode === 'password' ? '#0f291e' : 'transparent',
+                  color: adminLoginMode === 'password' ? '#fff' : '#64748b',
+                  fontWeight: 800,
+                  fontSize: '0.82rem',
+                  padding: '0.6rem 0.8rem',
+                  borderRadius: '9px',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease'
+                }}
+              >
+                🔑 Password Login
+              </button>
+            </div>
+
+            {adminLoginMode === 'otp' ? (
+              /* OTP LOGIN FORM */
+              <form onSubmit={handleAdminOtpLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.45rem', color: '#334155' }}>
+                    Admin Mobile Number
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <div style={{
+                      backgroundColor: '#f8fafc',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '12px',
+                      padding: '0.85rem 0.9rem',
+                      fontSize: '0.92rem',
+                      fontWeight: 800,
+                      color: '#475569',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      +91
+                    </div>
+                    <input
+                      type="tel"
+                      value={adminPhone}
+                      onChange={(e) => setAdminPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="Enter 10-digit mobile number"
+                      maxLength={10}
+                      required
+                      style={{
+                        flex: 1,
+                        padding: '0.85rem 1.1rem',
+                        borderRadius: '12px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '0.92rem',
+                        fontWeight: 700,
+                        outline: 'none',
+                        letterSpacing: '0.04em'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      disabled={sendingOtp || adminPhone.length < 10}
+                      onClick={handleSendAdminOtp}
+                      style={{
+                        backgroundColor: otpSent ? '#f1f5f9' : '#0f291e',
+                        color: otpSent ? '#475569' : '#fff',
+                        border: '1px solid #cbd5e1',
+                        padding: '0.85rem 1rem',
+                        borderRadius: '12px',
+                        fontWeight: 800,
+                        fontSize: '0.82rem',
+                        cursor: sendingOtp || adminPhone.length < 10 ? 'not-allowed' : 'pointer',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {sendingOtp ? 'Sending...' : otpSent ? 'Resend OTP' : 'Send OTP'}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                    <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#334155' }}>
+                      Enter 6-Digit OTP
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    value={adminOtp}
+                    onChange={(e) => setAdminOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="Enter 6-digit OTP"
+                    maxLength={6}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.85rem 1.1rem',
+                      borderRadius: '12px',
+                      border: '1px solid #cbd5e1',
+                      fontSize: '1.1rem',
+                      fontWeight: 800,
+                      letterSpacing: '0.25em',
+                      textAlign: 'center',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loginLoading}
+                  style={{
+                    background: 'linear-gradient(135deg, #0f291e 0%, #1a4332 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '0.95rem',
+                    borderRadius: '14px',
+                    fontWeight: 900,
+                    fontSize: '0.98rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 6px 20px rgba(15, 41, 30, 0.3)',
+                    transition: 'transform 0.2s'
+                  }}
+                >
+                  {loginLoading ? 'Verifying OTP...' : 'Verify OTP & Enter Admin'}
+                </button>
+              </form>
+            ) : (
+              /* PASSWORD LOGIN FORM */
+              <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.45rem', color: '#334155' }}>Admin Email</label>
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="admin@nutflix.com"
+                    required
+                    style={{ width: '100%', padding: '0.85rem 1.1rem', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '0.92rem', outline: 'none', transition: 'border-color 0.2s' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.45rem', color: '#334155' }}>Password</label>
+                  <input
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    style={{ width: '100%', padding: '0.85rem 1.1rem', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '0.92rem', outline: 'none', transition: 'border-color 0.2s' }}
+                  />
+                </div>
+
+                <div style={{ backgroundColor: '#faf8f5', border: '1px solid #f0e6d8', padding: '0.9rem 1rem', borderRadius: '12px', fontSize: '0.78rem', color: '#475569', lineHeight: 1.6 }}>
+                  🔑 <strong>Default Credentials:</strong><br />
+                  Email: <code style={{ color: '#b45309', fontWeight: 800 }}>admin@nutflix.com</code> | Password: <code style={{ color: '#b45309', fontWeight: 800 }}>123456</code>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loginLoading}
+                  style={{
+                    background: 'linear-gradient(135deg, #0f291e 0%, #1a4332 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '0.95rem',
+                    borderRadius: '14px',
+                    fontWeight: 900,
+                    fontSize: '0.98rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 6px 20px rgba(15, 41, 30, 0.3)',
+                    transition: 'transform 0.2s'
+                  }}
+                >
+                  {loginLoading ? 'Authenticating...' : 'Sign In to Dashboard'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       ) : (
@@ -1075,9 +1320,11 @@ export default function AdminView() {
                   totalRevenue={totalRevenue}
                   enquiriesCount={enquiriesList.length}
                   pendingEnquiriesCount={pendingEnquiriesCount}
-                  recentOrders={orders}
+                  pendingQrCount={pendingQrCount}
+                  recentOrders={verifiedOrders}
                   onViewAllOrders={() => setActiveMenu('new_orders')}
                   onViewEnquiries={() => setActiveMenu('enquiries')}
+                  onViewQrOrders={() => setActiveMenu('qr_orders')}
                 />
               )}
 
@@ -1155,6 +1402,14 @@ export default function AdminView() {
                   }}
                   onDeleteBanner={handleDeleteBanner}
                   onActivateBanner={handleActivateBanner}
+                />
+              )}
+
+              {activeMenu === 'qr_orders' && (
+                <QROrdersView
+                  orders={orders}
+                  searchQuery={searchQuery}
+                  onStatusChange={handleStatusChange}
                 />
               )}
 

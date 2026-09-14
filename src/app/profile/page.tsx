@@ -1207,6 +1207,30 @@ export default function UserProfilePage() {
                                         Txn: {ord.transactionId || ord.razorpayPaymentId || ord.paymentMethod.match(/pay_[a-zA-Z0-9]+/)?.[0]}
                                       </div>
                                     )}
+                                    {ord.paymentScreenshot && (
+                                      <div style={{ marginTop: '3px' }}>
+                                        <a
+                                          href={ord.paymentScreenshot}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.25rem',
+                                            fontSize: '0.68rem',
+                                            fontWeight: 700,
+                                            color: '#1d4ed8',
+                                            backgroundColor: '#eff6ff',
+                                            padding: '0.1rem 0.45rem',
+                                            borderRadius: '4px',
+                                            border: '1px solid #bfdbfe',
+                                            textDecoration: 'none',
+                                          }}
+                                        >
+                                          📸 QR Receipt
+                                        </a>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
 

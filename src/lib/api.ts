@@ -104,7 +104,13 @@ export function getUserFromCookie(): any | null {
   const cookieUser = getCookie('nutflix_user') || getCookie('user');
   if (cookieUser) {
     try {
-      return JSON.parse(cookieUser);
+      const parsed = JSON.parse(cookieUser);
+      if (parsed && typeof parsed === 'object') {
+        if (typeof parsed.role !== 'string') {
+          parsed.role = 'customer';
+        }
+        return parsed;
+      }
     } catch (e) {
       // ignore
     }
@@ -112,7 +118,13 @@ export function getUserFromCookie(): any | null {
   try {
     const localUser = localStorage.getItem('nutflix_user') || localStorage.getItem('user');
     if (localUser) {
-      return JSON.parse(localUser);
+      const parsed = JSON.parse(localUser);
+      if (parsed && typeof parsed === 'object') {
+        if (typeof parsed.role !== 'string') {
+          parsed.role = 'customer';
+        }
+        return parsed;
+      }
     }
   } catch (e) {
     // ignore
@@ -461,12 +473,25 @@ export async function fetchBanners(params?: { includeInactive?: boolean }): Prom
 }
 
 export async function submitOrder(orderData: any) {
-  const resolvedPaymentMethod = orderData.paymentMethod || (orderData.paymentType === 'cash' ? 'Cash on Delivery' : 'Online / UPI Payment');
+  const resolvedPaymentMethod =
+    orderData.paymentMethod ||
+    (orderData.paymentType === 'cash'
+      ? 'Cash on Delivery'
+      : orderData.paymentType === 'qr'
+        ? 'Pay with QR Code'
+        : 'Online / UPI Payment');
   const payload = {
     ...orderData,
     customerEmail: (orderData.customerEmail || '').toLowerCase().trim(),
-    paymentType: orderData.paymentType || (orderData.paymentMethod === 'Cash on Delivery' ? 'cash' : 'online'),
+    paymentType:
+      orderData.paymentType ||
+      (orderData.paymentMethod === 'Cash on Delivery'
+        ? 'cash'
+        : orderData.paymentMethod === 'Pay with QR Code'
+          ? 'qr'
+          : 'online'),
     paymentMethod: resolvedPaymentMethod,
+    paymentScreenshot: orderData.paymentScreenshot || undefined,
   };
 
   try {
@@ -497,6 +522,8 @@ export async function submitOrder(orderData: any) {
     shippingAddress: orderData.shippingAddress,
     paymentMethod: resolvedPaymentMethod,
     paymentType: orderData.paymentType || 'online',
+    paymentScreenshot: orderData.paymentScreenshot || undefined,
+    transactionId: orderData.transactionId || undefined,
     totalAmount: String(orderData.totalAmount || '0.00'),
     status: 'confirmed',
     createdAt: new Date().toISOString(),
@@ -1093,7 +1120,10 @@ export function base64ToFile(base64Data: string, filename = 'image.jpg'): File {
   }
 }
 
-export async function uploadImage(fileOrBase64: File | string): Promise<{ success: boolean; url?: string; message?: string }> {
+export async function uploadImage(
+  fileOrBase64: File | string,
+  folder?: string
+): Promise<{ success: boolean; url?: string; message?: string; data?: any }> {
   try {
     let fileToUpload: File;
     if (typeof fileOrBase64 === 'string') {
@@ -1107,15 +1137,20 @@ export async function uploadImage(fileOrBase64: File | string): Promise<{ succes
 
     const formData = new FormData();
     formData.append('image', fileToUpload);
+    if (folder) {
+      formData.append('folder', folder);
+    }
 
-    const res = await api.post('/upload', formData, {
+    const endpoint = folder && folder.toUpperCase() === 'QR' ? '/upload/qr' : (folder ? `/upload?folder=${folder}` : '/upload');
+
+    const res = await api.post(endpoint, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
 
     if (res.data && res.data.data?.url) {
-      return { success: true, url: res.data.data.url, message: res.data.message };
+      return { success: true, url: res.data.data.url, message: res.data.message, data: res.data.data };
     }
     if (res.data && res.data.url) {
       return { success: true, url: res.data.url, message: res.data.message };
