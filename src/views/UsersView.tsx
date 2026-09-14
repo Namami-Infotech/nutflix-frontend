@@ -22,6 +22,7 @@ export default function UsersView({ usersList, searchQuery, onDeleteUser, onTogg
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  console.log("paginatedUsers", paginatedUsers)
 
   const handleToggle = async (userId: number, currentStatus: boolean) => {
     if (!onToggleStatic) return;
@@ -93,7 +94,9 @@ export default function UsersView({ usersList, searchQuery, onDeleteUser, onTogg
                       </div>
                       <div>
                         <div style={{ fontWeight: 800, color: '#0f291e' }}>{usr.name}</div>
-                        <div style={{ fontSize: '0.68rem', color: '#64748b' }}>Joined Account</div>
+                        <div style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                          Joined: {usr.created_at || usr.createdAt ? new Date(usr.created_at || usr.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently'}
+                        </div>
                       </div>
                     </div>
                   </td>
