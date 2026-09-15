@@ -18,6 +18,7 @@ import {
   QrCode,
   PackageCheck,
   X,
+  Camera,
 } from 'lucide-react';
 
 export default function PayQrPage() {
@@ -61,6 +62,8 @@ export default function PayQrPage() {
       };
       reader.readAsDataURL(file);
     }
+    // reset input value so re-selecting the same file/retaking photo triggers change
+    e.target.value = '';
   };
 
   const handleRemoveScreenshot = () => {
@@ -73,7 +76,7 @@ export default function PayQrPage() {
     setErrorMessage('');
 
     if (!qrScreenshotFile) {
-      setErrorMessage('Please upload your payment screenshot to verify payment.');
+      setErrorMessage('Please upload a screenshot or take a photo of your payment confirmation.');
       return;
     }
 
@@ -322,23 +325,6 @@ export default function PayQrPage() {
           >
             <ArrowLeft size={16} /> Back to Checkout
           </Link>
-
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              color: '#15803d',
-              backgroundColor: '#f0fdf4',
-              padding: '0.35rem 0.8rem',
-              borderRadius: '20px',
-              border: '1px solid #bbf7d0',
-            }}
-          >
-            <span>🔒</span> Secure 256-Bit UPI Gateway
-          </div>
         </div>
 
         {/* 2-Column Responsive Grid */}
@@ -431,24 +417,7 @@ export default function PayQrPage() {
               <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.4rem' }}>
                 Accepted UPI Apps:
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                {['GPay', 'PhonePe', 'Paytm', 'BHIM', 'Any UPI'].map((app) => (
-                  <span
-                    key={app}
-                    style={{
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      backgroundColor: '#ffffff',
-                      color: '#475569',
-                      border: '1px solid #e2e8f0',
-                      padding: '0.2rem 0.55rem',
-                      borderRadius: '16px',
-                    }}
-                  >
-                    {app}
-                  </span>
-                ))}
-              </div>
+           
             </div>
 
             {/* Micro Steps */}
@@ -467,8 +436,8 @@ export default function PayQrPage() {
               }}
             >
               <div><strong>Step 1:</strong> Scan QR code with any UPI app & complete ₹{formatPrice(totalAmount)}.</div>
-              <div><strong>Step 2:</strong> Take a screenshot of the payment confirmation.</div>
-              <div><strong>Step 3:</strong> Upload the screenshot on the right to complete your order.</div>
+              <div><strong>Step 2:</strong> Take a screenshot or capture photo of the payment confirmation.</div>
+              <div><strong>Step 3:</strong> Upload image from gallery or capture with camera to place your order.</div>
             </div>
           </div>
 
@@ -500,7 +469,6 @@ export default function PayQrPage() {
               )}
             </div>
 
-            {/* Screenshot Upload Form */}
             <form onSubmit={handleCompleteQrPayment} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <div style={{ marginBottom: '1.25rem', flex: 1 }}>
                 <label
@@ -512,10 +480,10 @@ export default function PayQrPage() {
                     marginBottom: '0.25rem',
                   }}
                 >
-                  Upload Payment Screenshot <span style={{ color: '#dc2626' }}>*</span>
+                  Upload Payment Screenshot or Photo <span style={{ color: '#dc2626' }}>*</span>
                 </label>
                 <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.75rem' }}>
-                  Upload the successful transaction screenshot from your UPI app.
+                  Upload transaction screenshot from your gallery or use camera to snap payment proof.
                 </p>
 
                 {qrScreenshotPreview ? (
@@ -533,7 +501,7 @@ export default function PayQrPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                       <img
                         src={qrScreenshotPreview}
-                        alt="Uploaded Screenshot Preview"
+                        alt="Payment Proof Preview"
                         style={{
                           width: '58px',
                           height: '58px',
@@ -544,7 +512,7 @@ export default function PayQrPage() {
                       />
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#166534', fontWeight: 800, fontSize: '0.86rem' }}>
-                          <CheckCircle2 size={16} color="#16a34a" /> Screenshot Attached
+                          <CheckCircle2 size={16} color="#16a34a" /> Payment Proof Attached
                         </div>
                         <span style={{ fontSize: '0.74rem', color: '#15803d' }}>
                           Ready to verify & place order
@@ -569,36 +537,63 @@ export default function PayQrPage() {
                         gap: '0.25rem',
                       }}
                     >
-                      <X size={14} /> Remove
+                      <X size={14} /> Change / Remove
                     </button>
                   </div>
                 ) : (
                   <label className="pay-qr-dropzone">
                     <input
                       type="file"
-                      accept="image/jpeg,image/png,image/webp,image/avif"
+                      accept="image/jpeg,image/png,image/webp,image/avif,image/*"
                       onChange={handleScreenshotChange}
                       style={{ display: 'none' }}
                     />
                     <div
                       style={{
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(200, 157, 102, 0.15)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'var(--color-forest)',
-                        marginBottom: '0.65rem',
+                        gap: '0.65rem',
+                        marginBottom: '0.75rem',
                       }}
                     >
-                      <UploadCloud size={26} />
+                      <div
+                        style={{
+                          width: '46px',
+                          height: '46px',
+                          borderRadius: '50%',
+                          backgroundColor: 'rgba(200, 157, 102, 0.16)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--color-forest)',
+                        }}
+                      >
+                        <UploadCloud size={24} />
+                      </div>
+                      <div
+                        style={{
+                          width: '46px',
+                          height: '46px',
+                          borderRadius: '50%',
+                          backgroundColor: 'rgba(22, 35, 26, 0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'var(--color-forest)',
+                        }}
+                      >
+                        <Camera size={22} />
+                      </div>
                     </div>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--color-forest)' }}>
-                      Click or drag to upload payment screenshot
+
+                    <span style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
+                      Upload Screenshot or Open Camera
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>
+                    <span style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '0.4rem' }}>
+                      Click or tap to choose screenshot from gallery or take photo with camera
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
                       Supports JPG, PNG, WEBP (Max 10MB)
                     </span>
                   </label>
@@ -650,7 +645,7 @@ export default function PayQrPage() {
                 {loading ? (
                   <>
                     <Loader2 size={20} className="animate-spin" />
-                    <span>Uploading Screenshot & Placing Order...</span>
+                    <span>Uploading Proof & Placing Order...</span>
                   </>
                 ) : (
                   <>
@@ -661,7 +656,7 @@ export default function PayQrPage() {
               </button>
 
               <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.72rem', color: '#94a3b8' }}>
-                Your order is confirmed immediately upon screenshot submission.
+                Your order is confirmed immediately upon submitting proof.
               </div>
             </form>
           </div>
