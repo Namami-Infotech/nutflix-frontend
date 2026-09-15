@@ -757,32 +757,57 @@ export default function UserProfilePage() {
             padding: 0 0.85rem !important;
           }
           .profile-user-card {
-            padding: 1.15rem 1rem !important;
-            gap: 1rem !important;
+            padding: 1rem 1rem !important;
+            gap: 0.75rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: wrap !important;
+          }
+          .profile-user-left {
+            gap: 0.75rem !important;
+            min-width: 0 !important;
+            flex: 1 1 auto !important;
           }
           .profile-avatar-circle {
-            width: 48px !important;
-            height: 48px !important;
-            font-size: 1.25rem !important;
+            width: 44px !important;
+            height: 44px !important;
+            font-size: 1.15rem !important;
+            flex-shrink: 0 !important;
           }
           .profile-user-name {
-            font-size: 1.15rem !important;
+            font-size: 1.05rem !important;
+            margin: 0 0 0.15rem !important;
           }
           .profile-user-meta {
-            font-size: 0.78rem !important;
+            font-size: 0.76rem !important;
+            gap: 0.4rem !important;
           }
           .profile-actions-wrapper {
-            width: 100% !important;
-            flex-direction: column !important;
-            gap: 0.5rem !important;
+            width: auto !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            margin-left: auto !important;
+            flex-shrink: 0 !important;
           }
           .profile-delete-btn {
             display: none !important;
           }
           .profile-logout-btn {
-            width: 100% !important;
+            width: auto !important;
+            display: inline-flex !important;
+            align-items: center !important;
             justify-content: center !important;
-            padding: 0.6rem !important;
+            padding: 0.42rem 0.85rem !important;
+            font-size: 0.8rem !important;
+            font-weight: 700 !important;
+            border-radius: 20px !important;
+            background-color: #fff1f2 !important;
+            color: #e11d48 !important;
+            border: 1.5px solid #fecdd3 !important;
+            white-space: nowrap !important;
+            box-shadow: 0 2px 6px rgba(225, 29, 72, 0.08) !important;
           }
           .profile-tabs-scroll {
             gap: 0.45rem !important;
@@ -970,7 +995,7 @@ export default function UserProfilePage() {
                 className="profile-delete-btn"
                 title="Delete your account"
               >
-                <Trash2 size={15} /> Delete Account
+                <Trash2 size={15} /> <span>Delete Account</span>
               </button>
               <button
                 onClick={handleLogout}
@@ -1536,7 +1561,7 @@ export default function UserProfilePage() {
                 {/* SAVED ADDRESS CARDS IN PROFILE */}
                 {userAddresses.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                    {userAddresses.map((addr) => {
+                    {[...userAddresses].sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0)).map((addr) => {
                       return (
                         <div
                           key={addr.id}

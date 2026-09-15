@@ -46,6 +46,7 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { AddressModal } from './AddressModal';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
@@ -69,6 +70,7 @@ const loadRazorpayScript = (): Promise<boolean> => {
 };
 
 export const CheckoutForm: React.FC = () => {
+  const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
   const { isLoggedIn, user, openLoginModal } = useAuth();
   const [mounted, setMounted] = useState(false);
@@ -114,6 +116,7 @@ export const CheckoutForm: React.FC = () => {
   // Address Selection & Dialog Modal States
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [isAddressListExpanded, setIsAddressListExpanded] = useState<boolean>(false);
   const [loadingAddresses, setLoadingAddresses] = useState<boolean>(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState<boolean>(false);
   const [addressToEdit, setAddressToEdit] = useState<Address | null>(null);
@@ -338,50 +341,28 @@ export const CheckoutForm: React.FC = () => {
       return;
     }
 
-    // Pay with QR Code Checkout Flow
+    // Pay with QR Code Checkout Flow -> Navigate to /checkout/pay-qr
     if (selectedPayment === 'qr') {
-      if (!qrScreenshotFile) {
-        setErrorMessage('Please upload your payment screenshot to verify payment.');
-        showToast('Please upload your payment screenshot.', 'error');
-        return;
-      }
-
-      setLoading(true);
-      setUploadingQrScreenshot(true);
-
       try {
-        // 1. Upload screenshot to backend/uploads/QR
-        const uploadRes = await uploadImage(qrScreenshotFile, 'QR');
-        if (!uploadRes.success || !uploadRes.url) {
-          setLoading(false);
-          setUploadingQrScreenshot(false);
-          setErrorMessage(uploadRes.message || 'Failed to upload payment screenshot. Please try again.');
-          showToast(uploadRes.message || 'Failed to upload screenshot.', 'error');
-          return;
+        const qrDraft = {
+          orderPayload: {
+            ...orderPayload,
+            paymentType: 'qr',
+            paymentMethod: 'Pay with QR Code',
+          },
+          totalAmount,
+          customerName: orderPayload.customerName,
+          customerPhone: orderPayload.customerPhone,
+          customerEmail: orderPayload.customerEmail,
+          shippingAddress: orderPayload.shippingAddress,
+          items: orderPayload.items,
+        };
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('pending_qr_order', JSON.stringify(qrDraft));
         }
-
-        // 2. Submit order with QR payment and screenshot URL
-        const res = await submitOrder({
-          ...orderPayload,
-          paymentType: 'qr',
-          paymentMethod: 'Pay with QR Code',
-          transactionId: qrTransactionId.trim() || undefined,
-          paymentScreenshot: uploadRes.url,
-        });
-
-        setLoading(false);
-        setUploadingQrScreenshot(false);
-
-        if (res.success && res.data) {
-          setOrderComplete(res.data);
-          clearCart();
-        } else {
-          setErrorMessage(res.message || 'Failed to place QR Code order.');
-        }
+        router.push('/checkout/pay-qr');
       } catch (err: any) {
-        setLoading(false);
-        setUploadingQrScreenshot(false);
-        setErrorMessage(err?.message || 'Error processing QR Code payment order.');
+        setErrorMessage('Failed to initiate QR payment. Please try again.');
       }
       return;
     }
@@ -891,95 +872,243 @@ export const CheckoutForm: React.FC = () => {
           </div>
 
           <div>
-            {/* SAVED ADDRESSES DIRECT LIST */}
+            {/* SAVED ADDRESSES SECTION (Default first, expand on 'Change') */}
             {savedAddresses.length > 0 ? (
               <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#555', marginBottom: '0.65rem' }}>
-                  Select Delivery Address ({savedAddresses.length}/4 saved):
-                </div>
+                {!isAddressListExpanded ? (
+                  // Collapsed View: Show only the active/default address
+                  (() => {
+                    const activeAddress =
+                      savedAddresses.find((a) => a.id === selectedAddressId) ||
+                      savedAddresses.find((a) => a.isDefault) ||
+                      savedAddresses[0];
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {savedAddresses.map((addr) => {
-                    const isSelected = selectedAddressId === addr.id;
+                    if (!activeAddress) return null;
 
                     return (
                       <div
-                        key={addr.id}
-                        onClick={() => handleSelectAddress(addr)}
-                        className="address-card-item"
                         style={{
-                          border: isSelected ? '2px solid var(--color-forest)' : '1px solid #e2e8f0',
-                          backgroundColor: isSelected ? '#f7faf7' : '#ffffff',
-                          boxShadow: isSelected ? '0 2px 10px rgba(30, 77, 43, 0.08)' : '0 1px 3px rgba(0,0,0,0.02)',
+                          border: '2px solid var(--color-forest)',
+                          backgroundColor: '#f7faf7',
+                          boxShadow: '0 2px 10px rgba(30, 77, 43, 0.08)',
+                          padding: '0.95rem 1.15rem',
+                          borderRadius: '14px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.45rem',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flex: 1, minWidth: 0 }}>
-                          {/* Radio Selector */}
-                          <div
-                            style={{
-                              width: '18px',
-                              height: '18px',
-                              borderRadius: '50%',
-                              border: isSelected ? '5px solid var(--color-forest)' : '2px solid #cbd5e1',
-                              backgroundColor: '#fff',
-                              flexShrink: 0,
-                              marginTop: '3px',
-                              transition: 'all 0.15s ease',
-                            }}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-                              <span style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem' }}>
-                                {addr.fullName || customerName}
+                        {/* Top Row: Radio, Name, Badge on Left; Change on Right (Single non-wrapping row) */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '0.6rem', flexWrap: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1, overflow: 'hidden' }}>
+                            <div
+                              style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '50%',
+                                border: '5px solid var(--color-forest)',
+                                backgroundColor: '#fff',
+                                flexShrink: 0,
+                              }}
+                            />
+                            <span style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.94rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {activeAddress.fullName || customerName}
+                            </span>
+                            {activeAddress.isDefault ? (
+                              <span style={{ fontSize: '0.65rem', backgroundColor: '#e2ece4', color: 'var(--color-forest)', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 800, flexShrink: 0 }}>
+                                DEFAULT
                               </span>
-                              {addr.isDefault && (
-                                <span style={{ fontSize: '0.65rem', backgroundColor: '#e2ece4', color: 'var(--color-forest)', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 800 }}>
-                                  DEFAULT
-                                </span>
-                              )}
-                              <span style={{ fontSize: '0.78rem', color: '#555', backgroundColor: '#f3f4f6', padding: '0.1rem 0.4rem', borderRadius: '6px', fontWeight: 600 }}>
-                                📞 {addr.phone}
+                            ) : (
+                              <span style={{ fontSize: '0.65rem', backgroundColor: '#ecfdf5', color: '#047857', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 800, flexShrink: 0 }}>
+                                SELECTED
                               </span>
-                            </div>
-                            <div style={{ fontSize: '0.85rem', color: '#444', lineHeight: '1.45', wordBreak: 'break-word' }}>
-                              {addr.streetAddress}, {addr.city} {addr.state ? `, ${addr.state}` : ''} - <strong>{addr.postalCode}</strong>
-                            </div>
+                            )}
+                          </div>
+
+                          {/* Action buttons: Change & Edit */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                            <button
+                              type="button"
+                              onClick={() => setIsAddressListExpanded(true)}
+                              title="Change to another saved address"
+                              style={{
+                                backgroundColor: 'var(--color-forest)',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '20px',
+                                padding: '0.28rem 0.75rem',
+                                fontSize: '0.78rem',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0,
+                                boxShadow: '0 2px 5px rgba(22, 35, 26, 0.12)',
+                                transition: 'all 0.2s ease',
+                              }}
+                            >
+                              Change
+                            </button>
+                            <button
+                              type="button"
+                              title="Edit this address"
+                              onClick={(e) => handleOpenEditModal(activeAddress, e)}
+                              style={{
+                                background: '#ffffff',
+                                border: '1px solid #cbd5e1',
+                                borderRadius: '20px',
+                                padding: '0.28rem 0.5rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'var(--color-forest)',
+                                flexShrink: 0,
+                                transition: 'all 0.2s ease',
+                              }}
+                            >
+                              <Pencil size={13} />
+                            </button>
                           </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginLeft: '0.5rem', flexShrink: 0 }}>
-                          <button
-                            type="button"
-                            title="Edit Address"
-                            onClick={(e) => handleOpenEditModal(addr, e)}
-                            className="address-action-btn"
-                            style={{
-                              background: '#f8fafc',
-                              border: '1px solid #e2e8f0',
-                              color: 'var(--color-forest)',
-                            }}
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          <button
-                            type="button"
-                            title="Delete Address (Soft Delete)"
-                            onClick={(e) => handleDeleteAddress(addr.id, e)}
-                            className="address-action-btn"
-                            style={{
-                              background: '#fff1f2',
-                              border: '1px solid #fecdd3',
-                              color: '#e11d48',
-                            }}
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                        {/* Phone Number Row */}
+                        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                          <span style={{ fontSize: '0.78rem', color: '#555', backgroundColor: '#f3f4f6', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 600 }}>
+                            📞 {activeAddress.phone}
+                          </span>
+                        </div>
+
+                        {/* Full Address Details - Full Width */}
+                        <div style={{ fontSize: '0.88rem', color: '#444', lineHeight: '1.5', width: '100%' }}>
+                          {activeAddress.streetAddress}, {activeAddress.city} {activeAddress.state ? `, ${activeAddress.state}` : ''} - <strong>{activeAddress.postalCode}</strong>
                         </div>
                       </div>
                     );
-                  })}
-                </div>
+                  })()
+                ) : (
+                  // Expanded View: Show all saved addresses to change
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#555' }}>
+                        Select Delivery Address ({savedAddresses.length}/4 saved):
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddressListExpanded(false)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--color-forest)',
+                          fontSize: '0.82rem',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          padding: '0.2rem 0.4rem',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {savedAddresses.map((addr) => {
+                        const isSelected = selectedAddressId === addr.id;
+
+                        return (
+                          <div
+                            key={addr.id}
+                            onClick={() => {
+                              handleSelectAddress(addr);
+                              setIsAddressListExpanded(false);
+                            }}
+                            style={{
+                              border: isSelected ? '2px solid var(--color-forest)' : '1px solid #e2e8f0',
+                              backgroundColor: isSelected ? '#f7faf7' : '#ffffff',
+                              boxShadow: isSelected ? '0 2px 10px rgba(30, 77, 43, 0.08)' : '0 1px 3px rgba(0,0,0,0.02)',
+                              padding: '0.9rem 1.15rem',
+                              borderRadius: '14px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.45rem',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            {/* Top Row: Radio, Name, Badge on Left; Actions on Right */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '0.5rem', flexWrap: 'wrap' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', minWidth: 0, flexWrap: 'wrap' }}>
+                                <div
+                                  style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    borderRadius: '50%',
+                                    border: isSelected ? '5px solid var(--color-forest)' : '2px solid #cbd5e1',
+                                    backgroundColor: '#fff',
+                                    flexShrink: 0,
+                                    transition: 'all 0.15s ease',
+                                  }}
+                                />
+                                <span style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem' }}>
+                                  {addr.fullName || customerName}
+                                </span>
+                                {addr.isDefault && (
+                                  <span style={{ fontSize: '0.65rem', backgroundColor: '#e2ece4', color: 'var(--color-forest)', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 800 }}>
+                                    DEFAULT
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Action buttons */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginLeft: 'auto', flexShrink: 0 }}>
+                                <button
+                                  type="button"
+                                  title="Edit Address"
+                                  onClick={(e) => handleOpenEditModal(addr, e)}
+                                  className="address-action-btn"
+                                  style={{
+                                    background: '#f8fafc',
+                                    border: '1px solid #e2e8f0',
+                                    color: 'var(--color-forest)',
+                                  }}
+                                >
+                                  <Pencil size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  title="Delete Address (Soft Delete)"
+                                  onClick={(e) => handleDeleteAddress(addr.id, e)}
+                                  className="address-action-btn"
+                                  style={{
+                                    background: '#fff1f2',
+                                    border: '1px solid #fecdd3',
+                                    color: '#e11d48',
+                                  }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Phone Number Row */}
+                            <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                              <span style={{ fontSize: '0.78rem', color: '#555', backgroundColor: '#f3f4f6', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 600 }}>
+                                📞 {addr.phone}
+                              </span>
+                            </div>
+
+                            {/* Full Address Details - Full Width */}
+                            <div style={{ fontSize: '0.85rem', color: '#444', lineHeight: '1.45', width: '100%' }}>
+                              {addr.streetAddress}, {addr.city} {addr.state ? `, ${addr.state}` : ''} - <strong>{addr.postalCode}</strong>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div
@@ -1062,9 +1191,9 @@ export const CheckoutForm: React.FC = () => {
                       UPI / Cards / NetBanking
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                  {/* <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
                     Pay securely via Google Pay, PhonePe, Paytm, BHIM, Cards & NetBanking
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
@@ -1102,9 +1231,9 @@ export const CheckoutForm: React.FC = () => {
                       UPI / Scan & Pay
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                  {/* <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
                     Scan QR via Google Pay, PhonePe, Paytm or BHIM & upload screenshot
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
@@ -1137,9 +1266,9 @@ export const CheckoutForm: React.FC = () => {
                   <div style={{ fontWeight: 800, fontSize: '0.94rem', color: 'var(--color-forest)' }}>
                     Cash on Delivery (COD)
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                  {/* <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '2px' }}>
                     Pay with cash upon delivery at your doorstep
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
@@ -1153,212 +1282,41 @@ export const CheckoutForm: React.FC = () => {
             )}
           </div>
 
-          {/* QR Code Scan & Screenshot Upload Section */}
+          {/* QR Code Informative Notice */}
           {selectedPayment === 'qr' && (
             <div
               style={{
-                backgroundColor: '#fbfcf9',
-                borderRadius: '16px',
+                backgroundColor: '#fbf8f2',
+                borderRadius: '14px',
                 border: '1.5px solid var(--color-gold)',
-                padding: '1.5rem',
+                padding: '1.15rem 1.25rem',
                 marginBottom: '1.5rem',
-                boxShadow: '0 4px 16px rgba(27, 67, 50, 0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.85rem',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.2rem' }}>
-                <div style={{ padding: '0.45rem', borderRadius: '10px', backgroundColor: '#e2ece4', color: 'var(--color-forest)' }}>
-                  <QrCode size={22} />
-                </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--color-forest)' }}>
-                    Scan QR Code to Pay ₹{formatPrice(totalAmount)}
-                  </h4>
-                  <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-                    Scan with any UPI App (GPay, PhonePe, Paytm) & upload payment screenshot
-                  </p>
-                </div>
-              </div>
-
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                  gap: '1.5rem',
-                  alignItems: 'start',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(200, 157, 102, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  color: 'var(--color-forest)',
                 }}
               >
-                {/* QR Code Visual Column */}
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    backgroundColor: '#ffffff',
-                    padding: '1.2rem',
-                    borderRadius: '14px',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-                    textAlign: 'center',
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'relative',
-                      padding: '10px',
-                      backgroundColor: '#ffffff',
-                      borderRadius: '12px',
-                      border: '2px dashed var(--color-gold)',
-                      marginBottom: '0.75rem',
-                    }}
-                  >
-                    <img
-                      src="/images/qr-code.jpg"
-                      alt="UPI QR Code"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/qr-1789384287719-24192059.jpg';
-                      }}
-                      style={{
-                        width: '190px',
-                        height: '190px',
-                        objectFit: 'contain',
-                        display: 'block',
-                      }}
-                    />
-                  </div>
-
-                  <div style={{ fontSize: '0.94rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.2rem' }}>
-                    Amount: ₹{formatPrice(totalAmount)}
-                  </div>
-                  <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                    Supported: Google Pay, PhonePe, Paytm, BHIM UPI
-                  </div>
+                <QrCode size={24} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--color-forest)', marginBottom: '0.2rem' }}>
+                  Pay with UPI QR Code
                 </div>
-
-                {/* Screenshot Upload & UTR Column */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-                  {/* Transaction ID / UTR Input */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
-                      UPI Reference / UTR Number (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 12-digit UTR (423456789012)"
-                      value={qrTransactionId}
-                      onChange={(e) => setQrTransactionId(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '0.65rem 0.85rem',
-                        borderRadius: '10px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '0.88rem',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-
-                  {/* Screenshot Upload Box */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-forest)', marginBottom: '0.35rem' }}>
-                      Upload Payment Screenshot <span style={{ color: '#dc2626' }}>*</span>
-                    </label>
-
-                    {qrScreenshotPreview ? (
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.8rem',
-                          padding: '0.75rem',
-                          backgroundColor: '#ffffff',
-                          borderRadius: '12px',
-                          border: '1.5px solid #10b981',
-                        }}
-                      >
-                        <img
-                          src={qrScreenshotPreview}
-                          alt="Screenshot Preview"
-                          style={{
-                            width: '56px',
-                            height: '56px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            border: '1px solid #e2e8f0',
-                          }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#065f46', fontSize: '0.82rem', fontWeight: 700 }}>
-                            <CheckCircle2 size={15} color="#10b981" />
-                            <span>Screenshot Attached</span>
-                          </div>
-                          <div style={{ fontSize: '0.74rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {qrScreenshotFile?.name} ({(Number(qrScreenshotFile?.size || 0) / 1024).toFixed(1)} KB)
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleRemoveScreenshot}
-                          style={{
-                            backgroundColor: '#fff1f2',
-                            border: '1px solid #fecdd3',
-                            color: '#e11d48',
-                            borderRadius: '8px',
-                            padding: '0.4rem 0.65rem',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <label
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: '1.4rem 1rem',
-                          backgroundColor: '#ffffff',
-                          borderRadius: '12px',
-                          border: '1.5px dashed #94a3b8',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          textAlign: 'center',
-                        }}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                            const file = e.dataTransfer.files[0];
-                            if (file.size > 10 * 1024 * 1024) {
-                              showToast('Screenshot file size exceeds 10MB limit.', 'error');
-                              return;
-                            }
-                            setQrScreenshotFile(file);
-                            const reader = new FileReader();
-                            reader.onload = () => setQrScreenshotPreview(reader.result as string);
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                      >
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleScreenshotChange}
-                          style={{ display: 'none' }}
-                        />
-                        <UploadCloud size={28} color="var(--color-forest)" style={{ marginBottom: '0.35rem' }} />
-                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-forest)' }}>
-                          Click to upload payment screenshot
-                        </span>
-                        <span style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '3px' }}>
-                          Upload JPG, PNG, WEBP, AVIF (Saves to backend/uploads/QR)
-                        </span>
-                      </label>
-                    )}
-                  </div>
+                <div style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: '1.4' }}>
+                  Click &apos;Pay with QR&apos; below to open the QR payment page, scan with Google Pay, PhonePe, Paytm or BHIM, and upload your payment screenshot.
                 </div>
               </div>
             </div>
@@ -1406,7 +1364,7 @@ export const CheckoutForm: React.FC = () => {
             ) : selectedPayment === 'qr' ? (
               <>
                 <QrCode size={18} />
-                <span>Place Order with QR Screenshot • ₹{formatPrice(totalAmount)}</span>
+                <span>Pay with QR • ₹{formatPrice(totalAmount)}</span>
               </>
             ) : (
               <>
@@ -1477,6 +1435,7 @@ export const CheckoutForm: React.FC = () => {
         onSaveSuccess={async (savedAddr) => {
           await loadAddresses();
           handleSelectAddress(savedAddr);
+          setIsAddressListExpanded(false);
           showToast('Delivery address saved successfully!', 'success');
         }}
       />
