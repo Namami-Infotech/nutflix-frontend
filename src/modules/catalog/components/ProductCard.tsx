@@ -17,7 +17,6 @@ const FALLBACK_IMG = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d
 
 export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
   const [mounted, setMounted] = useState(false);
-  const [showFullDesc, setShowFullDesc] = useState(false);
   const { items, addToCart, updateQuantity } = useCart();
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
@@ -32,7 +31,6 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
   const productUrl = `/products/${product.slug || product.id}`;
   const { regularPrice, currentPrice, hasDiscount, discountPercent } = getProductPrices(product);
   const descText = product.description || '';
-  const isLongDesc = descText.length > 70;
 
   return (
     <div className="product-card">
@@ -119,43 +117,10 @@ export const ProductCard: React.FC<Props> = ({ product, onQuickView }) => {
           {descText && (
             <div style={{ marginBottom: '0.6rem' }}>
               <Link href={productUrl} style={{ textDecoration: 'none', display: 'block' }}>
-                <p
-                  className={showFullDesc ? 'product-desc-expanded' : 'product-desc'}
-                  style={{
-                    cursor: 'pointer',
-                    margin: 0,
-                    marginBottom: isLongDesc ? '0.25rem' : '0',
-                    ...(showFullDesc ? { display: 'block', overflow: 'visible' } : {})
-                  }}
-                >
+                <p className="product-desc" style={{ cursor: 'pointer', margin: 0 }}>
                   {descText}
                 </p>
               </Link>
-              {isLongDesc && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowFullDesc(!showFullDesc);
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: 'var(--color-gold-dark, #b45309)',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '2px',
-                    textDecoration: 'underline',
-                  }}
-                >
-                  {showFullDesc ? 'View less' : 'View more'}
-                </button>
-              )}
             </div>
           )}
 

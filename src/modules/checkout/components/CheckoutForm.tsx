@@ -738,16 +738,23 @@ export const CheckoutForm: React.FC = () => {
   }
 
   return (
-    <div className="checkout-page-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1rem' }}>
+    <div className="checkout-page-container">
       <style>{`
         .checkout-page-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 2.5rem 1.25rem;
+          width: 100%;
           box-sizing: border-box;
+          overflow-x: hidden;
         }
         .checkout-grid-layout {
           display: grid;
           grid-template-columns: 1.55fr 1fr;
           gap: 2rem;
           align-items: flex-start;
+          width: 100%;
+          box-sizing: border-box;
         }
         .checkout-card {
           background-color: #ffffff;
@@ -756,6 +763,19 @@ export const CheckoutForm: React.FC = () => {
           border: 1px solid var(--color-border);
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
           box-sizing: border-box;
+          width: 100%;
+        }
+        .active-address-card {
+          border: 2px solid var(--color-forest);
+          background-color: #f7faf7;
+          box-shadow: 0 2px 10px rgba(30, 77, 43, 0.08);
+          padding: 0.95rem 1.15rem;
+          borderRadius: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.45rem;
+          box-sizing: border-box;
+          width: 100%;
         }
         .address-card-item {
           display: flex;
@@ -766,6 +786,7 @@ export const CheckoutForm: React.FC = () => {
           cursor: pointer;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           box-sizing: border-box;
+          width: 100%;
         }
         .address-card-item:hover {
           border-color: var(--color-gold) !important;
@@ -785,28 +806,46 @@ export const CheckoutForm: React.FC = () => {
         }
         @media (max-width: 900px) {
           .checkout-grid-layout {
-            grid-template-columns: 1fr;
+            grid-template-columns: 100%;
             gap: 1.5rem;
+            width: 100%;
           }
           .checkout-summary-card {
             position: static !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
           }
         }
         @media (max-width: 600px) {
           .checkout-page-container {
-            padding: 1.25rem 0.5rem;
+            padding: 1.25rem 0.85rem !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .checkout-grid-layout {
+            grid-template-columns: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
           }
           .checkout-card {
-            padding: 1.2rem 1rem;
-            border-radius: 16px;
+            padding: 1.15rem 0.85rem !important;
+            border-radius: 16px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .active-address-card {
+            padding: 0.75rem 0.75rem !important;
+            gap: 0.35rem !important;
           }
           .checkout-summary-card {
-            padding: 1.2rem 1rem !important;
+            padding: 1.15rem 0.85rem !important;
             border-radius: 16px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
           }
           .address-card-item {
-            padding: 0.85rem 0.9rem;
-            gap: 0.5rem;
+            padding: 0.75rem 0.75rem !important;
+            gap: 0.4rem !important;
           }
         }
       `}</style>
@@ -887,20 +926,19 @@ export const CheckoutForm: React.FC = () => {
 
                     return (
                       <div
+                        className="active-address-card"
                         style={{
                           border: '2px solid var(--color-forest)',
                           backgroundColor: '#f7faf7',
                           boxShadow: '0 2px 10px rgba(30, 77, 43, 0.08)',
-                          padding: '0.95rem 1.15rem',
                           borderRadius: '14px',
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: '0.45rem',
                         }}
                       >
                         {/* Top Row: Radio, Name, Badge on Left; Change on Right (Single non-wrapping row) */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '0.6rem', flexWrap: 'nowrap' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1, overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '0.5rem', flexWrap: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0, flex: 1, overflow: 'hidden' }}>
                             <div
                               style={{
                                 width: '18px',
@@ -911,22 +949,22 @@ export const CheckoutForm: React.FC = () => {
                                 flexShrink: 0,
                               }}
                             />
-                            <span style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.94rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--color-forest)', fontSize: '0.92rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {activeAddress.fullName || customerName}
                             </span>
                             {activeAddress.isDefault ? (
-                              <span style={{ fontSize: '0.65rem', backgroundColor: '#e2ece4', color: 'var(--color-forest)', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 800, flexShrink: 0 }}>
+                              <span style={{ fontSize: '0.62rem', backgroundColor: '#e2ece4', color: 'var(--color-forest)', padding: '0.1rem 0.4rem', borderRadius: '5px', fontWeight: 800, flexShrink: 0 }}>
                                 DEFAULT
                               </span>
                             ) : (
-                              <span style={{ fontSize: '0.65rem', backgroundColor: '#ecfdf5', color: '#047857', padding: '0.12rem 0.45rem', borderRadius: '6px', fontWeight: 800, flexShrink: 0 }}>
+                              <span style={{ fontSize: '0.62rem', backgroundColor: '#ecfdf5', color: '#047857', padding: '0.1rem 0.4rem', borderRadius: '5px', fontWeight: 800, flexShrink: 0 }}>
                                 SELECTED
                               </span>
                             )}
                           </div>
 
                           {/* Action buttons: Change & Edit */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
                             <button
                               type="button"
                               onClick={() => setIsAddressListExpanded(true)}
@@ -936,8 +974,8 @@ export const CheckoutForm: React.FC = () => {
                                 color: '#ffffff',
                                 border: 'none',
                                 borderRadius: '20px',
-                                padding: '0.28rem 0.75rem',
-                                fontSize: '0.78rem',
+                                padding: '0.24rem 0.6rem',
+                                fontSize: '0.74rem',
                                 fontWeight: 800,
                                 cursor: 'pointer',
                                 display: 'inline-flex',
@@ -959,7 +997,7 @@ export const CheckoutForm: React.FC = () => {
                                 background: '#ffffff',
                                 border: '1px solid #cbd5e1',
                                 borderRadius: '20px',
-                                padding: '0.28rem 0.5rem',
+                                padding: '0.24rem 0.45rem',
                                 cursor: 'pointer',
                                 display: 'inline-flex',
                                 alignItems: 'center',
