@@ -102,6 +102,7 @@ export default function PayQrPage() {
         paymentType: 'qr',
         paymentMethod: 'Pay with QR Code',
         paymentScreenshot: uploadRes.url,
+        status: 'pending',
       });
 
       setLoading(false);
@@ -178,11 +179,26 @@ export default function PayQrPage() {
                 textAlign: 'left',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: '#0f5132', fontWeight: 800, fontSize: '0.92rem' }}>
-                <PackageCheck size={18} /> Payment Screenshot Uploaded
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#0f5132', fontWeight: 800, fontSize: '0.92rem' }}>
+                  <PackageCheck size={18} /> Payment Screenshot Uploaded
+                </div>
+                <span style={{
+                  backgroundColor: '#fef3c7',
+                  color: '#92400e',
+                  border: '1px solid #fde68a',
+                  padding: '0.2rem 0.65rem',
+                  borderRadius: '20px',
+                  fontSize: '0.72rem',
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  Status: {orderComplete.status || 'Pending'}
+                </span>
               </div>
               <p style={{ fontSize: '0.82rem', color: '#555', margin: '0 0 0.85rem' }}>
-                Our verification team will confirm your UPI payment proof shortly and dispatch your package.
+                Order status is <strong>Pending verification</strong>. Our verification team will review your UPI payment proof shortly and confirm your order.
               </p>
 
               {orderComplete.paymentScreenshot && (

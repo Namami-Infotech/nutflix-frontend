@@ -261,6 +261,19 @@ export const OrderTrackerModal: React.FC<OrderTrackerModalProps> = ({ order, isO
             </div>
           )}
 
+          {/* Pending Verification Notice for QR / Unverified Orders */}
+          {rawStatus === 'pending' && (
+            <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', padding: '1rem', borderRadius: '12px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Clock size={24} color="#d97706" style={{ flexShrink: 0 }} />
+              <div>
+                <strong style={{ fontSize: '0.9rem' }}>Payment Verification Pending</strong>
+                <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#b45309' }}>
+                  Your QR Code payment screenshot has been uploaded and is waiting for verification by our accounts team. Once confirmed, processing will begin immediately.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* STEP BY STEP TRACKING TIMELINE */}
           {!isCancelled && !isReturned && (
             <div style={{ marginBottom: '2rem', padding: '0.5rem 0' }}>

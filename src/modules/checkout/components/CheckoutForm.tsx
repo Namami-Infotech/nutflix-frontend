@@ -326,7 +326,12 @@ export const CheckoutForm: React.FC = () => {
     if (selectedPayment === 'cash') {
       setLoading(true);
       try {
-        const res = await submitOrder(orderPayload);
+        const res = await submitOrder({
+          ...orderPayload,
+          paymentType: 'cash',
+          paymentMethod: 'Cash on Delivery',
+          status: 'confirmed',
+        });
         setLoading(false);
         if (res.success && res.data) {
           setOrderComplete(res.data);
@@ -349,6 +354,7 @@ export const CheckoutForm: React.FC = () => {
             ...orderPayload,
             paymentType: 'qr',
             paymentMethod: 'Pay with QR Code',
+            status: 'pending',
           },
           totalAmount,
           customerName: orderPayload.customerName,

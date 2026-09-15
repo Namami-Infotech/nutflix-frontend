@@ -1092,8 +1092,10 @@ export default function UserProfilePage() {
                         const statusColor =
                           ord.status === 'delivered' ? '#10b981' :
                             ord.status === 'shipped' ? '#3b82f6' :
-                              ord.status === 'cancelled' ? '#ef4444' :
-                                ord.status === 'returned' ? '#f97316' : '#8b5cf6';
+                              ord.status === 'confirmed' ? '#059669' :
+                                ord.status === 'pending' ? '#d97706' :
+                                  ord.status === 'cancelled' ? '#ef4444' :
+                                    ord.status === 'returned' ? '#f97316' : '#8b5cf6';
 
                         return (
                           <div

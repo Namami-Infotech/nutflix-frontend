@@ -473,25 +473,37 @@ export async function fetchBanners(params?: { includeInactive?: boolean }): Prom
 }
 
 export async function submitOrder(orderData: any) {
+  const isQr =
+    orderData.paymentType === 'qr' ||
+    orderData.paymentMethod === 'Pay with QR Code' ||
+    (typeof orderData.paymentMethod === 'string' && orderData.paymentMethod.toLowerCase().includes('qr')) ||
+    Boolean(orderData.paymentScreenshot);
+
+  const resolvedStatus = orderData.status || (isQr ? 'pending' : 'confirmed');
+
   const resolvedPaymentMethod =
     orderData.paymentMethod ||
     (orderData.paymentType === 'cash'
       ? 'Cash on Delivery'
-      : orderData.paymentType === 'qr'
+      : isQr
         ? 'Pay with QR Code'
         : 'Online / UPI Payment');
+
+  const resolvedPaymentType =
+    orderData.paymentType ||
+    (orderData.paymentMethod === 'Cash on Delivery'
+      ? 'cash'
+      : isQr
+        ? 'qr'
+        : 'online');
+
   const payload = {
     ...orderData,
     customerEmail: (orderData.customerEmail || '').toLowerCase().trim(),
-    paymentType:
-      orderData.paymentType ||
-      (orderData.paymentMethod === 'Cash on Delivery'
-        ? 'cash'
-        : orderData.paymentMethod === 'Pay with QR Code'
-          ? 'qr'
-          : 'online'),
+    paymentType: resolvedPaymentType,
     paymentMethod: resolvedPaymentMethod,
     paymentScreenshot: orderData.paymentScreenshot || undefined,
+    status: resolvedStatus,
   };
 
   try {
@@ -521,11 +533,11 @@ export async function submitOrder(orderData: any) {
     customerEmail: (orderData.customerEmail || '').toLowerCase().trim(),
     shippingAddress: orderData.shippingAddress,
     paymentMethod: resolvedPaymentMethod,
-    paymentType: orderData.paymentType || 'online',
+    paymentType: resolvedPaymentType,
     paymentScreenshot: orderData.paymentScreenshot || undefined,
     transactionId: orderData.transactionId || undefined,
     totalAmount: String(orderData.totalAmount || '0.00'),
-    status: 'confirmed',
+    status: resolvedStatus,
     createdAt: new Date().toISOString(),
     items: orderData.items || [],
   };

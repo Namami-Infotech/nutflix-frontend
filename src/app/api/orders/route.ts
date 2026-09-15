@@ -58,6 +58,11 @@ export async function POST(request: NextRequest) {
     }
 
     const orderNumber = 'NF-00001';
+    const isQr =
+      body.paymentType === 'qr' ||
+      (typeof body.paymentMethod === 'string' && body.paymentMethod.toLowerCase().includes('qr')) ||
+      Boolean(body.paymentScreenshot);
+    const orderStatus = body.status || (isQr ? 'pending' : 'confirmed');
 
     return NextResponse.json({
       success: true,
@@ -68,6 +73,10 @@ export async function POST(request: NextRequest) {
         customerEmail: body.customerEmail,
         shippingAddress: body.shippingAddress,
         totalAmount: body.totalAmount,
+        status: orderStatus,
+        paymentType: body.paymentType || (isQr ? 'qr' : 'online'),
+        paymentMethod: body.paymentMethod || (isQr ? 'Pay with QR Code' : 'Online / UPI'),
+        paymentScreenshot: body.paymentScreenshot || undefined,
         items: body.items,
         createdAt: new Date().toISOString(),
       },
