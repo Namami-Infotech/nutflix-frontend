@@ -139,8 +139,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               priority={isFirstOrActive}
               draggable={false}
               className="hero-banner-img"
+              containerClassName="hero-banner-container"
+              containerStyle={{ width: '100%', height: 'auto' }}
               style={{
                 userSelect: 'none',
+                width: '100%',
+                height: 'auto',
+                display: 'block',
               }}
             />
           );
@@ -232,10 +237,18 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
       {/* Responsive Styles */}
       <style jsx global>{`
+        .hero-banner-container {
+          width: 100% !important;
+          height: auto !important;
+        }
+
         .hero-banner-img {
-          width: 100%;
-          height: auto;
-          display: block;
+          width: 100% !important;
+          height: auto !important;
+          min-height: unset !important;
+          max-height: none !important;
+          display: block !important;
+          object-fit: contain !important;
         }
 
         .hero-banner-controls {
@@ -325,17 +338,23 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
         /* Responsive Breakpoints */
         @media (max-width: 768px) {
+          .hero-banner-container {
+            width: 100% !important;
+            height: auto !important;
+          }
+
           .hero-banner-img {
-            min-height: 240px;
-            height: 240px;
-            object-fit: cover;
-            object-position: center;
+            width: 100% !important;
+            height: auto !important;
+            min-height: unset !important;
+            max-height: none !important;
+            object-fit: contain !important;
           }
 
           .hero-banner-controls {
-            bottom: 0.5rem;
-            padding: 0.22rem 0.6rem;
-            gap: 0.5rem;
+            bottom: 0.45rem;
+            padding: 0.2rem 0.55rem;
+            gap: 0.45rem;
           }
 
           .hero-banner-dot {
@@ -363,15 +382,21 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         }
 
         @media (max-width: 480px) {
+          .hero-banner-container {
+            width: 100% !important;
+            height: auto !important;
+          }
+
           .hero-banner-img {
-            min-height: 220px;
-            height: 220px;
-            object-fit: cover;
-            object-position: center;
+            width: 100% !important;
+            height: auto !important;
+            min-height: unset !important;
+            max-height: none !important;
+            object-fit: contain !important;
           }
 
           .hero-banner-controls {
-            bottom: 0.35rem;
+            bottom: 0.3rem;
             padding: 0.15rem 0.45rem;
             gap: 0.35rem;
             border-radius: 20px;
@@ -412,15 +437,21 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         }
 
         @media (max-width: 360px) {
+          .hero-banner-container {
+            width: 100% !important;
+            height: auto !important;
+          }
+
           .hero-banner-img {
-            min-height: 195px;
-            height: 200px;
-            object-fit: cover;
-            object-position: center;
+            width: 100% !important;
+            height: auto !important;
+            min-height: unset !important;
+            max-height: none !important;
+            object-fit: contain !important;
           }
 
           .hero-banner-controls {
-            bottom: 0.25rem;
+            bottom: 0.2rem;
             padding: 0.12rem 0.35rem;
             gap: 0.25rem;
           }
