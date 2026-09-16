@@ -38,14 +38,25 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
     setCurrentIndex((prevIndex) => (prevIndex - 1 + activeBanners.length) % activeBanners.length);
   }, [activeBanners.length]);
 
-  // Auto-scroll Timer (Fast 3s interval)
+  const nextRandomSlide = useCallback(() => {
+    if (activeBanners.length <= 1) return;
+    setCurrentIndex((prevIndex) => {
+      let nextIndex = prevIndex;
+      while (nextIndex === prevIndex) {
+        nextIndex = Math.floor(Math.random() * activeBanners.length);
+      }
+      return nextIndex;
+    });
+  }, [activeBanners.length]);
+
+  // Auto-scroll Timer (Randomly swaps between banners instead of single-line order)
   useEffect(() => {
     if (isPaused || activeBanners.length <= 1) return;
     const interval = setInterval(() => {
-      nextSlide();
+      nextRandomSlide();
     }, autoScrollInterval);
     return () => clearInterval(interval);
-  }, [isPaused, nextSlide, activeBanners.length, autoScrollInterval]);
+  }, [isPaused, nextRandomSlide, activeBanners.length, autoScrollInterval]);
 
   // Keyboard navigation support (Left / Right arrow keys)
   useEffect(() => {
@@ -108,18 +119,19 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         overflow: 'hidden',
       }}
     >
-      {/* Smooth Sliding Track Container */}
+      {/* Smooth Swap / Crossfade Container */}
       <div
         style={{
-          display: 'flex',
+          position: 'relative',
           width: '100%',
-          transform: `translate3d(-${currentIndex * 100}%, 0, 0)`,
-          transition: 'transform 0.65s cubic-bezier(0.25, 1, 0.5, 1)',
-          willChange: 'transform',
+          display: 'grid',
+          gridTemplateColumns: '1fr',
+          gridTemplateRows: '1fr',
         }}
       >
         {activeBanners.map((banner, index) => {
-          const isFirstOrActive = index === 0 || index === currentIndex;
+          const isActive = index === currentIndex;
+          const isFirstOrActive = index === 0 || isActive;
           const imgElement = (
             <OptimizedImage
               src={banner.imageUrl}
@@ -137,9 +149,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <div
               key={banner.id || `banner-${index}`}
               style={{
-                flex: '0 0 100%',
-                minWidth: '100%',
-                maxWidth: '100%',
+                gridArea: '1 / 1 / 2 / 2',
+                width: '100%',
+                opacity: isActive ? 1 : 0,
+                visibility: isActive ? 'visible' : 'hidden',
+                transition: 'opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.7s ease',
+                pointerEvents: isActive ? 'auto' : 'none',
+                zIndex: isActive ? 2 : 1,
               }}
             >
               {banner.ctaLink ? (
