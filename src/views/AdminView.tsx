@@ -25,7 +25,9 @@ import {
   X,
   Menu,
   MessageSquare,
-  QrCode
+  QrCode,
+  Monitor,
+  Smartphone
 } from 'lucide-react';
 import { ImageCropperModal } from '@/components/ui/ImageCropperModal';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
@@ -197,13 +199,14 @@ export default function AdminView() {
   const [uploadingProduct, setUploadingProduct] = useState(false);
   const [uploadingCategory, setUploadingCategory] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingMobileBanner, setUploadingMobileBanner] = useState(false);
 
   // Admin Cropper States
   const [adminCropperOpen, setAdminCropperOpen] = useState(false);
   const [adminCropperSrc, setAdminCropperSrc] = useState<string | null>(null);
   const [adminCropperAspect, setAdminCropperAspect] = useState<number>(1);
   const [adminCropperTitle, setAdminCropperTitle] = useState('Crop Image');
-  const [adminCropperTarget, setAdminCropperTarget] = useState<'product' | 'category' | 'banner'>('product');
+  const [adminCropperTarget, setAdminCropperTarget] = useState<'product' | 'category' | 'banner' | 'mobileBanner'>('product');
 
   const handleProductFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -260,9 +263,31 @@ export default function AdminView() {
       reader.onloadend = () => {
         if (reader.result) {
           setAdminCropperSrc(reader.result as string);
-          setAdminCropperAspect(1900 / 650); // 1900x650 ratio for hero banner
-          setAdminCropperTitle('Crop Hero Banner Image (1900×650)');
+          setAdminCropperAspect(1900 / 650); // 1900x650 ratio for hero desktop banner
+          setAdminCropperTitle('Crop Desktop Banner Image (1900×650)');
           setAdminCropperTarget('banner');
+          setAdminCropperOpen(true);
+        }
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+  };
+
+  const handleMobileBannerFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File size exceeds 5MB limit. Please choose an image under 5MB.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          setAdminCropperSrc(reader.result as string);
+          setAdminCropperAspect(1200 / 896); // 1200x896 ratio for mobile banner
+          setAdminCropperTitle('Crop Mobile Banner Image (1200×896)');
+          setAdminCropperTarget('mobileBanner');
           setAdminCropperOpen(true);
         }
       };
@@ -279,7 +304,8 @@ export default function AdminView() {
     highlightText: 'Harvested With Care.',
     ctaText: 'Shop Premium Dry Fruits',
     ctaLink: '#products',
-    imageUrl: ''
+    imageUrl: '',
+    mobileImageUrl: '',
   });
 
   const [toastMsg, setToastMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -698,20 +724,34 @@ export default function AdminView() {
     }
 
     if (!bannerForm.imageUrl) {
-      showToast('Please upload a banner image first.', 'error');
+      showToast('Please upload a desktop banner image (1900×650) first.', 'error');
+      return;
+    }
+
+    if (!bannerForm.mobileImageUrl) {
+      showToast('Please upload a mobile banner image (1200×896).', 'error');
       return;
     }
 
     let finalImageUrl = bannerForm.imageUrl;
     if (finalImageUrl.startsWith('data:')) {
-      showToast('Uploading banner image to server...');
+      showToast('Uploading desktop banner image to server...');
       const uploadRes = await uploadImage(finalImageUrl);
       if (uploadRes.success && uploadRes.url) {
         finalImageUrl = uploadRes.url;
       }
     }
 
-    const payload = { ...bannerForm, imageUrl: finalImageUrl };
+    let finalMobileImageUrl = bannerForm.mobileImageUrl || '';
+    if (finalMobileImageUrl.startsWith('data:')) {
+      showToast('Uploading mobile banner image to server...');
+      const uploadRes = await uploadImage(finalMobileImageUrl);
+      if (uploadRes.success && uploadRes.url) {
+        finalMobileImageUrl = uploadRes.url;
+      }
+    }
+
+    const payload = { ...bannerForm, imageUrl: finalImageUrl, mobileImageUrl: finalMobileImageUrl };
 
     if (editingBanner) {
       const res = await updateBanner(editingBanner.id, payload);
@@ -1392,12 +1432,12 @@ export default function AdminView() {
                   searchQuery={searchQuery}
                   onAddBanner={() => {
                     setEditingBanner(null);
-                    setBannerForm({ badgeText: 'Premium Harvest Special', title: '', highlightText: '', ctaText: 'Shop Premium Dry Fruits', ctaLink: '#products', imageUrl: '' });
+                    setBannerForm({ badgeText: 'Premium Harvest Special', title: '', highlightText: '', ctaText: 'Shop Premium Dry Fruits', ctaLink: '#products', imageUrl: '', mobileImageUrl: '' });
                     setBannerModalOpen(true);
                   }}
                   onEditBanner={(b) => {
                     setEditingBanner(b);
-                    setBannerForm({ badgeText: b.badgeText || '', title: b.title || '', highlightText: b.highlightText || '', ctaText: b.ctaText || 'Shop Now', ctaLink: b.ctaLink || '#products', imageUrl: b.imageUrl || '' });
+                    setBannerForm({ badgeText: b.badgeText || '', title: b.title || '', highlightText: b.highlightText || '', ctaText: b.ctaText || 'Shop Now', ctaLink: b.ctaLink || '#products', imageUrl: b.imageUrl || '', mobileImageUrl: b.mobileImageUrl || '' });
                     setBannerModalOpen(true);
                   }}
                   onDeleteBanner={handleDeleteBanner}
@@ -2041,7 +2081,7 @@ export default function AdminView() {
       {/* BANNER FORM MODAL */}
       {bannerModalOpen && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', width: '100%', maxWidth: '780px', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ backgroundColor: '#ffffff', width: '100%', maxWidth: '840px', borderRadius: '24px', border: '1px solid #e2e8f0', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
             {/* Modal Header */}
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff' }}>
@@ -2050,7 +2090,7 @@ export default function AdminView() {
                   {editingBanner ? 'Edit Banner' : 'Upload Banner'}
                 </h3>
                 <p style={{ margin: '0.15rem 0 0', fontSize: '0.78rem', color: '#64748b' }}>
-                  Update hero banner headlines and image file.
+                  Upload desktop (1900×650) and mobile (1200×896) banners for perfect responsive display.
                 </p>
               </div>
               <button
@@ -2072,36 +2112,38 @@ export default function AdminView() {
                   </span>
                 </div>
               )}
-              <div style={{ padding: '1.35rem 1.5rem', overflowY: 'auto', flexGrow: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1.25rem', alignItems: 'start' }}>
-                {/* Left Column */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
-                      Banner Main Title *
-                    </label>
-                    <input
-                      type="text"
-                      value={bannerForm.title}
-                      onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
-                      required
-                      placeholder="e.g. Handcrafted Premium Dry Fruits"
-                      style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
-                    />
-                  </div>
+              <div style={{ padding: '1.35rem 1.5rem', overflowY: 'auto', flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {/* Banner Title */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
+                    Banner Main Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={bannerForm.title}
+                    onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
+                    required
+                    placeholder="e.g. Handcrafted Premium Dry Fruits"
+                    style={{ width: '100%', padding: '0.75rem 0.9rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem', outline: 'none' }}
+                  />
                 </div>
 
-                {/* Right Column */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
-                  {/* Upload Image Section */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 800, marginBottom: '0.35rem', color: '#334155' }}>
-                      Banner Image *
-                    </label>
+                {/* 2 Banners Upload Grid: Desktop + Mobile */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1.25rem', alignItems: 'start' }}>
+                  {/* Field 1: Desktop / Web Banner */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.35rem' }}>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.35rem', margin: 0 }}>
+                        <Monitor size={15} color="#0f291e" /> Desktop / Web Banner *
+                      </label>
+                      <span style={{ fontSize: '0.7rem', color: '#166534', backgroundColor: '#dcfce7', padding: '0.15rem 0.45rem', borderRadius: '6px', fontWeight: 700 }}>
+                        1900×650
+                      </span>
+                    </div>
 
-                    {/* Integrated File Upload & Preview Box */}
                     <div style={{
-                      border: '2px dashed #f59e0b',
-                      backgroundColor: '#fffbeb',
+                      border: '2px dashed #0f291e',
+                      backgroundColor: '#f8fafc',
                       borderRadius: '14px',
                       padding: bannerForm.imageUrl && !uploadingBanner ? '0.75rem 1rem' : '1.25rem 1rem',
                       textAlign: 'center',
@@ -2121,28 +2163,28 @@ export default function AdminView() {
 
                       {uploadingBanner ? (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', pointerEvents: 'none', padding: '0.5rem 0' }}>
-                          <Loader2 size={24} color="#f59e0b" style={{ animation: 'spin 1s linear infinite' }} />
-                          <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#b45309' }}>
-                            Uploading image to server...
+                          <Loader2 size={24} color="#0f291e" style={{ animation: 'spin 1s linear infinite' }} />
+                          <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f291e' }}>
+                            Uploading desktop image...
                           </span>
                         </div>
                       ) : bannerForm.imageUrl ? (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', textAlign: 'left', minWidth: 0 }}>
                           <img
                             src={bannerForm.imageUrl}
-                            alt="Banner Preview"
-                            style={{ width: '70px', height: '42px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #cbd5e1', boxShadow: '0 2px 6px rgba(0,0,0,0.06)', flexShrink: 0 }}
+                            alt="Desktop Banner Preview"
+                            style={{ width: '85px', height: '36px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1', boxShadow: '0 2px 6px rgba(0,0,0,0.06)', flexShrink: 0 }}
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=1600&q=80';
                             }}
                           />
                           <div style={{ flexGrow: 1, minWidth: 0, overflow: 'hidden' }}>
-                            <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f291e', display: 'block' }}>Image Uploaded ✓</span>
-                            <span style={{ fontSize: '0.72rem', color: '#64748b', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', display: 'block', maxWidth: '100%' }}>
-                              {bannerForm.imageUrl.startsWith('data:') ? 'Uploaded Cropped Image (Base64)' : bannerForm.imageUrl}
+                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f291e', display: 'block' }}>Desktop Banner ✓</span>
+                            <span style={{ fontSize: '0.68rem', color: '#64748b', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', display: 'block', maxWidth: '100%' }}>
+                              {bannerForm.imageUrl.startsWith('data:') ? 'Cropped Base64' : bannerForm.imageUrl}
                             </span>
-                            <span style={{ fontSize: '0.7rem', color: '#d97706', fontWeight: 700, display: 'inline-block', marginTop: '0.1rem' }}>
-                              Click or drag new image to replace
+                            <span style={{ fontSize: '0.68rem', color: '#166534', fontWeight: 700, display: 'inline-block', marginTop: '0.1rem' }}>
+                              Click or drag to replace
                             </span>
                           </div>
                           <button
@@ -2158,18 +2200,108 @@ export default function AdminView() {
                         </div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', pointerEvents: 'none' }}>
-                          <div style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Upload size={20} color="#d97706" />
+                          <div style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Upload size={18} color="#0f291e" />
                           </div>
-                          <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#b45309' }}>
-                            Click or Drag Image File Here to Upload
+                          <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f291e' }}>
+                            Upload Desktop Banner
                           </span>
-                          <span style={{ fontSize: '0.74rem', color: '#64748b' }}>
-                            Supports PNG, JPG, WEBP (Max 5MB)
+                          <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                            Ratio 1900×650 (PNG, JPG, WEBP)
                           </span>
                         </div>
                       )}
                     </div>
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                      Shows on desktops, laptops, and wide screen monitors.
+                    </span>
+                  </div>
+
+                  {/* Field 2: Mobile Banner */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.35rem' }}>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 800, color: '#334155', display: 'flex', alignItems: 'center', gap: '0.35rem', margin: 0 }}>
+                        <Smartphone size={15} color="#d97706" /> Mobile Banner Image <span style={{ color: '#ef4444' }}>*</span>
+                      </label>
+                      <span style={{ fontSize: '0.7rem', color: '#b45309', backgroundColor: '#fef3c7', padding: '0.15rem 0.45rem', borderRadius: '6px', fontWeight: 700 }}>
+                        1200×896
+                      </span>
+                    </div>
+
+                    <div style={{
+                      border: '2px dashed #f59e0b',
+                      backgroundColor: '#fffbeb',
+                      borderRadius: '14px',
+                      padding: bannerForm.mobileImageUrl && !uploadingMobileBanner ? '0.75rem 1rem' : '1.25rem 1rem',
+                      textAlign: 'center',
+                      cursor: uploadingMobileBanner ? 'wait' : 'pointer',
+                      position: 'relative',
+                      transition: 'all 0.2s ease',
+                      overflow: 'hidden'
+                    }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleMobileBannerFileUpload}
+                        id="mobile-banner-upload-input"
+                        disabled={uploadingMobileBanner}
+                        style={{ position: 'absolute', inset: 0, opacity: 0, cursor: uploadingMobileBanner ? 'wait' : 'pointer', width: '100%', height: '100%', zIndex: 2 }}
+                      />
+
+                      {uploadingMobileBanner ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', pointerEvents: 'none', padding: '0.5rem 0' }}>
+                          <Loader2 size={24} color="#f59e0b" style={{ animation: 'spin 1s linear infinite' }} />
+                          <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#b45309' }}>
+                            Uploading mobile image...
+                          </span>
+                        </div>
+                      ) : bannerForm.mobileImageUrl ? (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', textAlign: 'left', minWidth: 0 }}>
+                          <img
+                            src={bannerForm.mobileImageUrl}
+                            alt="Mobile Banner Preview"
+                            style={{ width: '48px', height: '36px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1', boxShadow: '0 2px 6px rgba(0,0,0,0.06)', flexShrink: 0 }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=800&q=80';
+                            }}
+                          />
+                          <div style={{ flexGrow: 1, minWidth: 0, overflow: 'hidden' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f291e', display: 'block' }}>Mobile Banner ✓</span>
+                            <span style={{ fontSize: '0.68rem', color: '#64748b', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', display: 'block', maxWidth: '100%' }}>
+                              {bannerForm.mobileImageUrl.startsWith('data:') ? 'Cropped Base64' : bannerForm.mobileImageUrl}
+                            </span>
+                            <span style={{ fontSize: '0.68rem', color: '#d97706', fontWeight: 700, display: 'inline-block', marginTop: '0.1rem' }}>
+                              Click or drag to replace
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setBannerForm(prev => ({ ...prev, mobileImageUrl: '' }));
+                            }}
+                            style={{ zIndex: 3, padding: '0.35rem 0.65rem', backgroundColor: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem', pointerEvents: 'none' }}>
+                          <div style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Smartphone size={18} color="#d97706" />
+                          </div>
+                          <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#b45309' }}>
+                            Upload Mobile Banner
+                          </span>
+                          <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                            Ratio 1200×896 (PNG, JPG, WEBP)
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                      Optimized for phone screens with balanced, compact height.
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2230,7 +2362,10 @@ export default function AdminView() {
             showToast('Cropped category image uploaded & URL saved!');
           } else if (adminCropperTarget === 'banner') {
             setBannerForm(prev => ({ ...prev, imageUrl: finalUrl }));
-            showToast('Cropped banner image uploaded & URL saved!');
+            showToast('Cropped desktop banner image uploaded & URL saved!');
+          } else if (adminCropperTarget === 'mobileBanner') {
+            setBannerForm(prev => ({ ...prev, mobileImageUrl: finalUrl }));
+            showToast('Cropped mobile banner image uploaded & URL saved!');
           }
         }}
       />

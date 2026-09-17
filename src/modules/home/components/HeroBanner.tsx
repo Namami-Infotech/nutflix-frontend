@@ -132,14 +132,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         {activeBanners.map((banner, index) => {
           const isActive = index === currentIndex;
           const isFirstOrActive = index === 0 || isActive;
-          const imgElement = (
+          const desktopImgElement = (
             <OptimizedImage
               src={banner.imageUrl}
               alt={banner.title || `Hero Banner ${index + 1}`}
               priority={isFirstOrActive}
               draggable={false}
-              className="hero-banner-img"
-              containerClassName="hero-banner-container"
+              className="hero-banner-img hero-banner-img-desktop"
+              containerClassName="hero-banner-container hero-banner-container-desktop"
               containerStyle={{ width: '100%', height: 'auto' }}
               style={{
                 userSelect: 'none',
@@ -148,6 +148,37 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 display: 'block',
               }}
             />
+          );
+
+          const mobileImgElement = banner.mobileImageUrl ? (
+            <OptimizedImage
+              src={banner.mobileImageUrl}
+              alt={banner.title || `Hero Banner ${index + 1} Mobile`}
+              priority={isFirstOrActive}
+              draggable={false}
+              className="hero-banner-img hero-banner-img-mobile"
+              containerClassName="hero-banner-container hero-banner-container-mobile"
+              containerStyle={{ width: '100%', height: 'auto' }}
+              style={{
+                userSelect: 'none',
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+              }}
+            />
+          ) : null;
+
+          const bannerContent = (
+            <div className="hero-banner-slide-wrapper">
+              <div className="hero-banner-desktop-wrapper">
+                {desktopImgElement}
+              </div>
+              {mobileImgElement && (
+                <div className="hero-banner-mobile-wrapper">
+                  {mobileImgElement}
+                </div>
+              )}
+            </div>
           );
 
           return (
@@ -165,10 +196,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             >
               {banner.ctaLink ? (
                 <Link href={banner.ctaLink} style={{ display: 'block', width: '100%', textDecoration: 'none' }}>
-                  {imgElement}
+                  {bannerContent}
                 </Link>
               ) : (
-                imgElement
+                bannerContent
               )}
             </div>
           );
@@ -237,6 +268,21 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
       {/* Responsive Styles */}
       <style jsx global>{`
+        .hero-banner-slide-wrapper {
+          width: 100%;
+          position: relative;
+        }
+
+        .hero-banner-desktop-wrapper {
+          display: block;
+          width: 100%;
+        }
+
+        .hero-banner-mobile-wrapper {
+          display: none;
+          width: 100%;
+        }
+
         .hero-banner-container {
           width: 100% !important;
           height: auto !important;
@@ -338,6 +384,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
         /* Responsive Breakpoints */
         @media (max-width: 768px) {
+          .hero-banner-desktop-wrapper {
+            display: none !important;
+          }
+
+          .hero-banner-mobile-wrapper {
+            display: block !important;
+          }
+
           .hero-banner-container {
             width: 100% !important;
             height: auto !important;
@@ -349,6 +403,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             min-height: unset !important;
             max-height: none !important;
             object-fit: contain !important;
+          }
+
+          .hero-banner-img-mobile {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 1200 / 896 !important;
+            object-fit: contain !important;
+            max-height: none !important;
           }
 
           .hero-banner-controls {
@@ -393,6 +455,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             min-height: unset !important;
             max-height: none !important;
             object-fit: contain !important;
+          }
+
+          .hero-banner-img-mobile {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 1200 / 896 !important;
+            object-fit: contain !important;
+            max-height: none !important;
           }
 
           .hero-banner-controls {
@@ -448,6 +518,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             min-height: unset !important;
             max-height: none !important;
             object-fit: contain !important;
+          }
+
+          .hero-banner-img-mobile {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 1200 / 896 !important;
+            object-fit: contain !important;
+            max-height: none !important;
           }
 
           .hero-banner-controls {

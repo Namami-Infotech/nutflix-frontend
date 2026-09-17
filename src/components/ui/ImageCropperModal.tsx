@@ -10,6 +10,7 @@ import {
   Crop as CropIcon, 
   Square, 
   RectangleHorizontal,
+  Smartphone,
   Loader2,
   Check
 } from 'lucide-react';
@@ -18,9 +19,9 @@ interface ImageCropperModalProps {
   isOpen: boolean;
   onClose: () => void;
   imageSrc: string | null;
-  aspect?: number; // 1 for Square (Product & Category), 1900/650 for Banner
+  aspect?: number; // 1 for Square (Product & Category), 1900/650 for Banner, 1200/896 for Mobile Banner
   title?: string;
-  targetType?: 'product' | 'category' | 'banner';
+  targetType?: 'product' | 'category' | 'banner' | 'mobileBanner';
   onCropComplete: (croppedImageBase64: string) => void;
 }
 
@@ -79,6 +80,7 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
 
   if (!isOpen || !imageSrc) return null;
 
+  const isMobileBanner = targetType === 'mobileBanner';
   const isBanner = targetType === 'banner' || Math.abs(currentAspect - 1900 / 650) < 0.05;
 
   let displayLabel = '1:1 Square (Product & Category)';
@@ -87,7 +89,9 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   } else if (targetType === 'product') {
     displayLabel = '1:1 Square (Product)';
   } else if (isBanner) {
-    displayLabel = '1900×650 (Hero Banner)';
+    displayLabel = '1900×650 (Desktop Banner)';
+  } else if (isMobileBanner) {
+    displayLabel = '1200×896 (Mobile Banner)';
   }
 
   return (
@@ -111,7 +115,7 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
               Crop Ratio:
             </span>
             <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
-              ({isBanner ? '1900×650 Banner' : '1:1 Square'})
+              ({isBanner ? '1900×650 Desktop Banner' : isMobileBanner ? '1200×896 Mobile Banner' : '1:1 Square'})
             </span>
           </div>
 
@@ -133,7 +137,27 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                 }}
               >
                 <RectangleHorizontal size={14} />
-                <span>1900×650 (Hero Banner)</span>
+                <span>1900×650 (Desktop Banner)</span>
+                <Check size={13} style={{ marginLeft: '2px' }} />
+              </div>
+            ) : isMobileBanner ? (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.42rem 0.85rem',
+                  borderRadius: '8px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  backgroundColor: 'var(--color-forest)',
+                  color: '#ffffff',
+                  border: '1px solid var(--color-forest)',
+                  boxShadow: '0 2px 8px rgba(15, 41, 30, 0.2)',
+                }}
+              >
+                <Smartphone size={14} />
+                <span>1200×896 (Mobile Banner)</span>
                 <Check size={13} style={{ marginLeft: '2px' }} />
               </div>
             ) : (

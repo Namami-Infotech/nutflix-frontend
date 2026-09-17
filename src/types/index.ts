@@ -84,6 +84,7 @@ export interface MasterBanner {
   secondaryCtaText?: string;
   secondaryCtaLink?: string;
   imageUrl: string;
+  mobileImageUrl?: string;
   featuredBadge: string;
   featuredTitle: string;
   featuredSubtitle: string;

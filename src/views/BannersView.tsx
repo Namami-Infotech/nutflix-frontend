@@ -211,11 +211,30 @@ export default function BannersView({
                     }}
                   >
                     <td style={{ padding: '0.55rem 0.75rem', borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }}>
-                      <img
-                        src={b.imageUrl}
-                        alt={b.title}
-                        style={{ width: '85px', height: '45px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #e2e8f0', filter: isInactive ? 'grayscale(40%)' : 'none' }}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <img
+                            src={b.imageUrl}
+                            alt={b.title}
+                            style={{ width: '85px', height: '36px', borderRadius: '5px', objectFit: 'cover', border: '1px solid #cbd5e1', filter: isInactive ? 'grayscale(40%)' : 'none', display: 'block' }}
+                          />
+                          <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, marginTop: '2px' }}>Desktop</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                          {b.mobileImageUrl ? (
+                            <img
+                              src={b.mobileImageUrl}
+                              alt={`${b.title} Mobile`}
+                              style={{ width: '48px', height: '36px', borderRadius: '5px', objectFit: 'cover', border: '1px solid #cbd5e1', filter: isInactive ? 'grayscale(40%)' : 'none', display: 'block' }}
+                            />
+                          ) : (
+                            <div style={{ width: '48px', height: '36px', borderRadius: '5px', border: '1px dashed #cbd5e1', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#94a3b8' }}>
+                              Auto
+                            </div>
+                          )}
+                          <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, marginTop: '2px' }}>Mobile</div>
+                        </div>
+                      </div>
                     </td>
                   
                     <td style={{ padding: '0.55rem 0.75rem', fontWeight: 800, color: isInactive ? '#64748b' : '#0f291e', fontSize: '0.88rem' }}>
@@ -244,12 +263,12 @@ export default function BannersView({
                     <td style={{ padding: '0.55rem 0.75rem', borderTopRightRadius: '8px', borderBottomRightRadius: '8px' }}>
                       <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                         {/* Edit Button commented out as requested */}
-                        {/* <button
+                        <button
                           onClick={() => onEditBanner && onEditBanner(b)}
                           style={{ padding: '0.3rem 0.6rem', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                         >
                           <Edit size={13} /> Edit
-                        </button> */}
+                        </button>
 
                         {isInactive ? (
                           onActivateBanner && (
