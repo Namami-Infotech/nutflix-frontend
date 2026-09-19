@@ -228,7 +228,7 @@ export const Footer: React.FC = () => {
             <Link href="/refund-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Cancellation Policy</Link>
             <Link href="/shipping-policy" style={{ color: '#a0b0a4', textDecoration: 'none' }}>Shipping &amp; Delivery</Link>
           </div>
-          <p>© {new Date().getFullYear()} DARSHAN TECHNO SYSTEM (Brand: NUTFLIX). All rights reserved. GSTIN: 19ADZPG6957G3ZN • FSSAI Lic. No.: 22826039000325.</p>
+          <p>© {new Date().getFullYear()} DARSHAN TECHNO SYSTEM (Brand: NUTCLICK). All rights reserved. GSTIN: 19ADZPG6957G3ZN • FSSAI Lic. No.: 22826039000325.</p>
         </div>
       </footer>
 
