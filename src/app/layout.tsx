@@ -5,12 +5,12 @@ import { CartProvider, CartDrawer } from '@/modules/cart';
 import { AnnouncementBar, Header, Footer } from '@/modules/layout';
 
 export const metadata = {
-  title: 'NUTFLIX | Premium Dry Fruits, Categories',
-  description: 'NUTFLIX - Premium handcrafted dry fruits, almonds, giant roasted cashews, and organic walnuts.',
+  title: 'Nutclick | Premium Dry Fruits, Categories',
+  description: 'NUTCLICK - Premium handcrafted dry fruits, almonds, giant roasted cashews, and organic walnuts.',
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: '/favicon.ico?v=3',
+    shortcut: '/favicon.ico?v=3',
+    apple: '/favicon.ico?v=3',
   },
 };
 

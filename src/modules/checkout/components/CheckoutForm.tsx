@@ -417,7 +417,7 @@ export const CheckoutForm: React.FC = () => {
         key: keyId,
         amount: rzpOrderData.amount, // in paise
         currency: rzpOrderData.currency || 'INR',
-        name: 'Nutflix Tanzania',
+        name: 'Nutclick Tanzania',
         description: `Order Checkout (₹${formatPrice(totalAmount)})`,
         order_id: rzpOrderData.id,
         prefill: {

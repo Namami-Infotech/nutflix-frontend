@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { ShieldCheck, Lock, Eye, FileText, Bell, HelpCircle, Mail, Phone, MapPin, Globe } from 'lucide-react';
 
 export const metadata = {
-  title: 'Privacy Policy | NUTFLIX - Quality Dry Fruits',
-  description: 'Privacy Policy for NUTFLIX (A Brand of Darshan Techno System). Learn how we collect, protect, and handle your personal information.',
+  title: 'Privacy Policy | NUTCLICK - Quality Dry Fruits',
+  description: 'Privacy Policy for NUTCLICK (A Brand of Darshan Techno System). Learn how we collect, protect, and handle your personal information.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -48,10 +48,10 @@ export default function PrivacyPolicyPage() {
             Privacy Policy
           </h1>
           <p style={{ fontSize: '1.05rem', color: 'var(--color-cream)', lineHeight: '1.6', maxWidth: '640px', margin: '0 auto' }}>
-            At NUTFLIX, we respect your privacy. Learn how we handle and protect your personal information.
+            At NUTCLICK, we respect your privacy. Learn how we handle and protect your personal information.
           </p>
           <div style={{ marginTop: '1.2rem', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-            Last Updated: {lastUpdated} • NUTFLIX (A Brand of Darshan Techno System)
+            Last Updated: {lastUpdated} • NUTCLICK (A Brand of Darshan Techno System)
           </div>
         </div>
       </section>
@@ -143,10 +143,10 @@ export default function PrivacyPolicyPage() {
           {/* Core Official Policy Declaration */}
           <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.5rem 1.8rem', borderRadius: '16px', border: '1px solid var(--color-border)', marginBottom: '2.5rem' }}>
             <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              NUTFLIX Privacy Statement
+              NUTCLICK Privacy Statement
             </h2>
             <p style={{ color: 'var(--color-forest)', lineHeight: '1.8', fontSize: '0.98rem', fontWeight: 600 }}>
-              At NUTFLIX, we respect your privacy.
+              At NUTCLICK, we respect your privacy.
             </p>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', marginTop: '0.5rem' }}>
               Information such as your name, mobile number, address, email address and order details may be collected only for processing orders, providing customer service, making deliveries and improving our services.

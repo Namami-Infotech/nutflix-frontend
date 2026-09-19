@@ -698,7 +698,7 @@ export default function EnquiriesView({
                     <Phone size={12} /> Call Customer
                   </a>
                   <a
-                    href={`https://wa.me/${cleanPhoneForWa(selectedEnquiry.phone)}?text=${encodeURIComponent(`Hello ${selectedEnquiry.name}, regards from Nutflix team! In reference to your inquiry on "${selectedEnquiry.subject}"...`)}`}
+                    href={`https://wa.me/${cleanPhoneForWa(selectedEnquiry.phone)}?text=${encodeURIComponent(`Hello ${selectedEnquiry.name}, regards from NUTCLICK team! In reference to your inquiry on "${selectedEnquiry.subject}"...`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -717,7 +717,7 @@ export default function EnquiriesView({
                     <MessageCircle size={13} /> Chat on WhatsApp
                   </a>
                   <a
-                    href={`mailto:${selectedEnquiry.email}?subject=${encodeURIComponent(`Nutflix Response: ${selectedEnquiry.subject}`)}`}
+                    href={`mailto:${selectedEnquiry.email}?subject=${encodeURIComponent(`NUTCLICK Response: ${selectedEnquiry.subject}`)}`}
                     style={{
                       backgroundColor: '#0284c7',
                       color: '#fff',

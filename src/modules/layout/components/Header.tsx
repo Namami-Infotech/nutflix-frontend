@@ -214,11 +214,11 @@ export const Header: React.FC<{ onSearch?: (query: string) => void }> = ({ onSea
               <Menu size={19} />
             </button>
 
-            {/* Brand Logo - Exact nutflix image */}
+            {/* Brand Logo - Exact NUTCLICK image */}
             <Link href="/" className="header-brand-logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', minWidth: 0 }}>
               <img
-                src="/brand-logo.png"
-                alt="NUTFLIX"
+                src="/brand-logo.png?v=2"
+                alt="NUTCLICK"
                 style={{
                   height: '42px',
                   width: 'auto',

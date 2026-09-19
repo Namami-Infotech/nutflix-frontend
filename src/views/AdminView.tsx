@@ -1036,7 +1036,7 @@ export default function AdminView() {
                 Admin Portal
               </h2>
               <p style={{ fontSize: '0.88rem', color: '#64748b', margin: 0 }}>
-                Enter credentials to access Nutflix E-Commerce management.
+                Enter credentials to access NUTCLICK E-Commerce management.
               </p>
             </div>
 

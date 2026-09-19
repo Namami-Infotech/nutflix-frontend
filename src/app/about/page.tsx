@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { Award, Leaf, ShieldCheck, Heart, Sparkles, Truck, CheckCircle2, ArrowRight, Phone, MapPin, Globe } from 'lucide-react';
 
 export const metadata = {
-  title: 'About Us | NUTFLIX - Quality Dry Fruits, Delivered Fresh',
-  description: 'Welcome to NUTFLIX, a brand of Darshan Techno System. Fresh, hygienically packed and carefully selected quality dry fruits at competitive prices.',
+  title: 'About Us | NUTCLICK - Quality Dry Fruits, Delivered Fresh',
+  description: 'Welcome to NUTCLICK, a brand of Darshan Techno System. Fresh, hygienically packed and carefully selected quality dry fruits at competitive prices.',
 };
 
 export default function AboutPage() {
@@ -189,7 +189,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* The NUTFLIX Story & Mission */}
+      {/* The NUTCLICK Story & Mission */}
       <section className="container" style={{ maxWidth: '1000px', marginTop: '4rem' }}>
         <div
           style={{
@@ -204,10 +204,10 @@ export default function AboutPage() {
             <div>
               <span className="badge-impact" style={{ marginBottom: '0.8rem' }}>Darshan Techno System</span>
               <h2 style={{ fontSize: '2.1rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '1.2rem', lineHeight: '1.2' }}>
-                About NUTFLIX
+                About NUTCLICK
               </h2>
               <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.96rem', marginBottom: '1.2rem' }}>
-                <strong>NUTFLIX</strong> is a brand of <strong>Darshan Techno System</strong>, engaged in the online and offline sale of quality dry fruits.
+                <strong>NUTCLICK</strong> is a brand of <strong>Darshan Techno System</strong>, engaged in the online and offline sale of quality dry fruits.
               </p>
               <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.96rem', marginBottom: '1.2rem' }}>
                 We aim to provide fresh, hygienically packed and carefully selected dry fruits with convenient ordering and prompt delivery. Our promise is simple and steadfast: <strong>Quality • Freshness • Value • Convenience</strong>.
@@ -248,7 +248,7 @@ export default function AboutPage() {
                 Brand & Corporate Office
               </div>
               <div style={{ fontSize: '1.6rem', fontWeight: 900, marginBottom: '0.4rem', color: '#ffffff' }}>
-                NUTFLIX
+                NUTCLICK
               </div>
               <div style={{ fontSize: '0.9rem', color: '#c0d4c5', marginBottom: '1.5rem', fontWeight: 600 }}>
                 A Brand of Darshan Techno System

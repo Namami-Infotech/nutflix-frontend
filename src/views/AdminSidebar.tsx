@@ -123,7 +123,7 @@ export default function AdminSidebar({
               minWidth: 0,
               flex: 1,
             }}
-            title="NUTFLIX Storefront"
+            title="NUTCLICK Storefront"
           >
             {effectiveCollapsed ? (
               <BrandLogo width={42} height={32} variant="dark" />

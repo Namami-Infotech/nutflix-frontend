@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { Scale, FileCheck, CheckCircle2, AlertCircle, HelpCircle, Mail, Phone, MapPin, Globe } from 'lucide-react';
 
 export const metadata = {
-  title: 'Terms & Conditions | NUTFLIX - Quality Dry Fruits',
-  description: 'Terms and Conditions for NUTFLIX (A Brand of Darshan Techno System). Please review our terms before purchasing from www.nut-flix.in.',
+  title: 'Terms & Conditions | NUTCLICK - Quality Dry Fruits',
+  description: 'Terms and Conditions for NUTCLICK (A Brand of Darshan Techno System). Please review our terms before purchasing from www.nut-flix.in.',
 };
 
 export default function TermsPage() {
@@ -52,7 +52,7 @@ export default function TermsPage() {
             Please read these Terms and Conditions carefully before browsing or purchasing from www.nut-flix.in.
           </p>
           <div style={{ marginTop: '1.2rem', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-            Last Updated: {lastUpdated} • NUTFLIX (A Brand of Darshan Techno System)
+            Last Updated: {lastUpdated} • NUTCLICK (A Brand of Darshan Techno System)
           </div>
         </div>
       </section>
@@ -153,7 +153,7 @@ export default function TermsPage() {
               <li><strong>Order Acceptance:</strong> Orders are subject to acceptance and product availability.</li>
               <li><strong>Accurate Information:</strong> Customers must provide correct delivery and contact information.</li>
               <li><strong>Representation of Products:</strong> Product images on the website are for representation purposes and actual packaging or appearance may vary slightly.</li>
-              <li><strong>Right to Cancel:</strong> NUTFLIX reserves the right to cancel or refuse an order in case of pricing errors, non-availability, payment issues or circumstances beyond our control.</li>
+              <li><strong>Right to Cancel:</strong> NUTCLICK reserves the right to cancel or refuse an order in case of pricing errors, non-availability, payment issues or circumstances beyond our control.</li>
               <li><strong>Governing Law:</strong> All transactions shall be governed by the applicable laws of India.</li>
             </ul>
           </div>
@@ -163,7 +163,7 @@ export default function TermsPage() {
               1. Brand & Business Identity
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              <strong>NUTFLIX</strong> is a brand of <strong>Darshan Techno System</strong>, engaged in the online and offline sale of quality dry fruits. Our registered office is located at 43, Karaya Road, Kolkata – 700017, West Bengal, India.
+              <strong>NUTCLICK</strong> is a brand of <strong>Darshan Techno System</strong>, engaged in the online and offline sale of quality dry fruits. Our registered office is located at 43, Karaya Road, Kolkata – 700017, West Bengal, India.
             </p>
           </div>
 
@@ -190,7 +190,7 @@ export default function TermsPage() {
               4. Payment & Order Cancellation
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              Payments must be made through authorized electronic payment methods or Cash on Delivery where supported. Orders may only be cancelled prior to dispatch/shipping. If an order is cancelled by NUTFLIX due to unavoidable circumstances (such as pricing error or stock non-availability), any payment received will be refunded in accordance with our Cancellation Policy.
+              Payments must be made through authorized electronic payment methods or Cash on Delivery where supported. Orders may only be cancelled prior to dispatch/shipping. If an order is cancelled by NUTCLICK due to unavoidable circumstances (such as pricing error or stock non-availability), any payment received will be refunded in accordance with our Cancellation Policy.
             </p>
           </div>
 
@@ -213,7 +213,7 @@ export default function TermsPage() {
               For any questions regarding these Terms & Conditions, please contact us:
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-forest)' }}>
-              <div><strong>Brand:</strong> NUTFLIX (A Brand of Darshan Techno System)</div>
+              <div><strong>Brand:</strong> NUTCLICK (A Brand of Darshan Techno System)</div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <MapPin size={16} color="var(--color-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <span><strong>Registered Office:</strong> 43, Karaya Road, Kolkata – 700017, West Bengal, India</span>

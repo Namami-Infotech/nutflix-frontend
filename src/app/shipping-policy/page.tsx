@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { Truck, PackageCheck, MapPin, Clock, ShieldCheck, HelpCircle, Mail, Phone, Globe } from 'lucide-react';
 
 export const metadata = {
-  title: 'Shipping & Delivery Policy | NUTFLIX - Quality Dry Fruits',
-  description: 'Shipping and Delivery Policy for NUTFLIX (A Brand of Darshan Techno System). Orders normally delivered within 24 hours with fast, convenient service.',
+  title: 'Shipping & Delivery Policy | NUTCLICK - Quality Dry Fruits',
+  description: 'Shipping and Delivery Policy for NUTCLICK (A Brand of Darshan Techno System). Orders normally delivered within 24 hours with fast, convenient service.',
 };
 
 export default function ShippingPolicyPage() {
@@ -52,7 +52,7 @@ export default function ShippingPolicyPage() {
             Delivering quality, hygienically packed dry fruits fresh to your doorstep with convenient ordering and prompt delivery.
           </p>
           <div style={{ marginTop: '1.2rem', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-            Last Updated: {lastUpdated} • NUTFLIX (A Brand of Darshan Techno System)
+            Last Updated: {lastUpdated} • NUTCLICK (A Brand of Darshan Techno System)
           </div>
         </div>
       </section>
@@ -143,10 +143,10 @@ export default function ShippingPolicyPage() {
           {/* Main Official Delivery Statement Box */}
           <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.8rem', borderRadius: '16px', border: '1px solid var(--color-border)', marginBottom: '2.5rem' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              NUTFLIX Delivery Commitment
+              NUTCLICK Delivery Commitment
             </h2>
             <p style={{ color: 'var(--color-forest)', fontSize: '1rem', fontWeight: 800, marginBottom: '0.75rem' }}>
-              NUTFLIX aims to provide fast and convenient delivery.
+              NUTCLICK aims to provide fast and convenient delivery.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.7' }}>
               <p>
@@ -166,7 +166,7 @@ export default function ShippingPolicyPage() {
               1. Delivery Service & Channels
             </h2>
             <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem' }}>
-              NUTFLIX is a brand of Darshan Techno System, serving customers through both online and offline channels. We coordinate with express logistics and local delivery executives to ensure your dry fruits reach you promptly and in pristine condition.
+              NUTCLICK is a brand of Darshan Techno System, serving customers through both online and offline channels. We coordinate with express logistics and local delivery executives to ensure your dry fruits reach you promptly and in pristine condition.
             </p>
           </div>
 
@@ -198,7 +198,7 @@ export default function ShippingPolicyPage() {
               For order status, delivery queries, or assistance, please contact us:
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-forest)' }}>
-              <div><strong>Brand:</strong> NUTFLIX (A Brand of Darshan Techno System)</div>
+              <div><strong>Brand:</strong> NUTCLICK (A Brand of Darshan Techno System)</div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <MapPin size={16} color="var(--color-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <span><strong>Registered Office:</strong> 43, Karaya Road, Kolkata – 700017, West Bengal, India</span>

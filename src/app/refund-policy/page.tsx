@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { Ban, Clock, CheckCircle2, HelpCircle, Phone, MapPin, Globe, AlertTriangle } from 'lucide-react';
 
 export const metadata = {
-  title: 'Cancellation Policy | NUTFLIX - Quality Dry Fruits',
-  description: 'Cancellation Policy for NUTFLIX (A Brand of Darshan Techno System). Orders can only be cancelled prior to dispatch and shipping.',
+  title: 'Cancellation Policy | NUTCLICK - Quality Dry Fruits',
+  description: 'Cancellation Policy for NUTCLICK (A Brand of Darshan Techno System). Orders can only be cancelled prior to dispatch and shipping.',
 };
 
 export default function RefundPolicyPage() {
@@ -52,7 +52,7 @@ export default function RefundPolicyPage() {
             Orders can only be cancelled prior to dispatch and shipping. Please review our guidelines below.
           </p>
           <div style={{ marginTop: '1.2rem', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-            Last Updated: {lastUpdated} • NUTFLIX (A Brand of Darshan Techno System)
+            Last Updated: {lastUpdated} • NUTCLICK (A Brand of Darshan Techno System)
           </div>
         </div>
       </section>
@@ -143,14 +143,14 @@ export default function RefundPolicyPage() {
           {/* Core Official Policy Declaration Box */}
           <div style={{ backgroundColor: 'var(--color-cream-light)', padding: '1.8rem', borderRadius: '16px', border: '1px solid var(--color-border)', marginBottom: '2.5rem' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--color-forest)', marginBottom: '0.75rem' }}>
-              NUTFLIX Cancellation Policy
+              NUTCLICK Cancellation Policy
             </h2>
             <p style={{ color: 'var(--color-forest)', fontSize: '1rem', fontWeight: 800, marginBottom: '0.75rem' }}>
               Important Guidelines Regarding Order Cancellation:
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.95rem', lineHeight: '1.7' }}>
               <p>
-                • <strong>Cancellation Before Shipping Only:</strong> Orders placed on NUTFLIX can only be cancelled before they have been shipped/dispatched from our facility.
+                • <strong>Cancellation Before Shipping Only:</strong> Orders placed on NUTCLICK can only be cancelled before they have been shipped/dispatched from our facility.
               </p>
               <p>
                 • <strong>No Cancellation After Shipping:</strong> Once the parcel is dispatched or handed over to our courier/delivery partners, order cancellation is strictly not permitted.
@@ -197,7 +197,7 @@ export default function RefundPolicyPage() {
             <ul style={{ paddingLeft: '1.5rem', color: 'var(--color-text-muted)', lineHeight: '1.7', fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <li>Orders are processed promptly to ensure quick delivery. Please submit cancellation requests as soon as possible after placing an order.</li>
               <li>Once the order has been handed over for delivery / shipment, it cannot be recalled or cancelled.</li>
-              <li>NUTFLIX reserves the right to cancel any order due to unforeseen circumstances, stock unavailability, pricing inaccuracies, or unserviceable pin codes.</li>
+              <li>NUTCLICK reserves the right to cancel any order due to unforeseen circumstances, stock unavailability, pricing inaccuracies, or unserviceable pin codes.</li>
             </ul>
           </div>
 
@@ -220,7 +220,7 @@ export default function RefundPolicyPage() {
               Need urgent help to cancel an un-shipped order? Please reach out to our customer care desk immediately:
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-forest)' }}>
-              <div><strong>Brand:</strong> NUTFLIX (A Brand of Darshan Techno System)</div>
+              <div><strong>Brand:</strong> NUTCLICK (A Brand of Darshan Techno System)</div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <MapPin size={16} color="var(--color-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <span><strong>Registered Office:</strong> 43, Karaya Road, Kolkata – 700017, West Bengal, India</span>

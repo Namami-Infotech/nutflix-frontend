@@ -107,7 +107,7 @@ export default function ContactPage() {
             For orders, product enquiries, delivery assistance, returns, refunds or other support, we are here to assist you.
           </p>
           <div style={{ marginTop: '0.8rem', fontSize: '0.92rem', color: 'var(--color-gold)', fontWeight: 800 }}>
-            NUTFLIX – Quality Dry Fruits, Delivered Fresh.
+            NUTCLICK – Quality Dry Fruits, Delivered Fresh.
           </div>
         </div>
       </section>
@@ -130,7 +130,7 @@ export default function ContactPage() {
                 Customer Care &amp; Office
               </h2>
               <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
-                NUTFLIX is a brand of Darshan Techno System, serving customers through both online and offline channels.
+                NUTCLICK is a brand of Darshan Techno System, serving customers through both online and offline channels.
               </p>
             </div>
 

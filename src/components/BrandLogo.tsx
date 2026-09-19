@@ -34,8 +34,8 @@ export default function BrandLogo({
       className={className}
     >
       <img
-        src="/brand-logo-original.png"
-        alt="NUTFLIX"
+        src="/brand-logo.png?v=2"
+        alt="NUTCLICK"
         style={{
           height: height ? (typeof height === 'number' ? `${height}px` : height) : '48px',
           width: width ? (typeof width === 'number' ? `${width}px` : width) : '100%',

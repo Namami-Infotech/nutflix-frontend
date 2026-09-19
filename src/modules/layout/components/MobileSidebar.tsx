@@ -612,7 +612,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, onClose })
             }}
           >
             <div style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--color-forest)', marginBottom: '0.5rem' }}>
-              NUTFLIX (Darshan Techno System)
+              NUTCLICK (Darshan Techno System)
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.78rem' }}>
               <a

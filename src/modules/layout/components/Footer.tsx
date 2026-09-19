@@ -105,8 +105,8 @@ export const Footer: React.FC = () => {
           <div style={{ gridColumn: 'span 1' }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.8rem' }}>
               <img
-                src="/brand-logo-original.png"
-                alt="NUTFLIX"
+                src="/brand-logo.png?v=2"
+                alt="NUTCLICK"
                 style={{
                   height: '44px',
                   width: 'auto',
@@ -181,7 +181,7 @@ export const Footer: React.FC = () => {
           {/* Newsletter Signup */}
           <div>
             <h4 style={{ color: '#ffffff', fontSize: '1rem', fontWeight: 800, marginBottom: '0.6rem' }}>
-              Join NUTFLIX Updates
+              Join NUTCLICK Updates
             </h4>
             <p style={{ fontSize: '0.82rem', color: '#a0b0a4', marginBottom: '1rem' }}>
               Subscribe to get exclusive discount offers &amp; fresh stock alerts.
