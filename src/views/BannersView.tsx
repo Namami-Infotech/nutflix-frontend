@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Image as ImageIcon, CheckCircle, AlertCircle, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Edit, Trash2, Image as ImageIcon, CheckCircle, AlertCircle, Filter, X, Eye, Monitor, Smartphone, ExternalLink, Maximize2 } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 
 interface BannersViewProps {
@@ -23,7 +23,26 @@ export default function BannersView({
 }: BannersViewProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [viewingBanner, setViewingBanner] = useState<any | null>(null);
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile' | 'both'>('desktop');
   const pageSize = 5;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setViewingBanner(null);
+      }
+    };
+    if (viewingBanner) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewingBanner]);
+
+  const handleOpenPreview = (banner: any, device: 'desktop' | 'mobile' | 'both' = 'desktop') => {
+    setViewingBanner(banner);
+    setPreviewDevice(device);
+  };
 
   const activeCount = banners.filter(b => b.status !== 'inactive' && b.isActive !== false).length;
   const inactiveCount = banners.filter(b => b.status === 'inactive' || b.isActive === false).length;
@@ -211,28 +230,111 @@ export default function BannersView({
                     }}
                   >
                     <td style={{ padding: '0.55rem 0.75rem', borderTopLeftRadius: '8px', borderBottomLeftRadius: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <img
-                            src={b.imageUrl}
-                            alt={b.title}
-                            style={{ width: '85px', height: '36px', borderRadius: '5px', objectFit: 'cover', border: '1px solid #cbd5e1', filter: isInactive ? 'grayscale(40%)' : 'none', display: 'block' }}
-                          />
-                          <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, marginTop: '2px' }}>Desktop</div>
-                        </div>
-                        <div style={{ textAlign: 'center' }}>
-                          {b.mobileImageUrl ? (
+                      <div
+                        onClick={() => handleOpenPreview(b, 'desktop')}
+                        title="Click to view banner preview"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.55rem',
+                          cursor: 'pointer',
+                          padding: '0.25rem 0.4rem',
+                          borderRadius: '8px',
+                          border: '1px solid transparent',
+                          transition: 'all 0.15s ease',
+                          userSelect: 'none'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f1f5f9';
+                          e.currentTarget.style.borderColor = '#cbd5e1';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.borderColor = 'transparent';
+                        }}
+                      >
+                        {/* Desktop Thumbnail */}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenPreview(b, 'desktop');
+                          }}
+                          style={{ textAlign: 'center', position: 'relative' }}
+                          title="Click to view Desktop Banner (1900×650)"
+                        >
+                          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '5px' }}>
                             <img
-                              src={b.mobileImageUrl}
-                              alt={`${b.title} Mobile`}
-                              style={{ width: '48px', height: '36px', borderRadius: '5px', objectFit: 'cover', border: '1px solid #cbd5e1', filter: isInactive ? 'grayscale(40%)' : 'none', display: 'block' }}
+                              src={b.imageUrl}
+                              alt={b.title}
+                              style={{ width: '85px', height: '36px', borderRadius: '5px', objectFit: 'cover', border: '1px solid #cbd5e1', filter: isInactive ? 'grayscale(40%)' : 'none', display: 'block' }}
                             />
-                          ) : (
-                            <div style={{ width: '48px', height: '36px', borderRadius: '5px', border: '1px dashed #cbd5e1', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#94a3b8' }}>
-                              Auto
+                            <div
+                              style={{
+                                position: 'absolute',
+                                inset: 0,
+                                backgroundColor: 'rgba(15, 41, 30, 0.45)',
+                                opacity: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'opacity 0.15s ease',
+                                borderRadius: '5px'
+                              }}
+                              onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                              onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
+                            >
+                              <Eye size={14} color="#ffffff" />
                             </div>
-                          )}
-                          <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, marginTop: '2px' }}>Mobile</div>
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, marginTop: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
+                            <Monitor size={10} /> Desktop
+                          </div>
+                        </div>
+
+                        {/* Mobile Thumbnail */}
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenPreview(b, b.mobileImageUrl ? 'mobile' : 'desktop');
+                          }}
+                          style={{ textAlign: 'center', position: 'relative' }}
+                          title={b.mobileImageUrl ? "Click to view Mobile Banner (1200×896)" : "Auto-crop from desktop (Click to view)"}
+                        >
+                          <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '5px' }}>
+                            {b.mobileImageUrl ? (
+                              <>
+                                <img
+                                  src={b.mobileImageUrl}
+                                  alt={`${b.title} Mobile`}
+                                  style={{ width: '48px', height: '36px', borderRadius: '5px', objectFit: 'cover', border: '1px solid #cbd5e1', filter: isInactive ? 'grayscale(40%)' : 'none', display: 'block' }}
+                                />
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    backgroundColor: 'rgba(15, 41, 30, 0.45)',
+                                    opacity: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'opacity 0.15s ease',
+                                    borderRadius: '5px'
+                                  }}
+                                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
+                                >
+                                  <Eye size={12} color="#ffffff" />
+                                </div>
+                              </>
+                            ) : (
+                              <div style={{ width: '48px', height: '36px', borderRadius: '5px', border: '1px dashed #cbd5e1', backgroundColor: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#94a3b8' }}>
+                                Auto
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 700, marginTop: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}>
+                            <Smartphone size={10} /> Mobile
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -330,6 +432,528 @@ export default function BannersView({
         pageSize={pageSize}
         onPageChange={(page) => setCurrentPage(page)}
       />
+
+      {/* BANNER PREVIEW MODAL */}
+      {viewingBanner && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.72)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.25rem'
+          }}
+          onClick={() => setViewingBanner(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              width: '100%',
+              maxWidth: '920px',
+              maxHeight: '92vh',
+              borderRadius: '20px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                padding: '1.1rem 1.5rem',
+                borderBottom: '1px solid #e2e8f0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: '#ffffff',
+                gap: '1rem',
+                flexWrap: 'wrap'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    backgroundColor: '#fef3c7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}
+                >
+                  <ImageIcon size={19} color="#d97706" />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: '#0f291e' }}>
+                      {viewingBanner.title || 'Banner Preview'}
+                    </h3>
+                    <span
+                      style={{
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '12px',
+                        fontSize: '0.68rem',
+                        fontWeight: 900,
+                        textTransform: 'uppercase',
+                        backgroundColor: (viewingBanner.status === 'inactive' || viewingBanner.isActive === false) ? '#fee2e2' : '#dcfce7',
+                        color: (viewingBanner.status === 'inactive' || viewingBanner.isActive === false) ? '#b91c1c' : '#166534',
+                        border: `1px solid ${(viewingBanner.status === 'inactive' || viewingBanner.isActive === false) ? '#fca5a5' : '#86efac'}`,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}
+                    >
+                      {(viewingBanner.status === 'inactive' || viewingBanner.isActive === false) ? <AlertCircle size={10} /> : <CheckCircle size={10} />}
+                      {(viewingBanner.status === 'inactive' || viewingBanner.isActive === false) ? 'inactive' : 'active'}
+                    </span>
+                    {viewingBanner.badgeText && (
+                      <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', backgroundColor: '#f1f5f9', color: '#475569', borderRadius: '6px', fontWeight: 700 }}>
+                        🏷️ {viewingBanner.badgeText}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.75rem', color: '#64748b' }}>
+                    Preview banner as displayed on web storefront.
+                  </p>
+                </div>
+              </div>
+
+              {/* View Switcher Tabs & Close */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{ display: 'inline-flex', backgroundColor: '#f1f5f9', padding: '3px', borderRadius: '9px', border: '1px solid #e2e8f0' }}>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice('desktop')}
+                    style={{
+                      border: 'none',
+                      backgroundColor: previewDevice === 'desktop' ? '#0f291e' : 'transparent',
+                      color: previewDevice === 'desktop' ? '#ffffff' : '#64748b',
+                      fontWeight: 800,
+                      fontSize: '0.75rem',
+                      padding: '0.35rem 0.7rem',
+                      borderRadius: '7px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Monitor size={13} /> Desktop
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice('mobile')}
+                    style={{
+                      border: 'none',
+                      backgroundColor: previewDevice === 'mobile' ? '#0f291e' : 'transparent',
+                      color: previewDevice === 'mobile' ? '#ffffff' : '#64748b',
+                      fontWeight: 800,
+                      fontSize: '0.75rem',
+                      padding: '0.35rem 0.7rem',
+                      borderRadius: '7px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Smartphone size={13} /> Mobile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice('both')}
+                    style={{
+                      border: 'none',
+                      backgroundColor: previewDevice === 'both' ? '#0f291e' : 'transparent',
+                      color: previewDevice === 'both' ? '#ffffff' : '#64748b',
+                      fontWeight: 800,
+                      fontSize: '0.75rem',
+                      padding: '0.35rem 0.7rem',
+                      borderRadius: '7px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Maximize2 size={13} /> Both
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setViewingBanner(null)}
+                  style={{
+                    border: 'none',
+                    background: '#f1f5f9',
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    color: '#475569',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#fee2e2';
+                    e.currentTarget.style.color = '#ef4444';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f1f5f9';
+                    e.currentTarget.style.color = '#475569';
+                  }}
+                  title="Close Preview (Esc)"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '1.25rem 1.5rem', overflowY: 'auto', flexGrow: 1, backgroundColor: '#f8fafc' }}>
+              {/* DESKTOP VIEW */}
+              {previewDevice === 'desktop' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', fontWeight: 800, color: '#1e293b' }}>
+                      <Monitor size={15} color="#0f291e" /> Desktop Banner Preview
+                      <span style={{ fontSize: '0.7rem', color: '#166534', backgroundColor: '#dcfce7', padding: '0.15rem 0.45rem', borderRadius: '6px', fontWeight: 700 }}>
+                        Target: 1900 × 650
+                      </span>
+                    </div>
+                    {viewingBanner.imageUrl && (
+                      <a
+                        href={viewingBanner.imageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          fontSize: '0.74rem',
+                          color: '#166534',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          backgroundColor: '#ffffff',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '6px',
+                          border: '1px solid #cbd5e1'
+                        }}
+                      >
+                        <ExternalLink size={12} /> Open Original in New Tab
+                      </a>
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      borderRadius: '14px',
+                      overflow: 'hidden',
+                      backgroundColor: '#0f172a',
+                      border: '1px solid #cbd5e1',
+                      boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '220px',
+                      maxHeight: '480px',
+                      position: 'relative'
+                    }}
+                  >
+                    <img
+                      src={viewingBanner.imageUrl}
+                      alt={viewingBanner.title}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        maxHeight: '480px',
+                        objectFit: 'contain',
+                        display: 'block'
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=1600&q=80';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* MOBILE VIEW */}
+              {previewDevice === 'mobile' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+                  <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', fontWeight: 800, color: '#1e293b' }}>
+                      <Smartphone size={15} color="#d97706" /> Mobile Banner Preview
+                      <span style={{ fontSize: '0.7rem', color: '#b45309', backgroundColor: '#fef3c7', padding: '0.15rem 0.45rem', borderRadius: '6px', fontWeight: 700 }}>
+                        Target: 1200 × 896
+                      </span>
+                    </div>
+                    {viewingBanner.mobileImageUrl && (
+                      <a
+                        href={viewingBanner.mobileImageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          fontSize: '0.74rem',
+                          color: '#d97706',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          backgroundColor: '#ffffff',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '6px',
+                          border: '1px solid #cbd5e1'
+                        }}
+                      >
+                        <ExternalLink size={12} /> Open Mobile Banner in New Tab
+                      </a>
+                    )}
+                  </div>
+
+                  {viewingBanner.mobileImageUrl ? (
+                    <div
+                      style={{
+                        width: '100%',
+                        maxWidth: '380px',
+                        backgroundColor: '#0f172a',
+                        borderRadius: '28px',
+                        padding: '10px',
+                        boxShadow: '0 12px 30px rgba(0, 0, 0, 0.25)',
+                        border: '2px solid #334155'
+                      }}
+                    >
+                      <div style={{ width: '60px', height: '4px', backgroundColor: '#475569', borderRadius: '4px', margin: '4px auto 8px' }} />
+                      <div style={{ borderRadius: '20px', overflow: 'hidden', backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+                        <img
+                          src={viewingBanner.mobileImageUrl}
+                          alt={`${viewingBanner.title} Mobile`}
+                          style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = viewingBanner.imageUrl;
+                          }}
+                        />
+                      </div>
+                      <div style={{ width: '40px', height: '3px', backgroundColor: '#475569', borderRadius: '4px', margin: '8px auto 2px' }} />
+                    </div>
+                  ) : (
+                    <div style={{ width: '100%', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+                      <div
+                        style={{
+                          backgroundColor: '#fffbeb',
+                          border: '1px solid #fef3c7',
+                          borderLeft: '4px solid #f59e0b',
+                          borderRadius: '8px',
+                          padding: '0.65rem 0.85rem',
+                          width: '100%',
+                          fontSize: '0.78rem',
+                          color: '#92400e',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.45rem'
+                        }}
+                      >
+                        <AlertCircle size={15} color="#d97706" style={{ flexShrink: 0 }} />
+                        <span>
+                          <strong>No Dedicated Mobile Banner:</strong> Mobile visitors will see the Desktop banner auto-scaled to fit their screen.
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          width: '100%',
+                          backgroundColor: '#0f172a',
+                          borderRadius: '28px',
+                          padding: '10px',
+                          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.25)',
+                          border: '2px solid #334155'
+                        }}
+                      >
+                        <div style={{ width: '60px', height: '4px', backgroundColor: '#475569', borderRadius: '4px', margin: '4px auto 8px' }} />
+                        <div style={{ borderRadius: '20px', overflow: 'hidden', backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+                          <img
+                            src={viewingBanner.imageUrl}
+                            alt={`${viewingBanner.title} Auto-scaled`}
+                            style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }}
+                          />
+                        </div>
+                        <div style={{ width: '40px', height: '3px', backgroundColor: '#475569', borderRadius: '4px', margin: '8px auto 2px' }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* BOTH VIEWS COMPARISON */}
+              {previewDevice === 'both' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.6fr) minmax(0, 1fr)', gap: '1.25rem', alignItems: 'start' }}>
+                  {/* Left: Desktop */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Monitor size={14} color="#0f291e" /> Desktop (1900×650)
+                      </span>
+                      {viewingBanner.imageUrl && (
+                        <a
+                          href={viewingBanner.imageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.7rem', color: '#166534', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+                        >
+                          <ExternalLink size={11} /> Open
+                        </a>
+                      )}
+                    </div>
+                    <div style={{ borderRadius: '12px', overflow: 'hidden', backgroundColor: '#0f172a', border: '1px solid #cbd5e1', boxShadow: '0 4px 14px rgba(0,0,0,0.1)' }}>
+                      <img
+                        src={viewingBanner.imageUrl}
+                        alt={viewingBanner.title}
+                        style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Right: Mobile */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <Smartphone size={14} color="#d97706" /> Mobile (1200×896)
+                      </span>
+                      {viewingBanner.mobileImageUrl && (
+                        <a
+                          href={viewingBanner.mobileImageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.7rem', color: '#d97706', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+                        >
+                          <ExternalLink size={11} /> Open
+                        </a>
+                      )}
+                    </div>
+                    <div style={{ backgroundColor: '#0f172a', borderRadius: '20px', padding: '8px', border: '2px solid #334155', boxShadow: '0 4px 14px rgba(0,0,0,0.1)', maxWidth: '280px', margin: '0 auto' }}>
+                      <div style={{ borderRadius: '14px', overflow: 'hidden', backgroundColor: '#1e293b' }}>
+                        <img
+                          src={viewingBanner.mobileImageUrl || viewingBanner.imageUrl}
+                          alt={`${viewingBanner.title} Mobile`}
+                          style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }}
+                        />
+                      </div>
+                      {!viewingBanner.mobileImageUrl && (
+                        <div style={{ fontSize: '0.62rem', color: '#f59e0b', textAlign: 'center', marginTop: '4px', fontWeight: 700 }}>
+                          Auto Desktop Crop
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Banner Details Card */}
+              {(viewingBanner.subtitle || viewingBanner.badgeText || viewingBanner.link || viewingBanner.ctaText) && (
+                <div style={{ marginTop: '1rem', padding: '0.85rem 1rem', backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Banner Metadata & Links
+                  </div>
+                  {viewingBanner.subtitle && (
+                    <div style={{ fontSize: '0.82rem', color: '#334155' }}>
+                      <strong style={{ color: '#0f291e' }}>Subtitle:</strong> {viewingBanner.subtitle}
+                    </div>
+                  )}
+                  {viewingBanner.badgeText && (
+                    <div style={{ fontSize: '0.82rem', color: '#334155' }}>
+                      <strong style={{ color: '#0f291e' }}>Badge:</strong> {viewingBanner.badgeText}
+                    </div>
+                  )}
+                  {(viewingBanner.link || viewingBanner.ctaText) && (
+                    <div style={{ fontSize: '0.82rem', color: '#334155' }}>
+                      <strong style={{ color: '#0f291e' }}>Action / Route:</strong> {viewingBanner.ctaText ? `"${viewingBanner.ctaText}" → ` : ''}{viewingBanner.link || '/shop'}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              style={{
+                padding: '0.9rem 1.5rem',
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: '#ffffff',
+                gap: '0.75rem',
+                flexWrap: 'wrap'
+              }}
+            >
+              <div style={{ fontSize: '0.74rem', color: '#64748b' }}>
+                ID: <strong>#{viewingBanner.id}</strong> | Recommended specs: Desktop <strong>1900×650</strong>, Mobile <strong>1200×896</strong>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {onEditBanner && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const b = viewingBanner;
+                      setViewingBanner(null);
+                      onEditBanner(b);
+                    }}
+                    style={{
+                      padding: '0.45rem 0.9rem',
+                      backgroundColor: '#0f291e',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 800,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      boxShadow: '0 2px 8px rgba(15, 41, 30, 0.2)'
+                    }}
+                  >
+                    <Edit size={14} /> Edit Banner
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setViewingBanner(null)}
+                  style={{
+                    padding: '0.45rem 0.95rem',
+                    backgroundColor: '#f1f5f9',
+                    color: '#334155',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    fontWeight: 800,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
