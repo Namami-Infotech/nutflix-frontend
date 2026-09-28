@@ -211,8 +211,8 @@ export default function AdminView() {
   const handleProductFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 9 * 1024 * 1024) {
-        showToast('File size exceeds 9MB limit. Please choose an image under 9MB.', 'error');
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('File size exceeds 10 limit. Please choose an image under 9MB.', 'error');
         return;
       }
       const reader = new FileReader();
@@ -233,8 +233,8 @@ export default function AdminView() {
   const handleCategoryFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 9 * 1024 * 1024) {
-        showToast('File size exceeds 9MB limit. Please choose an image under 9MB.', 'error');
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('File size exceeds 10MB limit. Please choose an image under 9MB.', 'error');
         return;
       }
       const reader = new FileReader();
@@ -255,8 +255,8 @@ export default function AdminView() {
   const handleBannerFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 9 * 1024 * 1024) {
-        showToast('File size exceeds 9MB limit. Please choose an image under 9MB.', 'error');
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('File size exceeds 10MB limit. Please choose an image under 10MB.', 'error');
         return;
       }
       const reader = new FileReader();
@@ -277,8 +277,8 @@ export default function AdminView() {
   const handleMobileBannerFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 9 * 1024 * 1024) {
-        showToast('File size exceeds 9MB limit. Please choose an image under 9MB.', 'error');
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('File size exceeds 10MB limit. Please choose an image under 10MB.', 'error');
         return;
       }
       const reader = new FileReader();
